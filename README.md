@@ -1,1 +1,0 @@
-# hoatvp-management
