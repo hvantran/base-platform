@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="LOG_PATTERN">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <RollingFile name="LogToFile" fileName="common-logs/app.log" filePattern="common-logs/app-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        <File name="AccFile" fileName="common-logs/acc.log">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+        </File>
+        <File name="Metric" fileName="common-logs/metric.log">
+            <PatternLayout>
+                <Pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %m%n</Pattern>
+            </PatternLayout>
+        </File>
+        <File name="MissingAccFile" fileName="common-logs/missacc.log">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+        </File>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!-- avoid duplicated logs with additivity=false -->
+        <Logger name="HOATV" level="DEBUG" additivity="false">
+            <AppenderRef ref="AccFile"/>
+        </Logger>
+        <Logger name="Metric" level="DEBUG" additivity="false">
+            <AppenderRef ref="Metric"/>
+        </Logger>
+        <Logger name="MISS_ACC" level="DEBUG" additivity="false">
+            <AppenderRef ref="MissingAccFile"/>
+        </Logger>
+        <Root level="INFO">
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToConsole"/>
+        </Root>
+    </Loggers>
+</Configuration>

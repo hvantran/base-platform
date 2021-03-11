@@ -1,0 +1,58 @@
+
+{
+  "mappings" : {
+    "properties" : {
+      "@timestamp" : {
+        "type" : "date"
+      },
+      "@version" : {
+        "type" : "keyword"
+      },
+      "application" : {
+        "type" : "keyword"
+      },
+      "category" : {
+        "type" : "keyword"
+      },
+      "host" : {
+        "type" : "keyword"
+      },
+      "level" : {
+        "type" : "keyword"
+      },
+      "level_value" : {
+        "type" : "long"
+      },
+      "logger_name" : {
+        "type" : "keyword"
+      },
+      "message" : {
+        "type" : "text",
+        "fields" : {
+          "keyword" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
+      },
+      "metric-name" : {
+        "type" : "keyword"
+      },
+      "metric-unit" : {
+        "type" : "keyword"
+      },
+      "metric-value" : {
+        "type" : "long"
+      },
+      "path" : {
+        "type" : "keyword"
+      },
+      "thread_name" : {
+        "type" : "keyword"
+      },
+      "type" : {
+        "type" : "keyword"
+      }
+    }
+  }
+}
