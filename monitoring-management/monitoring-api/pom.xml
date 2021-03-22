@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>monitoring-api</artifactId>
+    <name>base-platform/monitoring-management/monitoring-api</name>
 
 
 </project>
