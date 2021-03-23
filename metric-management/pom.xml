@@ -16,12 +16,12 @@
         <dependency>
             <groupId>hoatv</groupId>
             <artifactId>common-fwk</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>hoatv</groupId>
             <artifactId>task-management</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
