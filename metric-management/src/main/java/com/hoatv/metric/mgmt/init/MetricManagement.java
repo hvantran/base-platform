@@ -91,6 +91,7 @@ public class MetricManagement {
     private void logMetricRecord(Metric metric, String name, Object value) {
         if (StringUtils.isEmpty(metric.unit())) {
             METRIC_LOGGER.info("{} - {}", name, value);
+            return;
         }
 
         METRIC_LOGGER.info("{} - {} {}", name, value, metric.unit());
