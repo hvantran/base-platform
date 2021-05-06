@@ -6,10 +6,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
 
 @Getter
 public class TaskMgmtService<T> extends CloseableTask {
@@ -35,5 +32,14 @@ public class TaskMgmtService<T> extends CloseableTask {
         Callable<T> taskHandler = (Callable<T>) taskEntry.getTaskHandler();
         TaskWorker<T> taskWorker = TaskWorkerFactory.getTaskWorker(taskHandler, concurrentAccountLocks, taskEntry);
         return executorService.submit(taskWorker);
+    }
+
+    public void resize(int increasePoolSize) {
+        if (increasePoolSize > 0) {
+            ThreadPoolExecutor executorService = (ThreadPoolExecutor) this.executorService;
+            int newSize = executorService.getCorePoolSize() + increasePoolSize;
+            executorService.setCorePoolSize(newSize);
+            executorService.setMaximumPoolSize(newSize);
+        }
     }
 }
