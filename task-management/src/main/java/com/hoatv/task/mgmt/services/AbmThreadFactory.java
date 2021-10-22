@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class AbmThreadFactory implements ThreadFactory {
 
+    private static final Logger APP_LOGGER = LoggerFactory.getLogger(AbmThreadFactory.class);
+
     private AtomicInteger threadNumber = new AtomicInteger(1);
 
     @NonNull
@@ -20,6 +24,8 @@ public class AbmThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable runnable) {
-        return new Thread(runnable, name + "-thread-" + threadNumber.getAndIncrement());
+        String threadName = this.name + "-thread-" + threadNumber.getAndIncrement();
+        APP_LOGGER.debug("Created a new thread name {}", threadName);
+        return new Thread(runnable, threadName);
     }
 }
