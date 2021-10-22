@@ -6,7 +6,5 @@ import java.util.List;
 
 public interface ExternalMetricProvider {
 
-    void processMetrics();
-
     List<ComplexValue> getExternalMetricValues();
 }

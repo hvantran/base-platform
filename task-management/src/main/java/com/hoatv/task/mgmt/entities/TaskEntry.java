@@ -38,16 +38,27 @@ public class TaskEntry {
         };
     }
 
-    public static BiCheckedFunction<Object, Method, TaskEntry> fromMethod(Object... args) {
+    public static BiCheckedFunction<Object, Method, TaskEntry> fromMethod(Object... methodArgs) {
         return (instance, method) -> {
             ScheduleApplication scheduleApplication = instance.getClass().getAnnotation(ScheduleApplication.class);
             ObjectUtils.checkThenThrow(scheduleApplication == null, "ScheduleApplication should be annotated in instance");
             ScheduleTask annotation = method.getAnnotation(ScheduleTask.class);
             ObjectUtils.checkThenThrow(annotation == null, "ScheduleTask should be annotated in instance method");
-            Callable<?> callable = () -> method.invoke(instance);
-            long period = annotation.period() != 0 ? annotation.period() : scheduleApplication.period();
-            long delay = annotation.delay() != 0 ? annotation.delay() : scheduleApplication.delay();
+            Callable<?> callable = () -> method.invoke(instance, methodArgs);
+            long period = annotation.period() > 0 ? annotation.period() : scheduleApplication.period();
+            long delay = annotation.delay() > 0 ? annotation.delay() : scheduleApplication.delay();
             return new TaskEntry(annotation.name(), scheduleApplication.application(), callable, delay, period);
+        };
+    }
+
+    public static BiCheckedFunction<Object, Method, TaskEntry> fromMethodWithParams(String name, long period, long delay, Object... methodArgs) {
+        return (instance, method) -> {
+            ScheduleApplication scheduleApplication = instance.getClass().getAnnotation(ScheduleApplication.class);
+            ObjectUtils.checkThenThrow(scheduleApplication == null, "ScheduleApplication should be annotated in instance");
+            Callable<?> callable = () -> method.invoke(instance, methodArgs);
+            long periodParam = period > 0 ? period : scheduleApplication.period();
+            long delayParam = delay > 0 ? delay : scheduleApplication.delay();
+            return new TaskEntry(name, scheduleApplication.application(), callable, delayParam, periodParam);
         };
     }
 }

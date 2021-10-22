@@ -2,7 +2,10 @@ package com.hoatv.fwk.common.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoatv.fwk.common.exceptions.AppException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,6 +16,7 @@ public enum HttpClientService {
     INSTANCE;
 
     private static final String APPLICATION_JSON = "application/json";
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientService.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -58,6 +62,11 @@ public enum HttpClientService {
                         .uri(URI.create(url))
                         .header("Accept", APPLICATION_JSON).GET();
                 HttpResponse<String> response = sendHTTPRequest(httpClient, httpRequestBuilder);
+                if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                    appException = new AppException(response.body());
+                    currentRetryTimes++;
+                    continue;
+                }
                 CheckedSupplier<T> supplier = () -> objectMapper.readValue(response.body(), tClass);
                 return supplier.get();
             } catch (AppException exception) {

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public class TaskMgmtSemaphore extends Semaphore {
@@ -20,17 +21,20 @@ public class TaskMgmtSemaphore extends Semaphore {
         initialPermits = permits;
     }
 
-    public void acquire(TaskEntry taskEntry) {
-        CheckedSupplier<Void> acquire = () -> {
-            super.acquire();
-            return null;
+    public boolean acquire(TaskEntry taskEntry) {
+        CheckedSupplier<Boolean> acquire = () -> {
+            if (super.tryAcquire(5, TimeUnit.SECONDS)) {
+                LOGGER.info("Acquired a connection for task: {}, available connections: {}", taskEntry.getName(), availablePermits());
+                return true;
+            }
+            LOGGER.warn("Connection is not available to running the task: {}, available connections: {}", taskEntry.getName(), availablePermits());
+            return false;
         };
-        acquire.get();
-        LOGGER.info("Acquired a connection for application: {}", taskEntry.getApplicationName());
+        return acquire.get();
     }
 
     public void release(TaskEntry taskEntry) {
         super.release();
-        LOGGER.info("Released a connection for application: {}, available permits: {}", taskEntry.getApplicationName(), availablePermits());
+        LOGGER.info("Released a connection for task: {}, available permits: {}", taskEntry.getName(), availablePermits());
     }
 }
