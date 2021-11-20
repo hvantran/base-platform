@@ -29,6 +29,17 @@ public enum HttpClientService {
         return sendHTTPRequest(httpClient, httpRequestBuilder);
     }
 
+    public <T> T sendPOSTRequest(HttpClient httpClient, String postData, String url, Class<T> tClass)  {
+        HttpRequest.Builder httpRequestBuilder = HttpRequest
+                .newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", APPLICATION_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(postData));
+        HttpResponse<String> response = sendHTTPRequest(httpClient, httpRequestBuilder);
+        CheckedSupplier<T> supplier = () -> objectMapper.readValue(response.body(), tClass);
+        return supplier.get();
+    }
+
     public HttpResponse<String> sendGETRequest(HttpClient httpClient, String url) {
         HttpRequest.Builder httpRequestBuilder = HttpRequest
                 .newBuilder()

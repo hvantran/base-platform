@@ -24,7 +24,7 @@ public class TaskMgmtSemaphore extends Semaphore {
     public boolean acquire(TaskEntry taskEntry) {
         CheckedSupplier<Boolean> acquire = () -> {
             if (super.tryAcquire(5, TimeUnit.SECONDS)) {
-                LOGGER.info("Acquired a connection for task: {}, available connections: {}", taskEntry.getName(), availablePermits());
+                LOGGER.debug("Acquired a connection for task: {}, available connections: {}", taskEntry.getName(), availablePermits());
                 return true;
             }
             LOGGER.warn("Connection is not available to running the task: {}, available connections: {}", taskEntry.getName(), availablePermits());
@@ -35,6 +35,6 @@ public class TaskMgmtSemaphore extends Semaphore {
 
     public void release(TaskEntry taskEntry) {
         super.release();
-        LOGGER.info("Released a connection for task: {}, available permits: {}", taskEntry.getName(), availablePermits());
+        LOGGER.debug("Released a connection for task: {}, available permits: {}", taskEntry.getName(), availablePermits());
     }
 }

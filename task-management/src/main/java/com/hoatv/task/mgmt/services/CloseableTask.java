@@ -42,8 +42,19 @@ public abstract class CloseableTask implements Closeable {
                 LOGGER.debug("Still have some tasks in processing. Need to wait for all task completed.");
                 Thread.sleep(300);
             }
+        } catch (InterruptedException exception){
+            LOGGER.error("An exception occurred while shutdown executor", exception);
+        }
+        shutdownNow();
+    }
 
-            LOGGER.info("Reached to end of process. Shutdown Executor Service...");
+    @Override
+    public void close() {
+        awaitShutdown();
+    }
+
+    public void shutdownNow() {
+        try {
             executorService.shutdown();
             if( executorService.awaitTermination(awaitTerminationTimes, TimeUnit.MILLISECONDS)) {
                 executorService.shutdownNow();
@@ -52,10 +63,5 @@ public abstract class CloseableTask implements Closeable {
             LOGGER.error("An exception occurred while shutdown executor", exception);
             executorService.shutdownNow();
         }
-    }
-
-    @Override
-    public void close() {
-        awaitShutdown();
     }
 }
