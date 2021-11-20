@@ -11,9 +11,7 @@ public class ObjectUtils {
     }
 
     public static void checkThenThrow(boolean predicate) {
-        if (predicate) {
-            throw new AppException("The condition must be TRUE");
-        }
+        checkThenThrow(predicate, "The condition must be TRUE");
     }
 
     public static void checkThenThrow(boolean predicate, String message) {
