@@ -19,6 +19,7 @@ public class GenericHttpClientPool extends GenericObjectPool<HttpClient> {
     public GenericHttpClientPool(int maxTotal, int maxWaitMillis) {
         super(new HttpClientObjectPoolFactory());
         this.setMaxTotal(maxTotal);
+        this.setMaxIdle(maxTotal);
         this.setMaxWaitMillis(maxWaitMillis);
     }
 
