@@ -83,7 +83,6 @@ public enum HttpClientService {
             } catch (AppException exception) {
                 appException = exception;
                 currentRetryTimes++;
-                continue;
             } catch (InterruptedException interruptedException) {
                 appException = new AppException(interruptedException);
                 currentRetryTimes++;
@@ -94,7 +93,7 @@ public enum HttpClientService {
         throw appException;
     }
 
-    private HttpResponse<String> sendHTTPRequest(HttpClient httpClient, HttpRequest.Builder httpRequestBuilder) {
+    private HttpResponse<String> sendHTTPRequest(HttpClient httpClient, HttpRequest.Builder    httpRequestBuilder) {
         HttpRequest httpRequest = httpRequestBuilder.build();
         CheckedSupplier<HttpResponse<String>> supplier = () -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         return supplier.get();

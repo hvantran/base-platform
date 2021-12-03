@@ -14,17 +14,18 @@ public class TaskMgmtService<T> extends CloseableTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskMgmtService.class);
 
     public TaskMgmtService(int numberOfThreads, int maxAwaitTerminationMillis) {
+        this(numberOfThreads, maxAwaitTerminationMillis, "TaskMgmtService");
+    }
+
+    public TaskMgmtService(int numberOfThreads, int maxAwaitTerminationMillis, String application) {
         super(numberOfThreads, maxAwaitTerminationMillis);
-        String application = "TaskMgmtService";
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(this.numberOfThreads, new AbmThreadFactory(application));
-        this.executorService = executorService;
+        this.executorService = Executors.newScheduledThreadPool(this.numberOfThreads, new AbmThreadFactory(application));
     }
 
     public TaskMgmtService(ThreadPoolSettings threadPoolSettings) {
         super(threadPoolSettings);
         String application = threadPoolSettings.name();
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(this.numberOfThreads, new AbmThreadFactory(application));
-        this.executorService = executorService;
+        this.executorService = Executors.newScheduledThreadPool(this.numberOfThreads, new AbmThreadFactory(application));
     }
 
     public Future<T> execute(TaskEntry taskEntry) {
