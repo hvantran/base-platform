@@ -24,7 +24,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
     }
 
     public Future<?> scheduleTask(TaskEntry taskEntry) {
-        if (concurrentAccountLocks.acquire(taskEntry)) {
+        if (concurrentAccountLocks.tryAcquire(taskEntry)) {
             APP_LOGGER.info("Schedule one time execution task - {} under application - {}", taskEntry.getName(),
                     taskEntry.getApplicationName());
             TaskWorker<?> taskWorker = TaskWorkerFactory.getTaskWorker((Callable<?>) taskEntry.getTaskHandler(),
@@ -36,7 +36,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
     }
 
     public void scheduleFixedRateTask(TaskEntry taskEntry) {
-        if (concurrentAccountLocks.acquire(taskEntry)) {
+        if (concurrentAccountLocks.tryAcquire(taskEntry)) {
             APP_LOGGER.info(
                     "Schedule period task - {} under application - {}, delay - {} milliseconds, period - {} milliseconds",
                     taskEntry.getName(), taskEntry.getApplicationName(), taskEntry.getDelayInMillis(), taskEntry.getPeriodInMillis());

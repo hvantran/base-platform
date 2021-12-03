@@ -21,7 +21,16 @@ public class TaskMgmtSemaphore extends Semaphore {
         initialPermits = permits;
     }
 
-    public boolean acquire(TaskEntry taskEntry) {
+    public void acquire(TaskEntry taskEntry) {
+        CheckedSupplier<Void> checkedSupplier = () -> {
+            LOGGER.debug("Acquired a connection for task: {}, available connections: {}", taskEntry.getName(), availablePermits());
+            super.acquire();
+            return null;
+        };
+        checkedSupplier.get();
+    }
+
+    public boolean tryAcquire(TaskEntry taskEntry) {
         CheckedSupplier<Boolean> acquire = () -> {
             if (super.tryAcquire(5, TimeUnit.SECONDS)) {
                 LOGGER.debug("Acquired a connection for task: {}, available connections: {}", taskEntry.getName(), availablePermits());

@@ -29,7 +29,14 @@ public class TaskMgmtService<T> extends CloseableTask {
     }
 
     public Future<T> execute(TaskEntry taskEntry) {
-        if (concurrentAccountLocks.acquire(taskEntry)) {
+        concurrentAccountLocks.acquire(taskEntry);
+        Callable<T> taskHandler = (Callable<T>) taskEntry.getTaskHandler();
+        TaskWorker<T> taskWorker = TaskWorkerFactory.getTaskWorker(taskHandler, concurrentAccountLocks, taskEntry);
+        return executorService.submit(taskWorker);
+    }
+
+    public Future<T> tryExecute(TaskEntry taskEntry) {
+        if (concurrentAccountLocks.tryAcquire(taskEntry)) {
             Callable<T> taskHandler = (Callable<T>) taskEntry.getTaskHandler();
             TaskWorker<T> taskWorker = TaskWorkerFactory.getTaskWorker(taskHandler, concurrentAccountLocks, taskEntry);
             return executorService.submit(taskWorker);
