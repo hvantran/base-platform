@@ -3,21 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>parent-pom</artifactId>
+        <artifactId>base-platform</artifactId>
         <groupId>hoatv</groupId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../parent-pom/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <artifactId>base-platform</artifactId>
+    <artifactId>common-apps</artifactId>
 
     <modules>
-        <module>common-fwk</module>
-        <module>metric-management</module>
-        <module>task-management</module>
-        <module>monitoring-management</module>
-        <module>common-apps</module>
+        <module>ext-endpoint-collector</module>
     </modules>
 </project>
