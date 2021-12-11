@@ -6,6 +6,7 @@ import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
 import com.hoatv.ext.endpoint.dtos.MetadataVO;
 import com.hoatv.ext.endpoint.dtos.MetadataVO.ColumnMetadataVO;
 import com.hoatv.ext.endpoint.models.*;
+import com.hoatv.ext.endpoint.repositories.ExtEndpointRandomDataRepository;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointResponseRepository;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointSettingRepository;
 import com.hoatv.ext.endpoint.repositories.ExtExecutionResultRepository;
@@ -42,14 +43,17 @@ public class ExtRestDataService {
     private final ExtEndpointSettingRepository extEndpointSettingRepository;
     private final ExtEndpointResponseRepository endpointResponseRepository;
     private final ExtExecutionResultRepository extExecutionResultRepository;
+    private final ExtEndpointRandomDataRepository extEndpointRandomDataRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ExtRestDataService(ExtEndpointSettingRepository extEndpointSettingRepository,
                               ExtEndpointResponseRepository endpointResponseRepository,
-                              ExtExecutionResultRepository extExecutionResultRepository) {
+                              ExtExecutionResultRepository extExecutionResultRepository,
+                              ExtEndpointRandomDataRepository extEndpointRandomDataRepository) {
         this.extEndpointSettingRepository = extEndpointSettingRepository;
         this.endpointResponseRepository = endpointResponseRepository;
         this.extExecutionResultRepository = extExecutionResultRepository;
+        this.extEndpointRandomDataRepository = extEndpointRandomDataRepository;
     }
 
     public List<EndpointSettingVO> getAllExtEndpoints(String application) {
@@ -114,15 +118,15 @@ public class ExtRestDataService {
         executionResult.setEndpointSetting(endpointSetting);
         executionResult.setNumberOfTasks(noAttemptTimes);
         extExecutionResultRepository.save(executionResult);
+
         return () -> {
-            final Set<String> cachedCodes = new HashSet<>();
             try (GenericHttpClientPool httpClientPool = new GenericHttpClientPool(noParallelThread, 2000);
                  TaskMgmtService<Object> taskMgmtExecutorV2 = new TaskMgmtService<>(noParallelThread, 5000, application)) {
 
-                for (int index = 0; index < noAttemptTimes; index++) {
+                for (int index = 1; index <= noAttemptTimes; index++) {
                     TaskEntry taskEntry = getTaskEntry(endpointSetting, extEndpoint, extSupportedMethod, data,
                             generatorMethodName, generatorSaltLength, generatorSaltStartWith, metadataVO,
-                            successCriteria, generatorMethodFunc, cachedCodes, httpClientPool, index);
+                            successCriteria, generatorMethodFunc, httpClientPool, index);
                     taskEntry.setApplicationName(application);
                     taskEntry.setName(taskName + " " + index);
                     taskMgmtExecutorV2.execute(taskEntry);
@@ -136,8 +140,6 @@ public class ExtRestDataService {
                         extExecutionResultRepository.save(executionResult);
                     }
                 }
-            } finally {
-                cachedCodes.clear();
             }
             executionResult.setEndedAt(LocalDateTime.now());
             extExecutionResultRepository.save(executionResult);
@@ -150,11 +152,10 @@ public class ExtRestDataService {
                                    ExtSupportedMethod extSupportedMethod, String data, String generatorMethodName,
                                    Integer generatorSaltLength, String generatorSaltStartWith, MetadataVO metadataVO,
                                    String successCriteria, CheckedFunction<String, Method> generatorMethodFunc,
-                                   Set<String> cachedCodes, GenericHttpClientPool httpClientPool, int index) {
+                                   GenericHttpClientPool httpClientPool, int index) {
         TaskEntry taskEntry = new TaskEntry();
         taskEntry.setTaskHandler(() -> {
-            String random = generateRandomValue(generatorMethodName, generatorSaltLength, generatorSaltStartWith,
-                    metadataVO, generatorMethodFunc, cachedCodes);
+            String random = generateRandomValue(generatorMethodName, generatorSaltLength, generatorSaltStartWith, generatorMethodFunc);
             if (random == null) return null;
 
             ExecutionTemplate<String> executionTemplate = getExecutionTemplate(extEndpoint, extSupportedMethod, data, random);
@@ -168,20 +169,16 @@ public class ExtRestDataService {
         return taskEntry;
     }
 
-    private String generateRandomValue(String generatorMethodName, Integer generatorSaltLength, String generatorSaltStartWith, MetadataVO metadataVO, CheckedFunction<String, Method> generatorMethodFunc, Set<String> cachedCodes) throws IllegalAccessException, InvocationTargetException {
+    private String generateRandomValue(String generatorMethodName, Integer generatorSaltLength, String generatorSaltStartWith, CheckedFunction<String, Method> generatorMethodFunc) throws IllegalAccessException, InvocationTargetException {
         String random = "";
         if (StringUtils.isNotEmpty(generatorMethodName)) {
-            String columnId = metadataVO.getColumnId();
-            String endpointResponseMethodName = "existsEndpointResponseBy".concat(StringUtils.capitalize(columnId));
-            CheckedSupplier<Method> endpointResponseMethodSup = () -> ExtEndpointResponseRepository.class.getMethod(
-                    endpointResponseMethodName, String.class);
-            Method endpointResponseMethod = endpointResponseMethodSup.get();
             Method generatorMethod = generatorMethodFunc.apply(generatorMethodName);
-            random = (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength,
-                    generatorSaltStartWith);
-            if (isProcessedBefore(endpointResponseMethod, cachedCodes, random)) {
-                return null;
+            random = (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength, generatorSaltStartWith);
+            while(extEndpointRandomDataRepository.existsByRandom(random)) {
+                random = (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength, generatorSaltStartWith);
             }
+            extEndpointRandomDataRepository.save(EndpointRandomData.builder().random(random).build());
+            return random;
         }
         return random;
     }
@@ -231,20 +228,6 @@ public class ExtRestDataService {
                     throw new AppException(ExtSupportedMethod.INVALID_SUPPORTED_METHOD);
             }
         };
-    }
-
-    private boolean isProcessedBefore(Method endpointResponseMethod, Set<String> cachedCodes,
-                                      String random) throws IllegalAccessException, InvocationTargetException {
-        if (cachedCodes.contains(random)) {
-            return true;
-        }
-
-        cachedCodes.add(random);
-        Boolean isAlreadyExisted = (Boolean) endpointResponseMethod.invoke(endpointResponseRepository, random);
-        if (isAlreadyExisted.equals(Boolean.TRUE)) {
-            LOGGER.warn("Account with id {} is already exist", random);
-        }
-        return isAlreadyExisted;
     }
 
     private CheckedFunction<String, Method> getGeneratorMethodFunc(String generatorSaltStartWith) {
