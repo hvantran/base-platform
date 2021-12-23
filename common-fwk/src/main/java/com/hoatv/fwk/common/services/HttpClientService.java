@@ -84,7 +84,6 @@ public enum HttpClientService {
         int currentRetryTimes = 0;
         do {
             try {
-                Thread.sleep(100);
                 HttpResponse<String> response = sendHTTPRequest(httpClient, httpRequestBuilder);
                 if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                     appException = new AppException(response.body());
@@ -94,9 +93,6 @@ public enum HttpClientService {
                 return response;
             } catch (AppException exception) {
                 appException = exception;
-                currentRetryTimes++;
-            } catch (InterruptedException interruptedException) {
-                appException = new AppException(interruptedException);
                 currentRetryTimes++;
             }
         }
