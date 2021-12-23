@@ -5,8 +5,10 @@ import com.hoatv.ext.endpoint.dtos.EndpointResponseVO;
 import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
 import com.hoatv.ext.endpoint.dtos.MetadataVO;
 import com.hoatv.ext.endpoint.dtos.MetadataVO.ColumnMetadataVO;
-import com.hoatv.ext.endpoint.models.*;
-import com.hoatv.ext.endpoint.repositories.ExtEndpointRandomDataRepository;
+import com.hoatv.ext.endpoint.models.EndpointExecutionResult;
+import com.hoatv.ext.endpoint.models.EndpointResponse;
+import com.hoatv.ext.endpoint.models.EndpointSetting;
+import com.hoatv.ext.endpoint.models.ExtSupportedMethod;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointResponseRepository;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointSettingRepository;
 import com.hoatv.ext.endpoint.repositories.ExtExecutionResultRepository;
@@ -32,7 +34,9 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class ExtRestDataService {
@@ -43,17 +47,14 @@ public class ExtRestDataService {
     private final ExtEndpointSettingRepository extEndpointSettingRepository;
     private final ExtEndpointResponseRepository endpointResponseRepository;
     private final ExtExecutionResultRepository extExecutionResultRepository;
-    private final ExtEndpointRandomDataRepository extEndpointRandomDataRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ExtRestDataService(ExtEndpointSettingRepository extEndpointSettingRepository,
                               ExtEndpointResponseRepository endpointResponseRepository,
-                              ExtExecutionResultRepository extExecutionResultRepository,
-                              ExtEndpointRandomDataRepository extEndpointRandomDataRepository) {
+                              ExtExecutionResultRepository extExecutionResultRepository) {
         this.extEndpointSettingRepository = extEndpointSettingRepository;
         this.endpointResponseRepository = endpointResponseRepository;
         this.extExecutionResultRepository = extExecutionResultRepository;
-        this.extEndpointRandomDataRepository = extEndpointRandomDataRepository;
     }
 
     public List<EndpointSettingVO> getAllExtEndpoints(String application) {
@@ -169,18 +170,33 @@ public class ExtRestDataService {
         return taskEntry;
     }
 
-    private String generateRandomValue(String generatorMethodName, Integer generatorSaltLength, String generatorSaltStartWith, CheckedFunction<String, Method> generatorMethodFunc) throws IllegalAccessException, InvocationTargetException {
+    private String generateRandomValue(String generatorMethodName, Integer generatorSaltLength, String generatorSaltStartWith, CheckedFunction<String, Method> generatorMethodFunc) throws IllegalAccessException, InvocationTargetException, InvocationTargetException {
         String random = "";
         if (StringUtils.isNotEmpty(generatorMethodName)) {
             Method generatorMethod = generatorMethodFunc.apply(generatorMethodName);
             random = (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength, generatorSaltStartWith);
-            while(extEndpointRandomDataRepository.existsByRandom(random)) {
+            while(endpointResponseRepository.existsEndpointResponseByColumn1(random)) {
                 random = (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength, generatorSaltStartWith);
             }
-            extEndpointRandomDataRepository.save(EndpointRandomData.builder().random(random).build());
             return random;
         }
         return random;
+    }
+
+    private List<String> generateRandomValues(int noRandomValues, String generatorMethodName, Integer generatorSaltLength, String generatorSaltStartWith, CheckedFunction<String, Method> generatorMethodFunc) {
+        if (StringUtils.isNotEmpty(generatorMethodName)) {
+            Method generatorMethod = generatorMethodFunc.apply(generatorMethodName);
+            CheckedSupplier<String> generateValueSup = () -> (String) generatorMethod.invoke(SaltGeneratorUtils.class, generatorSaltLength, generatorSaltStartWith);
+            IntFunction<String> generateRandomFunc = (number) -> generateValueSup.get();
+            Set<String> randomValues = IntStream.range(0, noRandomValues).mapToObj(generateRandomFunc).collect(Collectors.toSet());
+
+//            Set<RandomValue> storedRandomValues = extEndpointRandomDataRepository.findByRandomIn(randomValues);
+//            Set<String> storedRandoms = storedRandomValues.stream().map(RandomValue::getRandom).collect(Collectors.toSet());
+//            randomValues.removeAll(storedRandoms);
+            LOGGER.info("Number of generated random values: {}", randomValues.size());
+            return new ArrayList<>(randomValues);
+        }
+        return IntStream.range(0, noRandomValues).mapToObj(number -> "").collect(Collectors.toList());
     }
 
     private void onSuccessResponse(EndpointSetting endpointSetting, MetadataVO metadataVO, String random, String responseString) {
