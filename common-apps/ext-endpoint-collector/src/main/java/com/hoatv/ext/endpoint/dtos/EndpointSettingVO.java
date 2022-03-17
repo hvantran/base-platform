@@ -1,5 +1,7 @@
 package com.hoatv.ext.endpoint.dtos;
 
+import com.hoatv.ext.endpoint.api.ResponseConsumerType;
+import com.hoatv.ext.endpoint.utils.SaltGeneratorUtils;
 import lombok.*;
 
 @Getter
@@ -25,6 +27,9 @@ public class EndpointSettingVO {
     private String generatorMethodName;
     private Integer generatorSaltLength;
     private String generatorSaltStartWith;
+    private String generatorStrategy = SaltGeneratorUtils.GeneratorType.NONE.name();
+
     private String successCriteria;
+    private String responseConsumerType = ResponseConsumerType.CONSOLE.name();
 }
 
