@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static java.net.http.HttpRequest.BodyPublishers.*;
+import static java.net.http.HttpRequest.BodyPublishers.ofString;
 
 public enum HttpClientService {
 
@@ -50,6 +51,8 @@ public enum HttpClientService {
 
         @Builder.Default
         private int retryTimes = 0;
+        @Builder.Default
+        private int requestTimeoutInMs = 5000;
         @Builder.Default
         private HttpMethod method = HttpMethod.GET;
         @Builder.Default
@@ -96,6 +99,7 @@ public enum HttpClientService {
 
             HttpRequest.Builder httpRequestBuilder = HttpRequest
                     .newBuilder()
+                    .timeout(Duration.ofMillis(requestParams.requestTimeoutInMs))
                     .uri(URI.create(requestParams.url));
 
             appendRequestHeaders(requestParams, httpRequestBuilder);
