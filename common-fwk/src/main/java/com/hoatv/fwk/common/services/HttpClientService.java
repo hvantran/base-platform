@@ -23,7 +23,6 @@ public enum HttpClientService {
 
     INSTANCE;
 
-    public static final String ACCEPT = "Accept";
     private static final String APPLICATION_JSON = "application/json";
     public static final String CONTENT_TYPE = "Content-Type";
 
