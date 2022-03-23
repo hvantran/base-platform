@@ -17,9 +17,11 @@ import com.hoatv.ext.endpoint.utils.SaltGeneratorUtils;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.fwk.common.services.GenericHttpClientPool;
+import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.services.HttpClientService.HttpMethod;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.task.mgmt.entities.TaskEntry;
+import com.hoatv.task.mgmt.services.TaskFactory;
 import com.hoatv.task.mgmt.services.TaskMgmtService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ public class ExtRestDataService {
         ObjectUtils.checkThenThrow(Objects::isNull, extSupportedMethod, HttpMethod.INVALID_SUPPORTED_METHOD);
 
         extEndpointSettingRepository.save(endpointSetting);
-        TaskMgmtService<Object> taskMgmtExecutorV1 = new TaskMgmtService<>(1, 5000);
+        TaskMgmtService taskMgmtExecutorV1 = TaskFactory.INSTANCE.getTaskMgmtService(1, 5000);
         TaskEntry mainTaskEntry = new TaskEntry();
         Callable<Object> callable = getEndpointResponseTasks(endpointSetting, endpointSettingVO);
         mainTaskEntry.setTaskHandler(callable);
@@ -99,7 +101,7 @@ public class ExtRestDataService {
         GeneratorType generatorType = GeneratorType.valueOf(endpointSettingVO.getGeneratorStrategy());
 
         CheckedFunction<String, Method> generatorMethodFunc = getGeneratorMethodFunc(generatorSaltStartWith);
-        Predicate<String> existingDataChecker = data -> endpointResponseRepository.existsEndpointResponseByColumn1(data);
+        Predicate<String> existingDataChecker = endpointResponseRepository::existsEndpointResponseByColumn1;
         DataGeneratorVO dataGeneratorVO = DataGeneratorVO.builder()
                 .generatorMethodFunc(generatorMethodFunc)
                 .generatorMethodName(generatorMethodName)
@@ -119,9 +121,9 @@ public class ExtRestDataService {
         ResponseConsumer responseConsumer = factory.getResponseConsumer(responseConsumerType);
 
         return () -> {
-            try (GenericHttpClientPool httpClientPool = new GenericHttpClientPool(noParallelThread, 2000);
-                 TaskMgmtService<Object> taskMgmtExecutorV2 = new TaskMgmtService<>(noParallelThread, 5000, application)) {
-
+            TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
+            GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(endpointSettingVO.getTaskName(),noParallelThread, 2000);
+            try (taskMgmtExecutorV2) {
                 for (int index = 1; index <= noAttemptTimes; index++) {
                     String executionTaskName = taskName.concat(String.valueOf(index));
                     ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()

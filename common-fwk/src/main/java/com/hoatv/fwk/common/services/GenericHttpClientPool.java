@@ -1,6 +1,7 @@
 package com.hoatv.fwk.common.services;
 
 import com.hoatv.fwk.common.annotations.HttpConnectionPoolSettings;
+import lombok.Getter;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.net.http.HttpClient;
 import java.util.Optional;
 
+@Getter
 public class GenericHttpClientPool extends GenericObjectPool<HttpClient> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericHttpClientPool.class);

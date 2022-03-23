@@ -16,7 +16,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
 
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(ScheduleTaskMgmtService.class);
 
-    public ScheduleTaskMgmtService(SchedulePoolSettings schedulePoolSettings) {
+    ScheduleTaskMgmtService(SchedulePoolSettings schedulePoolSettings) {
         super(schedulePoolSettings.threadPoolSettings());
         ThreadPoolSettings threadPoolSettings = schedulePoolSettings.threadPoolSettings();
         int corePoolSize = threadPoolSettings.numberOfThreads();
@@ -50,7 +50,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
     }
 
     public void scheduleTasks(TaskCollection taskCollection, int waitingTime, TimeUnit timeUnit) {
-        TaskMgmtService<Void> taskMgmtService = new TaskMgmtService<>(1, 5000);
+        TaskMgmtService taskMgmtService = new TaskMgmtService(1, 5000);
         TaskEntry applicationTask = new TaskEntry();
         applicationTask.setApplicationName(taskCollection.getApplicationName());
         Callable<Object> taskHandler = getTaskHandler(taskCollection, waitingTime, timeUnit);

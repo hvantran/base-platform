@@ -29,13 +29,13 @@ public class ScheduleTaskReflectionDiscoverService {
         APP_LOGGER.info("Collected all schedule task collections");
         Set<Class<?>> schedulePoolSettings = taskDiscover.getSchedulePoolSettings(DEFAULT_SCAN_PACKAGE);
         List<TaskCollection> taskCollection = taskDiscover.getTaskCollection(DEFAULT_SCAN_PACKAGE);
-        TaskMgmtService<Void> taskMgmtService = new TaskMgmtService<>(0, 5000);
+        TaskMgmtService taskMgmtService = new TaskMgmtService(0, 5000);
         Consumer<Class<?>> scheduleApplicationTasks = scheduleApplicationTasks(taskCollection, taskMgmtService);
         schedulePoolSettings.forEach(scheduleApplicationTasks);
     }
 
     private Consumer<Class<?>> scheduleApplicationTasks(
-            List<TaskCollection> taskCollection, TaskMgmtService<Void> taskMgmtService) {
+            List<TaskCollection> taskCollection, TaskMgmtService taskMgmtService) {
 
         return schedulePool -> {
             TaskEntry applicationTask = new TaskEntry();
@@ -55,7 +55,8 @@ public class ScheduleTaskReflectionDiscoverService {
             int threadCount = schedulePoolConfig.threadPoolSettings().numberOfThreads();
 
             APP_LOGGER.info("Creating schedule tasks service: application - {}, thread count - {}", application, threadCount);
-            try (ScheduleTaskMgmtService scheduleTaskMgmtService = new ScheduleTaskMgmtService(schedulePoolConfig)) {
+            try (ScheduleTaskMgmtService scheduleTaskMgmtService = TaskFactory.INSTANCE.newScheduleTaskMgmtService(
+                    schedulePoolConfig)) {
                 APP_LOGGER.info("Getting schedule tasks for application {}", application);
                 Predicate<TaskCollection> taskEntryPredicate = tc -> application.equals(tc.getApplicationName());
                 List<TaskEntry> applicationScheduleTasks = taskCollection.stream()
