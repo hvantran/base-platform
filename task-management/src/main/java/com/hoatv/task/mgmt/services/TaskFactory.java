@@ -16,7 +16,7 @@ public enum TaskFactory {
 
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(TaskFactory.class);
 
-    private Map<String, LinkedList<CloseableTask>> serviceRegistry = new ConcurrentHashMap<>();
+    private final Map<String, LinkedList<CloseableTask>> serviceRegistry = new ConcurrentHashMap<>();
 
     public TaskMgmtService getTaskMgmtService(int numberOfThreads, int maxAwaitTerminationMillis) {
         serviceRegistry.putIfAbsent("TaskMgmtService", new LinkedList<>());
