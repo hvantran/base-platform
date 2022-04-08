@@ -1,7 +1,5 @@
 package com.hoatv.task.mgmt.services;
 
-import com.hoatv.fwk.common.exceptions.AppException;
-import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.task.mgmt.entities.TaskEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
