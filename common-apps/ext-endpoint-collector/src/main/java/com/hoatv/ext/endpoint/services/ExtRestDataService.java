@@ -6,6 +6,7 @@ import com.hoatv.ext.endpoint.api.ResponseConsumerType;
 import com.hoatv.ext.endpoint.dtos.DataGeneratorVO;
 import com.hoatv.ext.endpoint.dtos.EndpointResponseVO;
 import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
+import com.hoatv.ext.endpoint.dtos.EndpointSettingVO.Input;
 import com.hoatv.ext.endpoint.dtos.MetadataVO;
 import com.hoatv.ext.endpoint.models.EndpointExecutionResult;
 import com.hoatv.ext.endpoint.models.EndpointResponse;
@@ -30,7 +31,11 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -91,14 +96,16 @@ public class ExtRestDataService {
         // Job configuration
         String application = endpointSetting.getApplication();
         String taskName = endpointSetting.getTaskName();
-        Integer noAttemptTimes = endpointSettingVO.getNoAttemptTimes();
+        Input input = endpointSettingVO.getInput();
+        int noAttemptTimes = input.getNoAttemptTimes();
         int noParallelThread = endpointSetting.getNoParallelThread();
 
         // Generator data for executing http methods
         String generatorMethodName = endpointSetting.getGeneratorMethodName();
         Integer generatorSaltLength = endpointSetting.getGeneratorSaltLength();
         String generatorSaltStartWith = Optional.ofNullable(endpointSetting.getGeneratorSaltStartWith()).orElse("");
-        GeneratorType generatorType = GeneratorType.valueOf(endpointSettingVO.getGeneratorStrategy());
+        EndpointSettingVO.DataGeneratorInfoVO dataGeneratorInfo = input.getDataGeneratorInfo();
+        GeneratorType generatorType = GeneratorType.valueOf(dataGeneratorInfo.getGeneratorStrategy());
 
         CheckedFunction<String, Method> generatorMethodFunc = getGeneratorMethodFunc(generatorSaltStartWith);
         Predicate<String> existingDataChecker = endpointResponseRepository::existsEndpointResponseByColumn1;
@@ -116,24 +123,34 @@ public class ExtRestDataService {
         executionResult.setNumberOfTasks(noAttemptTimes);
         extExecutionResultRepository.save(executionResult);
 
-        String responseConsumerTypeName = endpointSettingVO.getResponseConsumerType().toUpperCase();
+        EndpointSettingVO.Output output = endpointSettingVO.getOutput();
+        String responseConsumerTypeName = output.getResponseConsumerType().toUpperCase();
         ResponseConsumerType responseConsumerType = ResponseConsumerType.valueOf(responseConsumerTypeName);
         ResponseConsumer responseConsumer = factory.getResponseConsumer(responseConsumerType);
 
+        return getExecutionTasks(endpointSettingVO, metadataVO, application, taskName, input, noAttemptTimes,
+            noParallelThread, dataGeneratorVO, executionResult, responseConsumer);
+    }
+
+    private Callable<Object> getExecutionTasks(EndpointSettingVO endpointSettingVO, MetadataVO metadataVO,
+                                              String application, String taskName, Input input,
+                                              int noAttemptTimes, int noParallelThread, DataGeneratorVO dataGeneratorVO,
+                                              EndpointExecutionResult executionResult, ResponseConsumer responseConsumer) {
         return () -> {
             TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
-            GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(endpointSettingVO.getTaskName(),noParallelThread, 2000);
+            GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(input.getTaskName(), noParallelThread, 2000);
             try (taskMgmtExecutorV2) {
                 for (int index = 1; index <= noAttemptTimes; index++) {
                     String executionTaskName = taskName.concat(String.valueOf(index));
                     ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
-                            .dataGeneratorVO(dataGeneratorVO)
-                            .endpointSettingVO(endpointSettingVO)
-                            .httpClientPool(httpClientPool)
-                            .index(index)
-                            .metadataVO(metadataVO)
-                            .onSuccessResponse(responseConsumer)
-                            .build();
+                        .input(input)
+                        .index(index)
+                        .metadataVO(metadataVO)
+                        .httpClientPool(httpClientPool)
+                        .dataGeneratorVO(dataGeneratorVO)
+                        .filter(endpointSettingVO.getFilter())
+                        .onSuccessResponse(responseConsumer)
+                        .build();
 
                     CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);
                     TaskEntry taskEntry = taskEntryFunc.apply(extTaskEntry);

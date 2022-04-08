@@ -1,6 +1,10 @@
 package com.hoatv.ext.endpoint.models;
 
 import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
+import com.hoatv.ext.endpoint.dtos.EndpointSettingVO.DataGeneratorInfoVO;
+import com.hoatv.ext.endpoint.dtos.EndpointSettingVO.Filter;
+import com.hoatv.ext.endpoint.dtos.EndpointSettingVO.Input;
+import com.hoatv.ext.endpoint.dtos.EndpointSettingVO.RequestInfoVO;
 import lombok.*;
 
 import javax.persistence.*;
@@ -67,36 +71,52 @@ public class EndpointSetting {
     private Set<EndpointResponse> resultSet = new HashSet<>();
 
     public EndpointSettingVO toEndpointConfigVO() {
+        RequestInfoVO requestInfo = RequestInfoVO.builder()
+            .data(data)
+            .extEndpoint(extEndpoint)
+            .method(method)
+            .build();
+        DataGeneratorInfoVO dataGeneratorInfo = DataGeneratorInfoVO.builder()
+            .generatorMethodName(generatorMethodName)
+            .generatorSaltLength(generatorSaltLength)
+            .generatorSaltStartWith(generatorSaltStartWith)
+            .build();
+        Input input = Input.builder()
+            .application(application)
+            .taskName(taskName)
+            .noAttemptTimes(noAttemptTimes)
+            .noParallelThread(noParallelThread)
+            .columnMetadata(columnMetadata)
+            .dataGeneratorInfo(dataGeneratorInfo)
+            .requestInfo(requestInfo)
+            .build();
+        Filter filter = Filter.builder()
+            .successCriteria(successCriteria)
+            .build();
         return EndpointSettingVO.builder()
-                .application(application)
-                .taskName(taskName)
-                .extEndpoint(extEndpoint)
-                .method(method)
-                .data(data)
-                .noAttemptTimes(noAttemptTimes)
-                .noParallelThread(noParallelThread)
-                .columnMetadata(columnMetadata)
-                .generatorMethodName(generatorMethodName)
-                .generatorSaltLength(generatorSaltLength)
-                .generatorSaltStartWith(generatorSaltStartWith)
-                .successCriteria(successCriteria)
-                .build();
+            .input(input)
+            .filter(filter)
+            .build();
     }
 
     public static EndpointSetting fromEndpointConfigVO(EndpointSettingVO endpointSettingVO) {
+        Input input = endpointSettingVO.getInput();
+        RequestInfoVO requestInfo = input.getRequestInfo();
+        DataGeneratorInfoVO dataGeneratorInfo = input.getDataGeneratorInfo();
+        Filter filter = endpointSettingVO.getFilter();
         return EndpointSetting.builder()
-                .application(endpointSettingVO.getApplication())
-                .taskName(endpointSettingVO.getTaskName())
-                .extEndpoint(endpointSettingVO.getExtEndpoint())
-                .method(endpointSettingVO.getMethod())
-                .data(endpointSettingVO.getData())
-                .noAttemptTimes(endpointSettingVO.getNoAttemptTimes())
-                .noParallelThread(endpointSettingVO.getNoParallelThread())
-                .columnMetadata(endpointSettingVO.getColumnMetadata())
-                .generatorMethodName(endpointSettingVO.getGeneratorMethodName())
-                .generatorSaltLength(endpointSettingVO.getGeneratorSaltLength())
-                .generatorSaltStartWith(endpointSettingVO.getGeneratorSaltStartWith())
-                .successCriteria(endpointSettingVO.getSuccessCriteria())
+                .application(input.getApplication())
+                .taskName(input.getTaskName())
+                .extEndpoint(requestInfo.getExtEndpoint())
+                .method(requestInfo.getMethod())
+                .data(requestInfo.getData())
+                .noAttemptTimes(input.getNoAttemptTimes())
+                .noParallelThread(input.getNoParallelThread())
+                .columnMetadata(input.getColumnMetadata())
+                .generatorMethodName(dataGeneratorInfo.getGeneratorMethodName())
+                .generatorSaltLength(dataGeneratorInfo.getGeneratorSaltLength())
+                .generatorSaltStartWith(dataGeneratorInfo.getGeneratorSaltStartWith())
+                .successCriteria(filter.getSuccessCriteria())
                 .build();
     }
 }
