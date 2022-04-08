@@ -8,7 +8,6 @@ import com.hoatv.metric.mgmt.entities.MetricCollection;
 import com.hoatv.metric.mgmt.entities.MetricEntry;
 import lombok.Getter;
 import org.reflections.ReflectionUtils;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap.SimpleEntry;
@@ -21,7 +20,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Getter
-@Component
 @MetricRegistry
 public class MetricProviderRegistry {
 

@@ -1,4 +1,5 @@
 package com.hoatv.metric.mgmt.services;
+
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricEntry;
@@ -13,19 +14,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.text.Normalizer;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.hoatv.fwk.common.constants.Constants.*;
-import static com.hoatv.fwk.common.constants.SystemSettings.*;
+import static com.hoatv.fwk.common.constants.Constants.METRIC_LOG_APP_NAME;
+import static com.hoatv.fwk.common.constants.Constants.METRIC_MANAGEMENT;
+import static com.hoatv.fwk.common.constants.Constants.METRIC_MANAGEMENT_THREAD_POOL;
+import static com.hoatv.fwk.common.constants.Constants.NUMBER_OF_METRIC_THREADS;
+import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_NAME;
+import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_SCHEDULE_DELAY_IN_MILLIS;
+import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_SCHEDULE_PERIOD_TIME_IN_MILLIS;
 
-@Component
 @ScheduleApplication(application = METRIC_MANAGEMENT, delay = GLOBAL_METRIC_SCHEDULE_DELAY_IN_MILLIS, period = GLOBAL_METRIC_SCHEDULE_PERIOD_TIME_IN_MILLIS)
 @SchedulePoolSettings(application = METRIC_MANAGEMENT, threadPoolSettings = @ThreadPoolSettings(name = METRIC_MANAGEMENT_THREAD_POOL, numberOfThreads = NUMBER_OF_METRIC_THREADS))
 public class MetricMgmtService {
@@ -38,7 +45,6 @@ public class MetricMgmtService {
 
     private final MetricProviderRegistry metricProviders;
 
-    @Autowired
     public MetricMgmtService(MetricProviderRegistry metricProvider) {
         this.metricProviders = metricProvider;
     }
@@ -128,6 +134,6 @@ public class MetricMgmtService {
     public static String deAccent(String str) {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(nfdNormalizedString).replaceAll("").replaceAll("đ", "d");
+        return pattern.matcher(nfdNormalizedString).replaceAll("").replace("đ", "d");
     }
 }
