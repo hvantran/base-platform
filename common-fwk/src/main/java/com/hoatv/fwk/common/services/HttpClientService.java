@@ -3,7 +3,6 @@ package com.hoatv.fwk.common.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoatv.fwk.common.exceptions.AppException;
 import lombok.Builder;
-import org.apache.commons.collections4.MapUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -61,10 +60,12 @@ public enum HttpClientService {
     }
 
     private void appendRequestHeaders(RequestParams requestParams, HttpRequest.Builder httpRequestBuilder) {
-        if (MapUtils.isEmpty(requestParams.headers)) {
-            requestParams.headers.put(CONTENT_TYPE, APPLICATION_JSON);
+        Map<String, String> headers = requestParams.headers;
+        if (Objects.isNull(headers)) {
+            headers = new HashMap<>();
+            headers.put(CONTENT_TYPE, APPLICATION_JSON);
         }
-        requestParams.headers.forEach(httpRequestBuilder::header);
+        headers.forEach(httpRequestBuilder::header);
     }
 
     private void appendHttpRequestMethod(RequestParams requestParams, HttpRequest.Builder httpRequestBuilder) {

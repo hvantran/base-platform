@@ -1,5 +1,6 @@
 package com.hoatv.springboot.common.configurations;
 
+import com.hoatv.fwk.common.services.CheckedConsumer;
 import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
@@ -11,6 +12,7 @@ import com.hoatv.task.mgmt.entities.TaskCollection;
 import com.hoatv.task.mgmt.services.ScheduleTaskMgmtService;
 import com.hoatv.task.mgmt.services.ScheduleTaskRegistryService;
 import com.hoatv.task.mgmt.services.TaskFactory;
+import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -25,8 +27,10 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +71,7 @@ public class InitializeConfigurations {
     }
 
     @Bean
-    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+    public CommandLineRunner getCommandLineRunner(ApplicationContext ctx) {
         return args -> {
             LOGGER.info("Let's inspect the beans provided by Spring Boot");
             String[] metricProviderBeanNames = ctx.getBeanNamesForAnnotation(MetricProvider.class);
@@ -85,14 +89,18 @@ public class InitializeConfigurations {
 
             ScheduleTaskRegistryService scheduleTaskExecutorService = ctx.getBean(ScheduleTaskRegistryService.class);
 
-            poolSettings.forEach(applicationObj -> {
+            CheckedConsumer<Object> scheduleTaskExecutorService1 = applicationObj -> {
                 SchedulePoolSettings schedulePoolSettings = applicationObj.getClass().getAnnotation(SchedulePoolSettings.class);
                 ScheduleTaskMgmtService taskMgmtExecutorV1 = TaskFactory.INSTANCE.newScheduleTaskMgmtService(schedulePoolSettings);
 
+                Predicate<Field> fieldPredicate = field -> "scheduleTaskMgmtService".equals(field.getName());
+                CheckedConsumer<Field> scheduleTaskSettingConsumer = field -> field.set(applicationObj, taskMgmtExecutorV1);
+                ReflectionUtils.getFields(applicationObj.getClass(), fieldPredicate).forEach(scheduleTaskSettingConsumer);
                 scheduleTaskExecutorService.register(schedulePoolSettings.application(), taskMgmtExecutorV1);
                 TaskCollection taskCollection = TaskCollection.fromObject(applicationObj);
-                taskMgmtExecutorV1.scheduleTasks(taskCollection, 5, TimeUnit.SECONDS);
-            });
+                taskMgmtExecutorV1.scheduleTasks(taskCollection, 5000, TimeUnit.MILLISECONDS);
+            };
+            poolSettings.forEach(scheduleTaskExecutorService1);
         };
     }
 

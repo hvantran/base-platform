@@ -139,31 +139,29 @@ public class ExtRestDataService {
         return () -> {
             TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
             GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(input.getTaskName(), noParallelThread, 2000);
-            try (taskMgmtExecutorV2) {
-                for (int index = 1; index <= noAttemptTimes; index++) {
-                    String executionTaskName = taskName.concat(String.valueOf(index));
-                    ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
-                        .input(input)
-                        .index(index)
-                        .metadataVO(metadataVO)
-                        .httpClientPool(httpClientPool)
-                        .dataGeneratorVO(dataGeneratorVO)
-                        .filter(endpointSettingVO.getFilter())
-                        .onSuccessResponse(responseConsumer)
-                        .build();
+            for (int index = 1; index <= noAttemptTimes; index++) {
+                String executionTaskName = taskName.concat(String.valueOf(index));
+                ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
+                    .input(input)
+                    .index(index)
+                    .metadataVO(metadataVO)
+                    .httpClientPool(httpClientPool)
+                    .dataGeneratorVO(dataGeneratorVO)
+                    .filter(endpointSettingVO.getFilter())
+                    .onSuccessResponse(responseConsumer)
+                    .build();
 
-                    CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);
-                    TaskEntry taskEntry = taskEntryFunc.apply(extTaskEntry);
-                    taskMgmtExecutorV2.execute(taskEntry);
+                CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);
+                TaskEntry taskEntry = taskEntryFunc.apply(extTaskEntry);
+                taskMgmtExecutorV2.execute(taskEntry);
 
-                    int percentComplete = executionResult.getPercentComplete();
-                    int nextPercentComplete = index * 100 / noAttemptTimes;
+                int percentComplete = executionResult.getPercentComplete();
+                int nextPercentComplete = index * 100 / noAttemptTimes;
 
-                    if (percentComplete != nextPercentComplete) {
-                        executionResult.setNumberOfCompletedTasks(index);
-                        executionResult.setPercentComplete(nextPercentComplete);
-                        extExecutionResultRepository.save(executionResult);
-                    }
+                if (percentComplete != nextPercentComplete) {
+                    executionResult.setNumberOfCompletedTasks(index);
+                    executionResult.setPercentComplete(nextPercentComplete);
+                    extExecutionResultRepository.save(executionResult);
                 }
             }
             executionResult.setEndedAt(LocalDateTime.now());
