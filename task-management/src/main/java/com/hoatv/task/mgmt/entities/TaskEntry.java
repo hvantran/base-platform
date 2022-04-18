@@ -105,7 +105,7 @@ public class TaskEntry {
         }
         Class<?> superclass = instance.getClass().getSuperclass();
         try {
-            return Optional.of(superclass
+            return Optional.ofNullable(superclass
                     .getDeclaredMethod(method.getName())
                     .getAnnotation(ScheduleTask.class));
         } catch (NoSuchMethodException e) {
