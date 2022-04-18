@@ -37,7 +37,19 @@ public class TaskCollection {
 
         Method[] methods = applicationObj.getClass().getMethods();
         List<TaskEntry> taskHandlerOnMethods = Arrays.stream(methods)
-                .filter(method -> Objects.nonNull(method.getAnnotation(ScheduleTask.class)))
+                .filter(method -> {
+                    ScheduleTask scheduleTask = method.getAnnotation(ScheduleTask.class);
+                    if (Objects.nonNull(scheduleTask))
+                        return true;
+                    String methodName = method.getName();
+                    Class<?> superClass = applicationObj.getClass().getSuperclass();
+                    try {
+                        Method classMethod = superClass.getMethod(methodName, method.getParameterTypes());
+                        return Objects.nonNull(classMethod.getAnnotation(ScheduleTask.class));
+                    } catch (NoSuchMethodException e) {
+                        return false;
+                    }
+                })
                 .map(method -> taskEntryOnMethods.apply(applicationObj, method))
                 .collect(Collectors.toList());
 

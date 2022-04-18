@@ -2,6 +2,7 @@ package com.hoatv.task.mgmt.entities;
 
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.services.CheckedFunction;
+import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import lombok.*;
@@ -85,13 +86,27 @@ public class TaskEntry {
         return (instance, method) -> {
             ScheduleApplication scheduleApplication = instance.getClass().getAnnotation(ScheduleApplication.class);
             checkThenThrow(scheduleApplication == null, "ScheduleApplication should be annotated in instance");
-            ScheduleTask annotation = method.getAnnotation(ScheduleTask.class);
+            ScheduleTask annotation = getScheduleTask(instance, method);
+
             checkThenThrow(annotation == null, "ScheduleTask should be annotated in instance method");
             Callable<?> callable = () -> method.invoke(instance, methodArgs);
             long period = annotation.period() > 0 ? annotation.period() : scheduleApplication.period();
             long delay = annotation.delay() > 0 ? annotation.delay() : scheduleApplication.delay();
             return new TaskEntry(annotation.name(), scheduleApplication.application(), callable, delay, period);
         };
+    }
+
+    private static ScheduleTask getScheduleTask(Object instance, Method method) {
+        ScheduleTask annotation = method.getAnnotation(ScheduleTask.class);
+
+        if (annotation == null) {
+            Class<?> superclass = instance.getClass().getSuperclass();
+            CheckedSupplier<ScheduleTask> checkedSupplier = () -> superclass
+                    .getDeclaredMethod(method.getName())
+                    .getAnnotation(ScheduleTask.class);
+            annotation = checkedSupplier.get();
+        }
+        return annotation;
     }
 
     public static BiCheckedFunction<Object, Method, TaskEntry> fromMethodWithParams(String name, long period,
