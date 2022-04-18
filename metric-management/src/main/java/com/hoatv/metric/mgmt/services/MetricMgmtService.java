@@ -5,6 +5,7 @@ import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricEntry;
 import com.hoatv.metric.mgmt.entities.MetricTag;
 import com.hoatv.metric.mgmt.entities.SimpleValue;
+import com.hoatv.monitor.mgmt.TimingMonitor;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
 import com.hoatv.task.mgmt.annotations.SchedulePoolSettings;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
@@ -49,6 +50,7 @@ public class MetricMgmtService {
         this.metricProviders = metricProvider;
     }
 
+    @TimingMonitor
     @ScheduleTask(name = GLOBAL_METRIC_NAME)
     public void collectMetricData() {
         metricProviders.getMetricRegistry().forEach((application, metricCollection) -> {

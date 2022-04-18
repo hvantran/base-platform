@@ -3,7 +3,6 @@ package com.hoatv.task.mgmt.entities;
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
-import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -37,19 +35,7 @@ public class TaskCollection {
 
         Method[] methods = applicationObj.getClass().getMethods();
         List<TaskEntry> taskHandlerOnMethods = Arrays.stream(methods)
-                .filter(method -> {
-                    ScheduleTask scheduleTask = method.getAnnotation(ScheduleTask.class);
-                    if (Objects.nonNull(scheduleTask))
-                        return true;
-                    String methodName = method.getName();
-                    Class<?> superClass = applicationObj.getClass().getSuperclass();
-                    try {
-                        Method classMethod = superClass.getMethod(methodName, method.getParameterTypes());
-                        return Objects.nonNull(classMethod.getAnnotation(ScheduleTask.class));
-                    } catch (NoSuchMethodException e) {
-                        return false;
-                    }
-                })
+                .filter(method -> TaskEntry.getScheduleTask(applicationObj, method).isPresent())
                 .map(method -> taskEntryOnMethods.apply(applicationObj, method))
                 .collect(Collectors.toList());
 

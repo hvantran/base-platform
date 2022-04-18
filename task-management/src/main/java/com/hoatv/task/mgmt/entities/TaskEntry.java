@@ -2,12 +2,12 @@ package com.hoatv.task.mgmt.entities;
 
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.services.CheckedFunction;
-import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import lombok.*;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import static com.hoatv.fwk.common.ultilities.ObjectUtils.checkThenThrow;
@@ -86,27 +86,31 @@ public class TaskEntry {
         return (instance, method) -> {
             ScheduleApplication scheduleApplication = instance.getClass().getAnnotation(ScheduleApplication.class);
             checkThenThrow(scheduleApplication == null, "ScheduleApplication should be annotated in instance");
-            ScheduleTask annotation = getScheduleTask(instance, method);
+            Optional<TaskEntry> taskEntry = getScheduleTask(instance, method).map(annotation -> {
+                Callable<?> callable = () -> method.invoke(instance, methodArgs);
+                long period = annotation.period() > 0 ? annotation.period() : scheduleApplication.period();
+                long delay = annotation.delay() > 0 ? annotation.delay() : scheduleApplication.delay();
+                return new TaskEntry(annotation.name(), scheduleApplication.application(), callable, delay, period);
+            });
 
-            checkThenThrow(annotation == null, "ScheduleTask should be annotated in instance method");
-            Callable<?> callable = () -> method.invoke(instance, methodArgs);
-            long period = annotation.period() > 0 ? annotation.period() : scheduleApplication.period();
-            long delay = annotation.delay() > 0 ? annotation.delay() : scheduleApplication.delay();
-            return new TaskEntry(annotation.name(), scheduleApplication.application(), callable, delay, period);
+            checkThenThrow(taskEntry.isEmpty(), "ScheduleTask should be annotated in instance method");
+            return taskEntry.get();
         };
     }
 
-    private static ScheduleTask getScheduleTask(Object instance, Method method) {
+    public static Optional<ScheduleTask> getScheduleTask(Object instance, Method method) {
         ScheduleTask annotation = method.getAnnotation(ScheduleTask.class);
-
-        if (annotation == null) {
-            Class<?> superclass = instance.getClass().getSuperclass();
-            CheckedSupplier<ScheduleTask> checkedSupplier = () -> superclass
-                    .getDeclaredMethod(method.getName())
-                    .getAnnotation(ScheduleTask.class);
-            annotation = checkedSupplier.get();
+        if (annotation != null) {
+            return Optional.of(annotation);
         }
-        return annotation;
+        Class<?> superclass = instance.getClass().getSuperclass();
+        try {
+            return Optional.of(superclass
+                    .getDeclaredMethod(method.getName())
+                    .getAnnotation(ScheduleTask.class));
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
+        }
     }
 
     public static BiCheckedFunction<Object, Method, TaskEntry> fromMethodWithParams(String name, long period,

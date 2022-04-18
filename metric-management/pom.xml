@@ -23,5 +23,10 @@
             <artifactId>task-management</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>hoatv</groupId>
+            <artifactId>monitoring-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
