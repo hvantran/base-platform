@@ -105,9 +105,9 @@ public class InitializeConfigurations {
                 SchedulePoolSettings schedulePoolSettings = applicationObj.getClass().getAnnotation(SchedulePoolSettings.class);
                 ScheduleTaskMgmtService taskMgmtExecutorV1 = TaskFactory.INSTANCE.newScheduleTaskMgmtService(schedulePoolSettings);
 
-                Predicate<Field> fieldPredicate = field -> "scheduleTaskMgmtService".equals(field.getName());
+                Predicate<Field> isContainScheduleTaskMgmtServiceField = field -> "scheduleTaskMgmtService".equals(field.getName());
                 CheckedConsumer<Field> scheduleTaskSettingConsumer = field -> field.set(applicationObj, taskMgmtExecutorV1);
-                ReflectionUtils.getFields(applicationObj.getClass(), fieldPredicate).forEach(scheduleTaskSettingConsumer);
+                ReflectionUtils.getFields(applicationObj.getClass(), isContainScheduleTaskMgmtServiceField).forEach(scheduleTaskSettingConsumer);
                 scheduleTaskExecutorService.register(schedulePoolSettings.application(), taskMgmtExecutorV1);
                 TaskCollection taskCollection = TaskCollection.fromObject(applicationObj);
                 taskMgmtExecutorV1.scheduleTasks(taskCollection, 5000, TimeUnit.MILLISECONDS);
