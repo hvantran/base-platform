@@ -19,13 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 @Builder
 public class DBResponseConsumer implements ResponseConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DBResponseConsumer.class);
 
-    private final MetadataVO metadataVO;
-    private final EndpointSetting endpointSetting;
     private final ExtEndpointResponseRepository endpointResponseRepository;
 
     @Override
@@ -34,35 +33,36 @@ public class DBResponseConsumer implements ResponseConsumer {
     }
 
     @Override
-    public void onSuccessResponse(String random, String responseString) {
+    public BiConsumer<MetadataVO, EndpointSetting> onSuccessResponse(String random, String responseString) {
+        return (metadataVO, endpointSetting) -> {
+            Object document = Configuration.defaultConfiguration().jsonProvider().parse(responseString);
 
-        Object document = Configuration.defaultConfiguration().jsonProvider().parse(responseString);
+            List<ColumnMetadataVO> columnMetadataVOs = metadataVO.getColumnMetadata();
+            EndpointResponse endpointResponse = new EndpointResponse();
+            endpointResponse.setEndpointSetting(endpointSetting);
+            DocumentContext documentContext = JsonPath.parse(document);
+            CheckedConsumer<ColumnMetadataVO> columnVOConsumer = column -> {
+                String fieldJsonPath = column.getFieldPath();
+                String columnName = StringUtils.capitalize(column.getMappingColumnName());
+                String decryptFunctionName = column.getDecryptFunctionName();
+                String getMethodName = "set".concat(columnName);
+                String value = random;
 
-        List<ColumnMetadataVO> columnMetadataVOs = metadataVO.getColumnMetadata();
-        EndpointResponse endpointResponse = new EndpointResponse();
-        endpointResponse.setEndpointSetting(endpointSetting);
-        DocumentContext documentContext = JsonPath.parse(document);
-        CheckedConsumer<ColumnMetadataVO> columnVOConsumer = column -> {
-            String fieldJsonPath = column.getFieldPath();
-            String columnName = StringUtils.capitalize(column.getMappingColumnName());
-            String decryptFunctionName = column.getDecryptFunctionName();
-            String getMethodName = "set".concat(columnName);
-            String value = random;
+                if (!fieldJsonPath.equals("random")) {
+                    value = documentContext.read(fieldJsonPath, String.class);
+                }
 
-            if (!fieldJsonPath.equals("random")) {
-                value = documentContext.read(fieldJsonPath, String.class);
-            }
+                if (StringUtils.isNotEmpty(decryptFunctionName)) {
+                    Method decryptMethod = DecryptUtils.class.getMethod(decryptFunctionName, String.class);
+                    value = (String) decryptMethod.invoke(DecryptUtils.class, value);
+                }
 
-            if (StringUtils.isNotEmpty(decryptFunctionName)) {
-                Method decryptMethod = DecryptUtils.class.getMethod(decryptFunctionName, String.class);
-                value = (String) decryptMethod.invoke(DecryptUtils.class, value);
-            }
-
-            Method setMethod = EndpointResponse.class.getMethod(getMethodName, String.class);
-            setMethod.invoke(endpointResponse, value);
+                Method setMethod = EndpointResponse.class.getMethod(getMethodName, String.class);
+                setMethod.invoke(endpointResponse, value);
+            };
+            columnMetadataVOs.forEach(columnVOConsumer);
+            endpointResponseRepository.save(endpointResponse);
+            LOGGER.info("{} - {}", random, responseString);
         };
-        columnMetadataVOs.forEach(columnVOConsumer);
-        endpointResponseRepository.save(endpointResponse);
-        LOGGER.info("{} - {}", random, responseString);
     }
 }

@@ -2,40 +2,46 @@ package com.hoatv.task.mgmt.entities;
 
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.services.CheckedFunction;
+import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import static com.hoatv.fwk.common.ultilities.ObjectUtils.checkThenThrow;
+import static com.hoatv.fwk.common.ultilities.ObjectUtils.getAnnotation;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class TaskEntry {
 
-    @NonNull
     private String name;
 
-    @NonNull
     private String applicationName;
 
-    @NonNull
     private Callable<?> taskHandler;
 
-    @NonNull
     private long delayInMillis;
 
-    @NonNull
     private long periodInMillis;
+
+    public TaskEntry(String name, String applicationName, Callable<?> taskHandler, long delayInMillis, long periodInMillis) {
+        this.name = name;
+        this.applicationName = applicationName;
+        this.taskHandler = taskHandler;
+        this.delayInMillis = delayInMillis;
+        this.periodInMillis = periodInMillis;
+    }
 
     /**
      * Generate a TaskEntry from Callable instance with provide a ScheduleApplication
-     * @param scheduleApplication
+     * @param scheduleApplication Schedule Application
      * @return A TaskEntry
      */
     public static CheckedFunction<Object, TaskEntry> fromObject(ScheduleApplication scheduleApplication) {
@@ -52,8 +58,8 @@ public class TaskEntry {
 
     /**
      * Generate a TaskEntry from a Callable instance with provide task name and application
-     * @param taskName
-     * @param applicationName
+     * @param taskName Task name
+     * @param applicationName Application name
      * @return A TaskEntry
      */
     public static CheckedFunction<Object, TaskEntry> fromObject(String taskName, String applicationName) {
@@ -65,8 +71,8 @@ public class TaskEntry {
 
     /**
      * Generate a TaskEntry from a Method with provide task name, application, instance class, and destination method
-     * @param taskName
-     * @param applicationName
+     * @param taskName Task name
+     * @param applicationName Application name
      * @return A TaskEntry
      */
     public static BiCheckedFunction<Object, Method, TaskEntry> fromMethod(String taskName, String applicationName,
@@ -86,7 +92,7 @@ public class TaskEntry {
         return (instance, method) -> {
             ScheduleApplication scheduleApplication = instance.getClass().getAnnotation(ScheduleApplication.class);
             checkThenThrow(scheduleApplication == null, "ScheduleApplication should be annotated in instance");
-            Optional<TaskEntry> taskEntry = getScheduleTask(instance, method).map(annotation -> {
+            Optional<TaskEntry> taskEntry = getAnnotation(ScheduleTask.class, instance, method).map(annotation -> {
                 Callable<?> callable = () -> method.invoke(instance, methodArgs);
                 long period = annotation.period() > 0 ? annotation.period() : scheduleApplication.period();
                 long delay = annotation.delay() > 0 ? annotation.delay() : scheduleApplication.delay();
@@ -98,20 +104,6 @@ public class TaskEntry {
         };
     }
 
-    public static Optional<ScheduleTask> getScheduleTask(Object instance, Method method) {
-        ScheduleTask annotation = method.getAnnotation(ScheduleTask.class);
-        if (annotation != null) {
-            return Optional.of(annotation);
-        }
-        Class<?> superclass = instance.getClass().getSuperclass();
-        try {
-            return Optional.ofNullable(superclass
-                    .getDeclaredMethod(method.getName())
-                    .getAnnotation(ScheduleTask.class));
-        } catch (NoSuchMethodException e) {
-            return Optional.empty();
-        }
-    }
 
     public static BiCheckedFunction<Object, Method, TaskEntry> fromMethodWithParams(String name, long period,
             long delay, Object... methodArgs) {

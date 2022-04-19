@@ -3,6 +3,7 @@ package com.hoatv.task.mgmt.entities;
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
+import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.hoatv.fwk.common.ultilities.ObjectUtils.getAnnotation;
 
 @Getter
 @AllArgsConstructor
@@ -35,7 +38,7 @@ public class TaskCollection {
 
         Method[] methods = applicationObj.getClass().getMethods();
         List<TaskEntry> taskHandlerOnMethods = Arrays.stream(methods)
-                .filter(method -> TaskEntry.getScheduleTask(applicationObj, method).isPresent())
+                .filter(method -> getAnnotation(ScheduleTask.class, applicationObj, method).isPresent())
                 .map(method -> taskEntryOnMethods.apply(applicationObj, method))
                 .collect(Collectors.toList());
 

@@ -14,13 +14,13 @@ import com.hoatv.ext.endpoint.models.EndpointSetting;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointResponseRepository;
 import com.hoatv.ext.endpoint.repositories.ExtEndpointSettingRepository;
 import com.hoatv.ext.endpoint.repositories.ExtExecutionResultRepository;
-import com.hoatv.ext.endpoint.utils.SaltGeneratorUtils;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.fwk.common.services.GenericHttpClientPool;
 import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.services.HttpClientService.HttpMethod;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
+import com.hoatv.system.health.metrics.MethodStatisticCollector;
 import com.hoatv.task.mgmt.entities.TaskEntry;
 import com.hoatv.task.mgmt.services.TaskFactory;
 import com.hoatv.task.mgmt.services.TaskMgmtService;
@@ -31,16 +31,13 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.GeneratorType;
+import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.getGeneratorMethodFunc;
 
 @Service
 public class ExtRestDataService {
@@ -50,15 +47,21 @@ public class ExtRestDataService {
     private final ExtEndpointSettingRepository extEndpointSettingRepository;
     private final ExtEndpointResponseRepository endpointResponseRepository;
     private final ExtExecutionResultRepository extExecutionResultRepository;
+    private final MethodStatisticCollector methodStatisticCollector;
+    private final ResponseConsumerFactory responseConsumerFactory;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConsoleResponseConsumer consoleResponseConsumer = new ConsoleResponseConsumer();
 
     public ExtRestDataService(ExtEndpointSettingRepository extEndpointSettingRepository,
                               ExtEndpointResponseRepository endpointResponseRepository,
-                              ExtExecutionResultRepository extExecutionResultRepository) {
+                              ExtExecutionResultRepository extExecutionResultRepository,
+                              MethodStatisticCollector methodStatisticCollector,
+                              ResponseConsumerFactory responseConsumerFactory) {
         this.extEndpointSettingRepository = extEndpointSettingRepository;
         this.endpointResponseRepository = endpointResponseRepository;
         this.extExecutionResultRepository = extExecutionResultRepository;
+        this.methodStatisticCollector = methodStatisticCollector;
+        this.responseConsumerFactory = responseConsumerFactory;
     }
 
     public void addExtEndpoint(EndpointSettingVO endpointSettingVO) {
@@ -84,14 +87,6 @@ public class ExtRestDataService {
         CheckedSupplier<MetadataVO> columnMetadataVOSup = () -> objectMapper.readValue(columnMetadata, MetadataVO.class);
         MetadataVO metadataVO = columnMetadataVOSup.get();
 
-        // Register response consumers
-        ResponseConsumerFactory factory = new ResponseConsumerFactory();
-        factory.registerResponseConsumer(consoleResponseConsumer);
-        factory.registerResponseConsumer(DBResponseConsumer.builder()
-                .endpointResponseRepository(endpointResponseRepository)
-                .endpointSetting(endpointSetting)
-                .metadataVO(metadataVO)
-                .build());
 
         // Job configuration
         String application = endpointSetting.getApplication();
@@ -126,13 +121,13 @@ public class ExtRestDataService {
         EndpointSettingVO.Output output = endpointSettingVO.getOutput();
         String responseConsumerTypeName = output.getResponseConsumerType().toUpperCase();
         ResponseConsumerType responseConsumerType = ResponseConsumerType.valueOf(responseConsumerTypeName);
-        ResponseConsumer responseConsumer = factory.getResponseConsumer(responseConsumerType);
+        ResponseConsumer responseConsumer = responseConsumerFactory.getResponseConsumer(responseConsumerType);
 
-        return getExecutionTasks(endpointSettingVO, metadataVO, application, taskName, input, noAttemptTimes,
+        return getExecutionTasks(endpointSetting, endpointSettingVO, metadataVO, application, taskName, input, noAttemptTimes,
             noParallelThread, dataGeneratorVO, executionResult, responseConsumer);
     }
 
-    private Callable<Object> getExecutionTasks(EndpointSettingVO endpointSettingVO, MetadataVO metadataVO,
+    private Callable<Object> getExecutionTasks(EndpointSetting endpointSetting, EndpointSettingVO endpointSettingVO, MetadataVO metadataVO,
                                               String application, String taskName, Input input,
                                               int noAttemptTimes, int noParallelThread, DataGeneratorVO dataGeneratorVO,
                                               EndpointExecutionResult executionResult, ResponseConsumer responseConsumer) {
@@ -140,44 +135,44 @@ public class ExtRestDataService {
             TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
             GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(input.getTaskName(), noParallelThread, 2000);
             for (int index = 1; index <= noAttemptTimes; index++) {
+
                 String executionTaskName = taskName.concat(String.valueOf(index));
                 ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
-                    .input(input)
-                    .index(index)
-                    .metadataVO(metadataVO)
-                    .httpClientPool(httpClientPool)
-                    .dataGeneratorVO(dataGeneratorVO)
-                    .filter(endpointSettingVO.getFilter())
-                    .onSuccessResponse(responseConsumer)
-                    .build();
+                        .input(input)
+                        .index(index)
+                        .metadataVO(metadataVO)
+                        .methodStatisticCollector(methodStatisticCollector)
+                        .httpClientPool(httpClientPool)
+                        .dataGeneratorVO(dataGeneratorVO)
+                        .filter(endpointSettingVO.getFilter())
+                        .onSuccessResponse(responseConsumer)
+                        .endpointSetting(endpointSetting)
+                        .build();
 
                 CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);
                 TaskEntry taskEntry = taskEntryFunc.apply(extTaskEntry);
                 taskMgmtExecutorV2.execute(taskEntry);
-
-                int percentComplete = executionResult.getPercentComplete();
-                int nextPercentComplete = index * 100 / noAttemptTimes;
-
-                if (percentComplete != nextPercentComplete) {
-                    executionResult.setNumberOfCompletedTasks(index);
-                    executionResult.setPercentComplete(nextPercentComplete);
-                    extExecutionResultRepository.save(executionResult);
-                }
+                savePercentComplete(noAttemptTimes, executionResult, index);
             }
-            executionResult.setEndedAt(LocalDateTime.now());
-            extExecutionResultRepository.save(executionResult);
             LOGGER.info("{} is completed successfully.", taskName);
             return null;
         };
     }
 
-    private CheckedFunction<String, Method> getGeneratorMethodFunc(String generatorSaltStartWith) {
-        return methodName -> {
-            if (StringUtils.isNotEmpty(generatorSaltStartWith)) {
-                return SaltGeneratorUtils.class.getMethod(methodName, Integer.class, String.class);
-            }
-            return SaltGeneratorUtils.class.getMethod(methodName, Integer.class);
-        };
+    private void savePercentComplete(int noAttemptTimes, EndpointExecutionResult executionResult, int index) {
+        int percentComplete = executionResult.getPercentComplete();
+        int nextPercentComplete = index * 100 / noAttemptTimes;
+
+        if (percentComplete != nextPercentComplete) {
+            executionResult.setNumberOfCompletedTasks(index);
+            executionResult.setPercentComplete(nextPercentComplete);
+            extExecutionResultRepository.save(executionResult);
+        }
+
+        if (percentComplete == 100) {
+            executionResult.setEndedAt(LocalDateTime.now());
+            extExecutionResultRepository.save(executionResult);
+        }
     }
 
     public List<EndpointResponseVO> getEndpointResponses(String application) {

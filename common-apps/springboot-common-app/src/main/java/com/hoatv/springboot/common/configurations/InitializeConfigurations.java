@@ -7,7 +7,7 @@ import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.annotations.MetricRegistry;
 import com.hoatv.metric.mgmt.services.MetricMgmtService;
 import com.hoatv.metric.mgmt.services.MetricProviderRegistry;
-import com.hoatv.system.health.metrics.MethodStatistics;
+import com.hoatv.system.health.metrics.MethodStatisticCollector;
 import com.hoatv.system.health.metrics.SystemHealth;
 import com.hoatv.task.mgmt.annotations.SchedulePoolSettings;
 import com.hoatv.task.mgmt.entities.TaskCollection;
@@ -51,8 +51,8 @@ public class InitializeConfigurations {
     }
 
     @Bean
-    public MethodStatistics getMethodStatistics() {
-        return new MethodStatistics();
+    public MethodStatisticCollector getMethodStatistics() {
+        return new MethodStatisticCollector();
     }
 
     @Bean

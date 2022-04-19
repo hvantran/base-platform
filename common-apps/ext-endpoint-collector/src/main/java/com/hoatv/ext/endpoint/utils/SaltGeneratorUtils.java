@@ -87,4 +87,12 @@ public class SaltGeneratorUtils {
                 return null;
         }
     }
+    public static CheckedFunction<String, Method> getGeneratorMethodFunc(String generatorSaltStartWith) {
+        return methodName -> {
+            if (StringUtils.isNotEmpty(generatorSaltStartWith)) {
+                return SaltGeneratorUtils.class.getMethod(methodName, Integer.class, String.class);
+            }
+            return SaltGeneratorUtils.class.getMethod(methodName, Integer.class);
+        };
+    }
 }

@@ -2,8 +2,12 @@ package com.hoatv.ext.endpoint.services;
 
 import com.hoatv.ext.endpoint.api.ResponseConsumer;
 import com.hoatv.ext.endpoint.api.ResponseConsumerType;
+import com.hoatv.ext.endpoint.dtos.MetadataVO;
+import com.hoatv.ext.endpoint.models.EndpointSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.BiConsumer;
 
 public class ConsoleResponseConsumer implements ResponseConsumer {
 
@@ -15,7 +19,7 @@ public class ConsoleResponseConsumer implements ResponseConsumer {
     }
 
     @Override
-    public void onSuccessResponse(String randomValue, String responseString) {
-        LOGGER.info("{} - {}", randomValue, responseString);
+    public BiConsumer<MetadataVO, EndpointSetting> onSuccessResponse(String randomValue, String responseString) {
+        return (metadataVO, endpointSetting) -> LOGGER.info("{} - {}", randomValue, responseString);
     }
 }

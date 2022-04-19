@@ -23,7 +23,7 @@ public class AbmThreadFactory implements ThreadFactory {
     private String name;
 
     @Override
-    public Thread newThread(Runnable runnable) {
+    public Thread newThread(@NonNull Runnable runnable) {
         String threadName = this.name + "-thread-" + threadNumber.getAndIncrement();
         APP_LOGGER.debug("Created a new thread name {}", threadName);
         return new Thread(runnable, threadName);
