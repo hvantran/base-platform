@@ -41,13 +41,12 @@ public class ExtTaskEntry implements Callable<Void> {
 
     private ExecutionTemplate<String> getExecutionTemplate(String extEndpoint, HttpMethod endpointMethod,
                                                            String data, String random, Map<String, String> headers) {
-        RequestParamsBuilder requestParamsBuilder = RequestParams.builder()
-            .method(endpointMethod)
-            .headers(headers)
-            .url(endpointMethod == HttpMethod.GET ? String.format(extEndpoint, random) : extEndpoint)
-            .data(endpointMethod == HttpMethod.POST ? String.format(data, random) : null);
-
+        String URL = endpointMethod == HttpMethod.GET ? String.format(extEndpoint, random) : extEndpoint;
         return httpClient -> {
+            RequestParamsBuilder requestParamsBuilder = RequestParams.builder(URL, httpClient)
+                .method(endpointMethod)
+                .headers(headers)
+                .data(endpointMethod == HttpMethod.POST ? String.format(data, random) : null);
             requestParamsBuilder.httpClient(httpClient);
             return HTTP_CLIENT_SERVICE.sendHTTPRequest()
                     .andThen(HttpClientService::asString)

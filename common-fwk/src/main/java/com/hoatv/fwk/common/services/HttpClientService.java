@@ -40,12 +40,17 @@ public enum HttpClientService {
         }
     }
 
-    @Builder
+    @Builder(builderMethodName = "hiddenBuilder")
     public static class RequestParams {
         private String url;
         private String data;
         private HttpClient httpClient;
         private HttpRequest.BodyPublisher bodyPublishers;
+
+        public static RequestParamsBuilder builder(String url, HttpClient httpClient) {
+            return hiddenBuilder().url(url).httpClient(httpClient);
+        }
+
 
         @Builder.Default
         private int retryTimes = 0;
