@@ -71,7 +71,7 @@ public class ExtTaskEntry implements Callable<Void> {
                     .accept(metadataVO, endpointSetting);
         }
         long endTime = System.currentTimeMillis();
-        methodStatisticCollector.computeMethodExecutionTime("ExtTaskEntry.call", endTime - startTime);
+        methodStatisticCollector.computeMethodExecutionTime("Max execution time of getting endpoint data task", endTime - startTime);
         return null;
     }
 }

@@ -55,10 +55,10 @@ public class InitializeConfigurations {
         return new MethodStatisticCollector();
     }
 
-    @Bean
-    public SystemHealth getSystemHealth() {
-        return new SystemHealth();
-    }
+//    @Bean
+//    public SystemHealth getSystemHealth() {
+//        return new SystemHealth();
+//    }
 
     @Bean
     public MetricProviderRegistry getMetricProviderRegistry() {

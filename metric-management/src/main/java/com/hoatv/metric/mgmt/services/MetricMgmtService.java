@@ -101,19 +101,24 @@ public class MetricMgmtService {
         for (MetricTag metricTag : metricTags) {
             Map<String, String> attributes = metricTag.getAttributes();
             String nameTag = attributes.get("name");
+            String metricNameCompute = name;
             if (attributes.isEmpty()) {
                 MDC.put(METRIC_NAME, name);
             } else if (Objects.nonNull(nameTag)) {
                 attributes.remove("name");
                 String nameReplaced = nameTag.toLowerCase().replace(" ", "-");
                 String attNames = attributes.values().stream().map(MetricMgmtService::deAccent).collect(Collectors.joining("-"));
-                MDC.put(METRIC_NAME, deAccent(nameReplaced).concat("-").concat(attNames));
+                String metricNameFormatted = deAccent(nameReplaced).concat("-").concat(attNames);
+                metricNameCompute = metricNameFormatted;
+                MDC.put(METRIC_NAME, metricNameFormatted);
                 attributes.forEach(MDC::put);
             } else {
-                MDC.put(METRIC_NAME, name.concat(attributes.toString()));
+                String metricNameFormatted = name.concat(attributes.toString());
+                metricNameCompute = metricNameFormatted;
+                MDC.put(METRIC_NAME, metricNameFormatted);
                 attributes.forEach(MDC::put);
             }
-            logMetricRecord(metricEntry, name, metricTag);
+            logMetricRecord(metricEntry, metricNameCompute, metricTag);
         }
     }
 

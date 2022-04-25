@@ -25,7 +25,7 @@ public class MethodStatisticCollector {
     public void computeMethodExecutionTime(String methodName, long executionTime) {
         LOGGER.debug("Method {} execution time: {} ms", methodName, executionTime);
         statistics.putIfAbsent(methodName, executionTime);
-        statistics.computeIfPresent(methodName, (k, v) -> (v + executionTime)/2);
+        statistics.computeIfPresent(methodName, (k, v) -> v > executionTime ? v : executionTime);
     }
 
     @Metric(name = "Method statistics", unit="ms")
@@ -36,7 +36,7 @@ public class MethodStatisticCollector {
                     ComplexValue complexValue = new ComplexValue();
                     List<MetricTag> metricTags = new ArrayList<>();
                     MetricTag metricTag = new MetricTag(String.valueOf(executionTime));
-                    metricTag.getAttributes().put("name", methodName + "_execution_time");
+                    metricTag.getAttributes().put("name", methodName);
                     metricTags.add(metricTag);
                     complexValue.setTags(metricTags);
             return complexValue;
