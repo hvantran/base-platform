@@ -1,12 +1,14 @@
 package com.hoatv.ext.endpoint.models;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -51,7 +53,8 @@ public class EndpointExecutionResult {
 
     @PreUpdate
     public void preUpdate() {
-        if (Objects.nonNull(endedAt)) {
+        if (percentComplete == 100) {
+            endedAt = LocalDateTime.now();
             long elapsedTimeMillis = ChronoUnit.MILLIS.between(startedAt, endedAt);
             elapsedTime = DurationFormatUtils.formatDuration(elapsedTimeMillis, "HH:mm:ss.S");
         }
