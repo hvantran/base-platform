@@ -4,13 +4,14 @@ import java.util.concurrent.Callable;
 
 public interface TaskWorker<T> extends Callable<T> {
 
-    TaskMgmtSemaphore getLockObject();
+    default TaskMgmtSemaphore getLockObject() {
+        return null;
+    }
 
     T callWithReturn();
 
     @Override
     default T call() {
-        T returnValue = callWithReturn();
-        return returnValue;
+        return callWithReturn();
     }
 }
