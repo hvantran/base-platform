@@ -39,11 +39,11 @@ public class ExtTaskEntry implements Callable<Void> {
     private final MethodStatisticCollector methodStatisticCollector;
 
 
-    private ExecutionTemplate<String> getExecutionTemplate(String extEndpoint, HttpMethod endpointMethod,
+    public static ExecutionTemplate<String> getExecutionTemplate(String extEndpoint, HttpMethod endpointMethod,
                                                            String data, String random, Map<String, String> headers) {
-        String URL = endpointMethod == HttpMethod.GET ? String.format(extEndpoint, random) : extEndpoint;
+        String url = endpointMethod == HttpMethod.GET ? String.format(extEndpoint, random) : extEndpoint;
         return httpClient -> {
-            RequestParamsBuilder requestParamsBuilder = RequestParams.builder(URL, httpClient)
+            RequestParamsBuilder requestParamsBuilder = RequestParams.builder(url, httpClient)
                 .method(endpointMethod)
                 .headers(headers)
                 .data(endpointMethod == HttpMethod.POST ? String.format(data, random) : null);
@@ -71,7 +71,7 @@ public class ExtTaskEntry implements Callable<Void> {
                     .accept(metadataVO, endpointSetting);
         }
         long endTime = System.currentTimeMillis();
-        methodStatisticCollector.computeMethodExecutionTime("Max execution time of getting endpoint data task", endTime - startTime);
+        methodStatisticCollector.addMethodStatistics("endpoint-processing-data-task", "ms", endTime - startTime);
         return null;
     }
 }

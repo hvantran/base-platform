@@ -11,28 +11,18 @@ import com.hoatv.task.mgmt.annotations.SchedulePoolSettings;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import com.hoatv.task.mgmt.annotations.ThreadPoolSettings;
 import net.logstash.logback.argument.StructuredArguments;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.lang.reflect.Method;
 import java.text.Normalizer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.hoatv.fwk.common.constants.Constants.METRIC_LOG_APP_NAME;
-import static com.hoatv.fwk.common.constants.Constants.METRIC_MANAGEMENT;
-import static com.hoatv.fwk.common.constants.Constants.METRIC_MANAGEMENT_THREAD_POOL;
-import static com.hoatv.fwk.common.constants.Constants.NUMBER_OF_METRIC_THREADS;
-import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_NAME;
-import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_SCHEDULE_DELAY_IN_MILLIS;
-import static com.hoatv.fwk.common.constants.SystemSettings.GLOBAL_METRIC_SCHEDULE_PERIOD_TIME_IN_MILLIS;
+import static com.hoatv.fwk.common.constants.Constants.*;
+import static com.hoatv.fwk.common.constants.SystemSettings.*;
 
 @ScheduleApplication(application = METRIC_MANAGEMENT, delay = GLOBAL_METRIC_SCHEDULE_DELAY_IN_MILLIS, period = GLOBAL_METRIC_SCHEDULE_PERIOD_TIME_IN_MILLIS)
 @SchedulePoolSettings(application = METRIC_MANAGEMENT, threadPoolSettings = @ThreadPoolSettings(name = METRIC_MANAGEMENT_THREAD_POOL, numberOfThreads = NUMBER_OF_METRIC_THREADS))
@@ -43,6 +33,7 @@ public class MetricMgmtService {
 
     private static final String METRIC_NAME = "metric-name";
     private static final String METRIC_VALUE = "metric-value";
+    public static final String METRIC_UNIT = "metric-unit";
 
     private final MetricProviderRegistry metricProviders;
 
@@ -67,20 +58,16 @@ public class MetricMgmtService {
                     MDC.put("application", application);
                     MDC.put("type", providerAnnotation.category());
                     MDC.put("category", providerAnnotation.category());
-                    MDC.put("metric-unit", metricEntry.getUnit());
 
                     if (value instanceof SimpleValue) {
                         processSimpleValue(metricEntry, name, (SimpleValue) value);
-                        continue;
-                    }
-
-                    if (value instanceof Collection<?>) {
+                    } else if (value instanceof Collection<?>) {
+                        @SuppressWarnings("unchecked")
                         List<ComplexValue> complexValues = (List<ComplexValue>) value;
                         complexValues.forEach(complexValue -> processComplexValue(metricEntry, name, complexValue));
-                        continue;
+                    } else {
+                        processComplexValue(metricEntry, name, (ComplexValue) value);
                     }
-
-                    processComplexValue(metricEntry, name, (ComplexValue) value);
                 } catch (Exception exception) {
                     LOGGER.error("Cannot get value from method - {}, instance - {}", method.getName(), metricProvider, exception);
                 } finally {
@@ -92,16 +79,18 @@ public class MetricMgmtService {
 
     private void processSimpleValue(MetricEntry metricEntry, String name, SimpleValue simpleValue) {
         MDC.put(METRIC_NAME, name);
-        logMetricRecord(metricEntry, name, simpleValue.getValue());
+        logMetricRecord(name, simpleValue.getValue(), metricEntry.getUnit());
     }
 
     private void processComplexValue(MetricEntry metricEntry, String name, ComplexValue complexValue) {
         Collection<MetricTag> metricTags = complexValue.getTags();
 
         for (MetricTag metricTag : metricTags) {
+            String metricUnit = getMetricUnit(metricEntry, metricTag);
             Map<String, String> attributes = metricTag.getAttributes();
             String nameTag = attributes.get("name");
             String metricNameCompute = name;
+            MDC.put(METRIC_UNIT, metricUnit);
             if (attributes.isEmpty()) {
                 MDC.put(METRIC_NAME, name);
             } else if (Objects.nonNull(nameTag)) {
@@ -118,24 +107,37 @@ public class MetricMgmtService {
                 MDC.put(METRIC_NAME, metricNameFormatted);
                 attributes.forEach(MDC::put);
             }
-            logMetricRecord(metricEntry, metricNameCompute, metricTag);
+            logMetricRecord(metricNameCompute, metricTag, metricUnit);
         }
     }
 
-    private void logMetricRecord(MetricEntry metric, String name, Object value) {
+    private void logMetricRecord(String name, Object value, String unit) {
+        Map<String, Object> valueMap = getValueMap(value);
+        METRIC_LOGGER.info("{} - {} {}", name, value, unit, StructuredArguments.entries(valueMap));
+    }
+
+    private String getMetricUnit(MetricEntry metric, Object value) {
+        String unit = metric.getUnit();
+        if (value instanceof MetricTag) {
+            Map<String, String> attributes = ((MetricTag) value).getAttributes();
+            String unitMetricAttribute = attributes.get("unit");
+            if (Objects.nonNull(unitMetricAttribute)) {
+                unit = unitMetricAttribute;
+                attributes.remove("unit");
+            }
+        }
+        return unit;
+    }
+
+    private Map<String, Object> getValueMap(Object value) {
         Map<String, Object> valueMap = new HashMap<>();
         if (value instanceof MetricTag) {
-            Long lValue = Long.parseLong(((MetricTag)value).getValue());
+            Long lValue = Long.parseLong(((MetricTag) value).getValue());
             valueMap.put(METRIC_VALUE, lValue);
         } else {
             valueMap.put(METRIC_VALUE, value);
         }
-
-        if (StringUtils.isEmpty(metric.getUnit())) {
-            METRIC_LOGGER.info("{} - {}", name, value, StructuredArguments.entries(valueMap));
-            return;
-        }
-        METRIC_LOGGER.info("{} - {} {}", name, value, metric.getUnit(), StructuredArguments.entries(valueMap));
+        return valueMap;
     }
 
     public static String deAccent(String str) {

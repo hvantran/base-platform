@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
@@ -166,11 +165,6 @@ public class ExtRestDataService {
         if (percentComplete != nextPercentComplete) {
             executionResult.setNumberOfCompletedTasks(index);
             executionResult.setPercentComplete(nextPercentComplete);
-            extExecutionResultRepository.save(executionResult);
-        }
-
-        if (percentComplete == 100) {
-            executionResult.setEndedAt(LocalDateTime.now());
             extExecutionResultRepository.save(executionResult);
         }
     }
