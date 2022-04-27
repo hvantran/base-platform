@@ -2,6 +2,7 @@ package com.hoatv.ext.endpoint.repositories;
 
 import com.hoatv.ext.endpoint.models.EndpointResponse;
 import com.hoatv.ext.endpoint.models.EndpointSetting;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @Transactional
 public interface ExtEndpointResponseRepository extends JpaRepository<EndpointResponse, Long> {
 
-    List<EndpointResponse> findEndpointResponsesByEndpointSettingIn(List<EndpointSetting> endpointConfigSettings);
+    List<EndpointResponse> findEndpointResponsesByEndpointSettingIn(List<EndpointSetting> endpointConfigSettings, Pageable pageable);
     List<EndpointResponse> findEndpointResponsesByColumn3IsNotNullAndColumn10IsNull();
 
     boolean existsEndpointResponseByColumn1(String columnValue);

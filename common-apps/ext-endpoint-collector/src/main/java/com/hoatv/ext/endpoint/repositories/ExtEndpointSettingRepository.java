@@ -1,6 +1,7 @@
 package com.hoatv.ext.endpoint.repositories;
 
 import com.hoatv.ext.endpoint.models.EndpointSetting;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +12,5 @@ import java.util.List;
 @Transactional
 public interface ExtEndpointSettingRepository extends JpaRepository<EndpointSetting, Long> {
 
-    List<EndpointSetting> findEndpointConfigsByApplication(String application);
+    List<EndpointSetting> findEndpointConfigsByApplication(String application, Pageable pageable);
 }

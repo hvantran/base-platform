@@ -3,6 +3,8 @@ package com.hoatv.ext.endpoint.controllers;
 import com.hoatv.ext.endpoint.dtos.EndpointResponseVO;
 import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
 import com.hoatv.ext.endpoint.services.ExtRestDataService;
+import lombok.NonNull;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +27,12 @@ public class ExtRestDataController {
     }
 
     @GetMapping(value = "/endpoints", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<EndpointSettingVO> getAllExtEndpoints(@RequestParam String application) {
-        return extRestDataService.getAllExtEndpoints(application);
+    public List<EndpointSettingVO> getAllExtEndpoints(@NonNull @RequestParam String application, @RequestParam int pageIndex, @RequestParam int pageSize) {
+        return extRestDataService.getAllExtEndpoints(application, PageRequest.of(pageIndex, pageSize));
     }
 
     @GetMapping(value = "/endpoints/{application}/responses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<EndpointResponseVO> getEndpointResponses(@PathVariable("application") String application) {
-        return extRestDataService.getEndpointResponses(application);
+    public List<EndpointResponseVO> getEndpointResponses(@PathVariable("application") String application, @RequestParam int pageIndex, @RequestParam int pageSize) {
+        return extRestDataService.getEndpointResponses(application, PageRequest.of(pageIndex, pageSize));
     }
 }

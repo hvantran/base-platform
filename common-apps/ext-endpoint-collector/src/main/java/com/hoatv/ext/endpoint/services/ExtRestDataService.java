@@ -20,17 +20,22 @@ import com.hoatv.fwk.common.services.GenericHttpClientPool;
 import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.services.HttpClientService.HttpMethod;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
+import com.hoatv.monitor.mgmt.TimingMonitor;
 import com.hoatv.system.health.metrics.MethodStatisticCollector;
 import com.hoatv.task.mgmt.entities.TaskEntry;
 import com.hoatv.task.mgmt.services.TaskFactory;
 import com.hoatv.task.mgmt.services.TaskMgmtService;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -169,26 +174,21 @@ public class ExtRestDataService {
         }
     }
 
-    public List<EndpointResponseVO> getEndpointResponses(String application) {
+    @TimingMonitor
+    public List<EndpointResponseVO> getEndpointResponses(String application, Pageable pageable) {
         List<EndpointSetting> endpointSettings = extEndpointSettingRepository.findEndpointConfigsByApplication(
-                application);
+                application, PageRequest.of(0, 10));
         if (endpointSettings.isEmpty()) {
             return Collections.emptyList();
         }
         List<EndpointResponse> responses = endpointResponseRepository.findEndpointResponsesByEndpointSettingIn(
-                endpointSettings);
+                endpointSettings, pageable);
         return responses.stream().map(EndpointResponse::toEndpointResponseVO).collect(Collectors.toList());
     }
 
-    public List<EndpointSettingVO> getAllExtEndpoints(String application) {
-        List<EndpointSetting> endpointSettings = new ArrayList<>();
-        if (StringUtils.isEmpty(application)) {
-            List<EndpointSetting> extEndpointSettingRepositoryAll = extEndpointSettingRepository.findAll();
-            endpointSettings.addAll(extEndpointSettingRepositoryAll);
-        } else {
-            List<EndpointSetting> endpointConfigsByApplication = extEndpointSettingRepository.findEndpointConfigsByApplication(application);
-            endpointSettings.addAll(endpointConfigsByApplication);
-        }
-        return endpointSettings.stream().map(EndpointSetting::toEndpointConfigVO).collect(Collectors.toList());
+    @TimingMonitor
+    public List<EndpointSettingVO> getAllExtEndpoints(String application, Pageable pageable) {
+        List<EndpointSetting> endpointConfigsByApplication = extEndpointSettingRepository.findEndpointConfigsByApplication(application, pageable);
+        return endpointConfigsByApplication.stream().map(EndpointSetting::toEndpointConfigVO).collect(Collectors.toList());
     }
 }
