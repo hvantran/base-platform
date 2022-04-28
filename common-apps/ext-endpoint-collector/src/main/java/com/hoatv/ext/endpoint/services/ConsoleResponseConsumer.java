@@ -19,7 +19,7 @@ public class ConsoleResponseConsumer implements ResponseConsumer {
     }
 
     @Override
-    public BiConsumer<MetadataVO, EndpointSetting> onSuccessResponse(String randomValue, String responseString) {
-        return (metadataVO, endpointSetting) -> LOGGER.info("{} - {}", randomValue, responseString);
+    public BiConsumer<String, String> onSuccessResponse(MetadataVO metadataVO, EndpointSetting endpointSetting) {
+        return (randomValue, responseString) -> LOGGER.info("{} - {}", randomValue, responseString);
     }
 }

@@ -43,4 +43,11 @@ public class ObjectUtils {
             return Optional.empty();
         }
     }
+    public static <T extends Annotation> Optional<T> getAnnotation(Class<T> annotationClass, Object instance) {
+        T annotation = instance.getClass().getAnnotation(annotationClass);
+        if (annotation != null) {
+            return Optional.of(annotation);
+        }
+        return Optional.of(instance.getClass().getSuperclass().getAnnotation(annotationClass));
+    }
 }

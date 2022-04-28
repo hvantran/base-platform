@@ -1,5 +1,6 @@
 package com.hoatv.metric.mgmt.services;
 
+import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.fwk.common.ultilities.Pair;
 import com.hoatv.metric.mgmt.annotations.Metric;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
@@ -10,11 +11,8 @@ import lombok.Getter;
 import org.reflections.ReflectionUtils;
 
 import java.lang.reflect.Method;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,10 +31,10 @@ public class MetricProviderRegistry {
             Set<Method> metricMethod = ReflectionUtils.getAllMethods(instance.getClass(), metricAnnotated);
             List<MetricEntry> metricEntries = metricMethod.stream().map(MetricEntry::fromMethod).collect(Collectors.toList());
 
-            MetricProvider metricProviderAnnotation = instance.getClass().getAnnotation(MetricProvider.class);
-            Objects.requireNonNull(metricProviderAnnotation);
+            Optional<MetricProvider> metricProviderAnnotation = ObjectUtils.getAnnotation(MetricProvider.class, instance);
+            ObjectUtils.checkThenThrow(metricProviderAnnotation.isEmpty(), "MetricProvider annotation is missing");
 
-            String applicationName = metricProviderAnnotation.application();
+            String applicationName = metricProviderAnnotation.get().application();
             return Pair.of(applicationName, new MetricCollection(instance, metricEntries));
         }).collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 

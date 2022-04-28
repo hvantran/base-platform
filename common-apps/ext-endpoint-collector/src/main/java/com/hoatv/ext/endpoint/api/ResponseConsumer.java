@@ -11,5 +11,5 @@ public interface ResponseConsumer {
         return ResponseConsumerType.CONSOLE;
     }
 
-    BiConsumer<MetadataVO, EndpointSetting> onSuccessResponse(String randomValue, String responseString);
+    BiConsumer<String, String> onSuccessResponse(MetadataVO metadataVO, EndpointSetting endpointSetting);
 }

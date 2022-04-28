@@ -1,10 +1,7 @@
 package com.hoatv.ext.endpoint.services;
 
-import com.hoatv.ext.endpoint.api.ResponseConsumer;
 import com.hoatv.ext.endpoint.dtos.DataGeneratorVO;
 import com.hoatv.ext.endpoint.dtos.EndpointSettingVO;
-import com.hoatv.ext.endpoint.dtos.MetadataVO;
-import com.hoatv.ext.endpoint.models.EndpointSetting;
 import com.hoatv.ext.endpoint.utils.SaltGeneratorUtils;
 import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.fwk.common.services.GenericHttpClientPool;
@@ -21,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 
 @Builder
 public class ExtTaskEntry implements Callable<Void> {
@@ -29,13 +27,11 @@ public class ExtTaskEntry implements Callable<Void> {
     private static final HttpClientService HTTP_CLIENT_SERVICE = HttpClientService.INSTANCE;
 
     private final int index;
-    private final MetadataVO metadataVO;
     private final EndpointSettingVO.Input input;
     private final EndpointSettingVO.Filter filter;
     private final GenericHttpClientPool httpClientPool;
     private final DataGeneratorVO dataGeneratorVO;
-    private final ResponseConsumer onSuccessResponse;
-    private final EndpointSetting endpointSetting;
+    private final BiConsumer<String, String> onSuccessResponse;
     private final MethodStatisticCollector methodStatisticCollector;
 
 
@@ -67,8 +63,7 @@ public class ExtTaskEntry implements Callable<Void> {
         ExecutionTemplate<String> executionTemplate = getExecutionTemplate(extEndpoint, extSupportedMethod, data, random, headers);
         String responseString = httpClientPool.executeWithTemplate(executionTemplate);
         if (StringUtils.isNotEmpty(responseString) && responseString.contains(filter.getSuccessCriteria())) {
-            onSuccessResponse.onSuccessResponse(random, responseString)
-                    .accept(metadataVO, endpointSetting);
+            onSuccessResponse.accept(random, responseString);
         }
         long endTime = System.currentTimeMillis();
         methodStatisticCollector.addMethodStatistics("endpoint-processing-data-task", "ms", endTime - startTime);

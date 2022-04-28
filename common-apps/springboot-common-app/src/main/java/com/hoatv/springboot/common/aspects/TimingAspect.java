@@ -18,7 +18,8 @@ public class TimingAspect {
         long start = System.currentTimeMillis();
         Object returnValue = proceedingJoinPoint.proceed();
         long end = System.currentTimeMillis();
-        LOGGER.info("Method {} execution time: {} ms", proceedingJoinPoint.getSignature().getName(), (end - start));
+        String methodName = proceedingJoinPoint.getSignature().getName();
+        LOGGER.info("Method {} execution time: {} ms", methodName, (end - start));
         return returnValue;
     }
 }

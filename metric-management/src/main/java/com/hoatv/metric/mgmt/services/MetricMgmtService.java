@@ -1,5 +1,6 @@
 package com.hoatv.metric.mgmt.services;
 
+import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricEntry;
@@ -47,7 +48,9 @@ public class MetricMgmtService {
         metricProviders.getMetricRegistry().forEach((application, metricCollection) -> {
             Object metricProvider = metricCollection.getObject();
             List<MetricEntry> metricEntries = metricCollection.getMetricEntries();
-            MetricProvider providerAnnotation = metricProvider.getClass().getAnnotation(MetricProvider.class);
+            Optional<MetricProvider> providerAnnotationOp = ObjectUtils.getAnnotation(MetricProvider.class, metricProvider);
+            ObjectUtils.checkThenThrow(providerAnnotationOp.isEmpty(), "Metric provider must be annotated with @MetricProvider");
+            MetricProvider providerAnnotation = providerAnnotationOp.get();
 
             for (MetricEntry metricEntry : metricEntries) {
                 Method method = metricEntry.getMethod();

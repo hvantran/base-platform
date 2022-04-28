@@ -20,6 +20,9 @@ import com.hoatv.fwk.common.services.GenericHttpClientPool;
 import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.services.HttpClientService.HttpMethod;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
+import com.hoatv.metric.mgmt.annotations.Metric;
+import com.hoatv.metric.mgmt.annotations.MetricProvider;
+import com.hoatv.metric.mgmt.entities.SimpleValue;
 import com.hoatv.monitor.mgmt.TimingMonitor;
 import com.hoatv.system.health.metrics.MethodStatisticCollector;
 import com.hoatv.task.mgmt.entities.TaskEntry;
@@ -37,6 +40,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -44,6 +49,7 @@ import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.GeneratorType;
 import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.getGeneratorMethodFunc;
 
 @Service
+@MetricProvider(application = "External Rest Data Collection", category = "Application")
 public class ExtRestDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtRestDataService.class);
@@ -54,7 +60,7 @@ public class ExtRestDataService {
     private final MethodStatisticCollector methodStatisticCollector;
     private final ResponseConsumerFactory responseConsumerFactory;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ConsoleResponseConsumer consoleResponseConsumer = new ConsoleResponseConsumer();
+    private final AtomicInteger numberOfSuccessResponse = new AtomicInteger(0);
 
     public ExtRestDataService(ExtEndpointSettingRepository extEndpointSettingRepository,
                               ExtEndpointResponseRepository endpointResponseRepository,
@@ -66,6 +72,11 @@ public class ExtRestDataService {
         this.extExecutionResultRepository = extExecutionResultRepository;
         this.methodStatisticCollector = methodStatisticCollector;
         this.responseConsumerFactory = responseConsumerFactory;
+    }
+
+    @Metric(name = "ext-number-of-success-responses")
+    public SimpleValue getNumberOfSuccessResponse() {
+        return new SimpleValue(numberOfSuccessResponse.get());
     }
 
     public void addExtEndpoint(EndpointSettingVO endpointSettingVO) {
@@ -126,15 +137,19 @@ public class ExtRestDataService {
         String responseConsumerTypeName = output.getResponseConsumerType().toUpperCase();
         ResponseConsumerType responseConsumerType = ResponseConsumerType.valueOf(responseConsumerTypeName);
         ResponseConsumer responseConsumer = responseConsumerFactory.getResponseConsumer(responseConsumerType);
+        BiConsumer<String, String> responseBiConsumer = responseConsumer.onSuccessResponse(metadataVO,
+                endpointSetting).andThen((random, response) -> {
+            numberOfSuccessResponse.incrementAndGet();
+        });
 
-        return getExecutionTasks(endpointSetting, endpointSettingVO, metadataVO, application, taskName, input, noAttemptTimes,
-            noParallelThread, dataGeneratorVO, executionResult, responseConsumer);
+        return getExecutionTasks(endpointSettingVO, application, taskName, input, noAttemptTimes,
+            noParallelThread, dataGeneratorVO, executionResult, responseBiConsumer);
     }
 
-    private Callable<Object> getExecutionTasks(EndpointSetting endpointSetting, EndpointSettingVO endpointSettingVO, MetadataVO metadataVO,
+    private Callable<Object> getExecutionTasks(EndpointSettingVO endpointSettingVO,
                                               String application, String taskName, Input input,
                                               int noAttemptTimes, int noParallelThread, DataGeneratorVO dataGeneratorVO,
-                                              EndpointExecutionResult executionResult, ResponseConsumer responseConsumer) {
+                                              EndpointExecutionResult executionResult, BiConsumer<String, String> responseConsumer) {
         return () -> {
             TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
             GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(input.getTaskName(), noParallelThread, 2000);
@@ -144,13 +159,11 @@ public class ExtRestDataService {
                 ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
                         .input(input)
                         .index(index)
-                        .metadataVO(metadataVO)
                         .methodStatisticCollector(methodStatisticCollector)
                         .httpClientPool(httpClientPool)
                         .dataGeneratorVO(dataGeneratorVO)
                         .filter(endpointSettingVO.getFilter())
                         .onSuccessResponse(responseConsumer)
-                        .endpointSetting(endpointSetting)
                         .build();
 
                 CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);

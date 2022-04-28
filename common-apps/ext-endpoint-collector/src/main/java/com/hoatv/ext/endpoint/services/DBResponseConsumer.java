@@ -33,8 +33,8 @@ public class DBResponseConsumer implements ResponseConsumer {
     }
 
     @Override
-    public BiConsumer<MetadataVO, EndpointSetting> onSuccessResponse(String random, String responseString) {
-        return (metadataVO, endpointSetting) -> {
+    public BiConsumer<String, String> onSuccessResponse(MetadataVO metadataVO, EndpointSetting endpointSetting) {
+        return (random, responseString) -> {
             Object document = Configuration.defaultConfiguration().jsonProvider().parse(responseString);
 
             List<ColumnMetadataVO> columnMetadataVOs = metadataVO.getColumnMetadata();
