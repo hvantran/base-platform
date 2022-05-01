@@ -16,8 +16,6 @@ import com.hoatv.ext.endpoint.repositories.ExtEndpointSettingRepository;
 import com.hoatv.ext.endpoint.repositories.ExtExecutionResultRepository;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.services.CheckedSupplier;
-import com.hoatv.fwk.common.services.GenericHttpClientPool;
-import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.services.HttpClientService.HttpMethod;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.metric.mgmt.annotations.Metric;
@@ -61,6 +59,7 @@ public class ExtRestDataService {
     private final ResponseConsumerFactory responseConsumerFactory;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final AtomicInteger numberOfSuccessResponse = new AtomicInteger(0);
+    private final AtomicInteger numberOfErrorResponse = new AtomicInteger(0);
 
     public ExtRestDataService(ExtEndpointSettingRepository extEndpointSettingRepository,
                               ExtEndpointResponseRepository endpointResponseRepository,
@@ -77,6 +76,11 @@ public class ExtRestDataService {
     @Metric(name = "ext-number-of-success-responses")
     public SimpleValue getNumberOfSuccessResponse() {
         return new SimpleValue(numberOfSuccessResponse.get());
+    }
+
+    @Metric(name = "ext-number-of-failure-responses")
+    public SimpleValue getNumberOfErrorResponse() {
+        return new SimpleValue(numberOfErrorResponse.get());
     }
 
     public void addExtEndpoint(EndpointSettingVO endpointSettingVO) {
@@ -138,54 +142,29 @@ public class ExtRestDataService {
         ResponseConsumerType responseConsumerType = ResponseConsumerType.valueOf(responseConsumerTypeName);
         ResponseConsumer responseConsumer = responseConsumerFactory.getResponseConsumer(responseConsumerType);
         BiConsumer<String, String> responseBiConsumer = responseConsumer.onSuccessResponse(metadataVO,
-                endpointSetting).andThen((random, response) -> {
-            numberOfSuccessResponse.incrementAndGet();
-        });
+                endpointSetting).andThen((random, response) -> numberOfSuccessResponse.incrementAndGet());
 
-        return getExecutionTasks(endpointSettingVO, application, taskName, input, noAttemptTimes,
-            noParallelThread, dataGeneratorVO, executionResult, responseBiConsumer);
+        BiConsumer<String, String> errorResponseBiConsumer = responseConsumer.onErrorResponse()
+                .andThen((random, response) -> numberOfErrorResponse.incrementAndGet());
+
+        ExecutionContext executionContext = ExecutionContext.builder()
+                .input(input)
+                .taskName(taskName)
+                .executionResult(executionResult)
+                .application(application)
+                .noAttemptTimes(noAttemptTimes)
+                .executionResult(executionResult)
+                .methodStatisticCollector(methodStatisticCollector)
+                .noParallelThread(noParallelThread)
+                .dataGeneratorVO(dataGeneratorVO)
+                .endpointSettingVO(endpointSettingVO)
+                .successResponseConsumer(responseBiConsumer)
+                .errorResponseConsumer(errorResponseBiConsumer)
+                .extExecutionResultRepository(extExecutionResultRepository)
+                .build();
+        return TaskExecutionType.EXECUTE_WITH_COMPLETABLE_FUTURE.getExecutionTasks(executionContext);
     }
 
-    private Callable<Object> getExecutionTasks(EndpointSettingVO endpointSettingVO,
-                                              String application, String taskName, Input input,
-                                              int noAttemptTimes, int noParallelThread, DataGeneratorVO dataGeneratorVO,
-                                              EndpointExecutionResult executionResult, BiConsumer<String, String> responseConsumer) {
-        return () -> {
-            TaskMgmtService taskMgmtExecutorV2 = TaskFactory.INSTANCE.getTaskMgmtService(noParallelThread, 5000, application);
-            GenericHttpClientPool httpClientPool = HttpClientFactory.INSTANCE.getGenericHttpClientPool(input.getTaskName(), noParallelThread, 2000);
-            for (int index = 1; index <= noAttemptTimes; index++) {
-
-                String executionTaskName = taskName.concat(String.valueOf(index));
-                ExtTaskEntry extTaskEntry = ExtTaskEntry.builder()
-                        .input(input)
-                        .index(index)
-                        .methodStatisticCollector(methodStatisticCollector)
-                        .httpClientPool(httpClientPool)
-                        .dataGeneratorVO(dataGeneratorVO)
-                        .filter(endpointSettingVO.getFilter())
-                        .onSuccessResponse(responseConsumer)
-                        .build();
-
-                CheckedFunction<Object, TaskEntry> taskEntryFunc = TaskEntry.fromObject(executionTaskName, application);
-                TaskEntry taskEntry = taskEntryFunc.apply(extTaskEntry);
-                taskMgmtExecutorV2.execute(taskEntry);
-                savePercentComplete(noAttemptTimes, executionResult, index);
-            }
-            LOGGER.info("{} is completed successfully.", taskName);
-            return null;
-        };
-    }
-
-    private void savePercentComplete(int noAttemptTimes, EndpointExecutionResult executionResult, int index) {
-        int percentComplete = executionResult.getPercentComplete();
-        int nextPercentComplete = index * 100 / noAttemptTimes;
-
-        if (percentComplete != nextPercentComplete) {
-            executionResult.setNumberOfCompletedTasks(index);
-            executionResult.setPercentComplete(nextPercentComplete);
-            extExecutionResultRepository.save(executionResult);
-        }
-    }
 
     @TimingMonitor
     public List<EndpointResponseVO> getEndpointResponses(String application, Pageable pageable) {

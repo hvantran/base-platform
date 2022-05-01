@@ -8,7 +8,7 @@ import com.hoatv.metric.mgmt.annotations.MetricRegistry;
 import com.hoatv.metric.mgmt.services.MetricMgmtService;
 import com.hoatv.metric.mgmt.services.MetricProviderRegistry;
 import com.hoatv.system.health.metrics.MethodStatisticCollector;
-import com.hoatv.system.health.metrics.SystemHealth;
+import com.hoatv.system.health.metrics.SystemInfoProvider;
 import com.hoatv.task.mgmt.annotations.SchedulePoolSettings;
 import com.hoatv.task.mgmt.entities.TaskCollection;
 import com.hoatv.task.mgmt.services.ScheduleTaskMgmtService;
@@ -55,10 +55,10 @@ public class InitializeConfigurations {
         return new MethodStatisticCollector();
     }
 
-//    @Bean
-//    public SystemHealth getSystemHealth() {
-//        return new SystemHealth();
-//    }
+    @Bean
+    public SystemInfoProvider getSystemInfoProvider() {
+        return new SystemInfoProvider();
+    }
 
     @Bean
     public MetricProviderRegistry getMetricProviderRegistry() {

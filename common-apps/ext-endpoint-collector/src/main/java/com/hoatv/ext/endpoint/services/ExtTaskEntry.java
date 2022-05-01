@@ -32,6 +32,7 @@ public class ExtTaskEntry implements Callable<Void> {
     private final GenericHttpClientPool httpClientPool;
     private final DataGeneratorVO dataGeneratorVO;
     private final BiConsumer<String, String> onSuccessResponse;
+    private final BiConsumer<String, String> onErrorResponse;
     private final MethodStatisticCollector methodStatisticCollector;
 
 
@@ -64,6 +65,8 @@ public class ExtTaskEntry implements Callable<Void> {
         String responseString = httpClientPool.executeWithTemplate(executionTemplate);
         if (StringUtils.isNotEmpty(responseString) && responseString.contains(filter.getSuccessCriteria())) {
             onSuccessResponse.accept(random, responseString);
+        } else {
+            onErrorResponse.accept(random, responseString);
         }
         long endTime = System.currentTimeMillis();
         methodStatisticCollector.addMethodStatistics("endpoint-processing-data-task", "ms", endTime - startTime);
