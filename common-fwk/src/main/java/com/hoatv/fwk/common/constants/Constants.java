@@ -2,6 +2,9 @@ package com.hoatv.fwk.common.constants;
 
 public class Constants {
 
+    private Constants() {
+    }
+
     public static final String DEFAULT_SCAN_PACKAGE = "com.hoatv";
     public static final String METRIC_MANAGEMENT = "Metric Management";
 

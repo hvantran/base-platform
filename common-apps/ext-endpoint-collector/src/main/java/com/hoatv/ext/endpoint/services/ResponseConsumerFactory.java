@@ -6,13 +6,13 @@ import com.hoatv.ext.endpoint.repositories.ExtEndpointResponseRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 @Service
 public class ResponseConsumerFactory {
 
-    private final Map<ResponseConsumerType, ResponseConsumer> consumerRegistry = new HashMap<>();
+    private final Map<ResponseConsumerType, ResponseConsumer> consumerRegistry = new EnumMap<ResponseConsumerType, ResponseConsumer>(ResponseConsumerType.class);
     private final ExtEndpointResponseRepository endpointResponseRepository;
 
     public ResponseConsumerFactory(ExtEndpointResponseRepository endpointResponseRepository) {

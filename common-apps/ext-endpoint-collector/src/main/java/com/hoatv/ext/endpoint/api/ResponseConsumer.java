@@ -12,4 +12,6 @@ public interface ResponseConsumer {
     }
 
     BiConsumer<String, String> onSuccessResponse(MetadataVO metadataVO, EndpointSetting endpointSetting);
+
+    BiConsumer<String, String> onErrorResponse();
 }

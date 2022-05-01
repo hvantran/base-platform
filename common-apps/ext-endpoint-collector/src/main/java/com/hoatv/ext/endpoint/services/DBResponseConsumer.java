@@ -65,4 +65,10 @@ public class DBResponseConsumer implements ResponseConsumer {
             LOGGER.info("{} - {}", random, responseString);
         };
     }
+
+    @Override
+    public BiConsumer<String, String> onErrorResponse() {
+        return (random, responseString) -> {
+        };
+    }
 }
