@@ -10,7 +10,7 @@ public class ScheduleTaskRegistryService {
 
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(ScheduleTaskRegistryService.class);
 
-    private Map<String, ScheduleTaskMgmtService> scheduleTaskMgmtExecutors = new ConcurrentHashMap<>();
+    private final Map<String, ScheduleTaskMgmtService> scheduleTaskMgmtExecutors = new ConcurrentHashMap<>();
 
     public void register(String application, ScheduleTaskMgmtService scheduleTaskMgmtService) {
         APP_LOGGER.info("Registering a executor for application: {}", application);
@@ -23,6 +23,6 @@ public class ScheduleTaskRegistryService {
 
     public void destroy() {
         APP_LOGGER.info("Destroy all registered executors");
-        scheduleTaskMgmtExecutors.values().forEach(scheduleTaskMgmtService -> scheduleTaskMgmtService.shutdownNow());
+        scheduleTaskMgmtExecutors.values().forEach(CloseableTask::shutdownNow);
     }
 }

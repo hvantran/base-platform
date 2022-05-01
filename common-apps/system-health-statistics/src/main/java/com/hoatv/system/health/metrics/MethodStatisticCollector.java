@@ -4,8 +4,6 @@ import com.hoatv.metric.mgmt.annotations.Metric;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricTag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,9 +24,9 @@ public class MethodStatisticCollector {
         private long maxExecutionTime;
         private long avgExecutionTime;
         private long minExecutionTime;
-        private AtomicInteger numberOfExecution;
-        private String methodName;
-        private String unit;
+        private final AtomicInteger numberOfExecution;
+        private final String methodName;
+        private final String unit;
 
         public SummaryMethodExecution(String methodName, String unit) {
             this.unit = unit;
@@ -49,24 +47,22 @@ public class MethodStatisticCollector {
         }
 
         public List<ComplexValue> getComplexValues() {
-            String methodName = this.methodName;
-
             String avgExecutionTimeMetricName = String.format(METRIC_PATTERN, "avg", methodName);
-            ComplexValue avgExecutionTime = getComplexValue(avgExecutionTimeMetricName, this.unit, this.avgExecutionTime);
+            ComplexValue avgExecutionTimeMetric = getComplexValue(avgExecutionTimeMetricName, this.unit, this.avgExecutionTime);
 
             String minExecutionTimeMetricName = String.format(METRIC_PATTERN, "min", methodName);
-            ComplexValue minExecutionTime = getComplexValue(minExecutionTimeMetricName, this.unit, this.minExecutionTime);
+            ComplexValue minExecutionTimeMetric = getComplexValue(minExecutionTimeMetricName, this.unit, this.minExecutionTime);
 
             String maxExecutionTimeMetricName = String.format(METRIC_PATTERN, "max", methodName);
-            ComplexValue maxExecutionTime = getComplexValue(maxExecutionTimeMetricName, this.unit, this.maxExecutionTime);
+            ComplexValue maxExecutionTimeMetric = getComplexValue(maxExecutionTimeMetricName, this.unit, this.maxExecutionTime);
 
             String totalExecutionTimeMetricName = String.format(METRIC_PATTERN, "total", methodName);
-            ComplexValue totalExecutionTime = getComplexValue(totalExecutionTimeMetricName, this.unit, this.totalExecutionTime);
+            ComplexValue totalExecutionTimeMetric = getComplexValue(totalExecutionTimeMetricName, this.unit, this.totalExecutionTime);
 
             String numberOfExecutionMetricName = String.format(METRIC_PATTERN, "count", methodName);
-            ComplexValue numberOfExecution = getComplexValue(numberOfExecutionMetricName, "", this.numberOfExecution.get());
+            ComplexValue numberOfExecutionMetric = getComplexValue(numberOfExecutionMetricName, "", this.numberOfExecution.get());
 
-            return List.of(avgExecutionTime, minExecutionTime, maxExecutionTime, totalExecutionTime, numberOfExecution);
+            return List.of(avgExecutionTimeMetric, minExecutionTimeMetric, maxExecutionTimeMetric, totalExecutionTimeMetric, numberOfExecutionMetric);
         }
 
         private ComplexValue getComplexValue(String metricName, String unit, long value) {
@@ -78,8 +74,6 @@ public class MethodStatisticCollector {
             return complexValue;
         }
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodStatisticCollector.class);
 
     private final Map<String, SummaryMethodExecution> statistics = new ConcurrentHashMap<>();
 

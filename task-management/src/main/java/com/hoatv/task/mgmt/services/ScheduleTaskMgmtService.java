@@ -21,8 +21,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
         ThreadPoolSettings threadPoolSettings = schedulePoolSettings.threadPoolSettings();
         int corePoolSize = threadPoolSettings.numberOfThreads();
         String application = schedulePoolSettings.application();
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(corePoolSize, new AbmThreadFactory(application));
-        this.executorService = executorService;
+        this.executorService = Executors.newScheduledThreadPool(corePoolSize, new AbmThreadFactory(application));
     }
 
     public Future<?> scheduleTask(TaskEntry taskEntry, int waitingTime, TimeUnit timeUnit) {

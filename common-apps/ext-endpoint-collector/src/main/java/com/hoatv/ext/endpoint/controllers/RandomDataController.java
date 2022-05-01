@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/random", produces = MediaType.APPLICATION_JSON_VALUE)
 public class RandomDataController {
 
-    public RandomDataController() {
-    }
-
     @GetMapping(value = "/nums")
     public String getAllExtEndpoints(@RequestParam Integer length) {
         return SaltGeneratorUtils.getSaltNums(length);

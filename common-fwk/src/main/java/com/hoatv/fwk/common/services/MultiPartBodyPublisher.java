@@ -16,7 +16,7 @@ public class MultiPartBodyPublisher {
     private String boundary = UUID.randomUUID().toString();
 
     public HttpRequest.BodyPublisher build() {
-        if (partsSpecificationList.size() == 0) {
+        if (partsSpecificationList.isEmpty()) {
             throw new IllegalStateException("Must have at least one part to build multipart message.");
         }
         addFinalBoundaryPart();

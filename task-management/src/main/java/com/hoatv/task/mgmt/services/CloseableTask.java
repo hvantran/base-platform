@@ -48,6 +48,7 @@ public abstract class CloseableTask implements Closeable {
             isClosed = true;
         } catch (InterruptedException exception){
             LOGGER.error("An exception occurred while shutdown executor", exception);
+            Thread.currentThread().interrupt();
         }
         shutdownNow();
     }
@@ -66,6 +67,7 @@ public abstract class CloseableTask implements Closeable {
         } catch (InterruptedException exception) {
             LOGGER.error("An exception occurred while shutdown executor", exception);
             executorService.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }
