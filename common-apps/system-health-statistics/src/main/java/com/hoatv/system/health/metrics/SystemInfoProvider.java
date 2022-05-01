@@ -11,34 +11,36 @@ import java.lang.management.ManagementFactory;
 import static com.hoatv.fwk.common.constants.Constants.SYSTEM_APPLICATION;
 
 @MetricProvider(application = SYSTEM_APPLICATION, category = SYSTEM_APPLICATION)
-public class SystemHealth {
+public class SystemInfoProvider {
     private final SimpleValue initHeapSpace = new SimpleValue(0);
     private final SimpleValue usedHeapSpace = new SimpleValue(0);
     private final SimpleValue freeHeapSpace = new SimpleValue(0);
     private final SimpleValue cpuUsage = new SimpleValue(0);
     private final SimpleValue noThreads = new SimpleValue(0);
+    private static final int MB = 1024 * 1024;
+    private final Runtime runtime = Runtime.getRuntime();
 
-    @Metric(name = "max-memory", unit = "B")
+    @Metric(name = "max-memory", unit = "MB")
     public SimpleValue getInitialHeapSpaceMetric() {
-        initHeapSpace.setValue(Runtime.getRuntime().maxMemory());
+        initHeapSpace.setValue(runtime.maxMemory() / MB);
         return initHeapSpace;
     }
 
-    @Metric(name = "used-memory", unit = "B")
+    @Metric(name = "used-memory", unit = "MB")
     public SimpleValue getUsedHeapSpaceMetric() {
-        usedHeapSpace.setValue(Runtime.getRuntime().totalMemory());
+        usedHeapSpace.setValue((runtime.totalMemory() - runtime.freeMemory())/ MB);
         return usedHeapSpace;
     }
 
-    @Metric(name = "free-memory", unit = "B")
+    @Metric(name = "free-memory", unit = "MB")
     public SimpleValue getFreeHeapSpaceMetric() {
-        freeHeapSpace.setValue(Runtime.getRuntime().freeMemory());
+        freeHeapSpace.setValue(runtime.freeMemory() / MB);
         return freeHeapSpace;
     }
 
     @Metric(name = "cpu-usage")
     public SimpleValue getCPUUsage() {
-        OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
+        OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         cpuUsage.setValue((long) operatingSystemMXBean.getProcessCpuLoad());
         return cpuUsage;
     }
