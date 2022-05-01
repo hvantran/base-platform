@@ -17,6 +17,15 @@ public enum TaskFactory {
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(TaskFactory.class);
 
     private final Map<String, LinkedList<CloseableTask>> serviceRegistry = new ConcurrentHashMap<>();
+    private final Map<String, LinkedList<CloseableTaskV1>> serviceRegistryV1 = new ConcurrentHashMap<>();
+
+    public TaskMgmtServiceV1 getTaskMgmtServiceV1(int numberOfThreads, int maxAwaitTerminationMillis, String application) {
+        serviceRegistryV1.putIfAbsent(application, new LinkedList<>());
+        LinkedList<CloseableTaskV1> services = serviceRegistryV1.get(application);
+        TaskMgmtServiceV1 taskMgmtServiceV1 = new TaskMgmtServiceV1(numberOfThreads, maxAwaitTerminationMillis, application);
+        services.add(taskMgmtServiceV1);
+        return taskMgmtServiceV1;
+    }
 
     public TaskMgmtService getTaskMgmtService(int numberOfThreads, int maxAwaitTerminationMillis) {
         serviceRegistry.putIfAbsent("TaskMgmtService", new LinkedList<>());
@@ -57,5 +66,9 @@ public enum TaskFactory {
                 .flatMap(Collection::stream)
                 .filter(p -> !p.isClosed())
                 .forEach(CloseableTask::shutdownNow);
+        serviceRegistryV1.values().stream()
+                .flatMap(Collection::stream)
+                .filter(p -> !p.isClosed())
+                .forEach(CloseableTaskV1::shutdownNow);
     }
 }

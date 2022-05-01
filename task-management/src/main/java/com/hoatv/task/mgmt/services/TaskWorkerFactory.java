@@ -54,7 +54,9 @@ public class TaskWorkerFactory {
                     APP_LOGGER.error("An exception occurred while executing schedule task", exception);
                     return null;
                 } finally {
-                    getLockObject().release(taskEntry);
+                    if (getLockObject() != null) {
+                        getLockObject().release(taskEntry);
+                    }
                 }
             }
         };
