@@ -17,5 +17,6 @@
         <module>springboot-common-app</module>
         <module>ext-endpoint-collector</module>
         <module>system-health-statistics</module>
+        <module>springboot-webflux-app</module>
     </modules>
 </project>

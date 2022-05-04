@@ -129,7 +129,6 @@ public enum TaskExecutionType implements TaskExecutionImplementation {
                                 long elapsedTime = extTaskReportVO.getElapsedTime();
                                 methodStatisticCollector.addMethodStatistics("endpoint-processing-data-task", "ms",
                                         elapsedTime);
-                                extTaskReportVO = null;
                             });
                     savePercentComplete(extExecutionResultRepository, noAttemptTimes, executionResult, index);
                 }
