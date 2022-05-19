@@ -8,9 +8,10 @@ import com.sun.management.OperatingSystemMXBean;
 
 import java.lang.management.ManagementFactory;
 
-import static com.hoatv.fwk.common.constants.Constants.SYSTEM_APPLICATION;
+import static com.hoatv.fwk.common.constants.MetricProviders.MetricCategories.SYSTEM_HEALTH;
+import static com.hoatv.fwk.common.constants.MetricProviders.SYSTEM_APPLICATION;
 
-@MetricProvider(application = SYSTEM_APPLICATION, category = SYSTEM_APPLICATION)
+@MetricProvider(application = SYSTEM_APPLICATION, category = SYSTEM_HEALTH)
 public class SystemInfoProvider {
     private final SimpleValue initHeapSpace = new SimpleValue(0);
     private final SimpleValue usedHeapSpace = new SimpleValue(0);

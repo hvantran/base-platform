@@ -35,7 +35,8 @@ public class MetricProviderRegistry {
             ObjectUtils.checkThenThrow(metricProviderAnnotation.isEmpty(), "MetricProvider annotation is missing");
 
             String applicationName = metricProviderAnnotation.get().application();
-            return Pair.of(applicationName, new MetricCollection(instance, metricEntries));
+            String category = metricProviderAnnotation.get().category();
+            return Pair.of(applicationName + category, new MetricCollection(instance, metricEntries));
         }).collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 
         metricRegistry.putAll(metricPairs);

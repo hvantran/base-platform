@@ -12,9 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.hoatv.fwk.common.constants.Constants.SYSTEM_APPLICATION;
+import static com.hoatv.fwk.common.constants.MetricProviders.MetricCategories.METHOD_EXECUTION_TIME;
+import static com.hoatv.fwk.common.constants.MetricProviders.SYSTEM_APPLICATION;
 
-@MetricProvider(application = "Method Statistics Provider", category = SYSTEM_APPLICATION)
+@MetricProvider(application = SYSTEM_APPLICATION, category = METHOD_EXECUTION_TIME)
 public class MethodStatisticCollector {
 
     private static class SummaryMethodExecution {

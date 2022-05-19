@@ -58,7 +58,7 @@ public class MetricMgmtService {
                     String name = metricEntry.getName().toLowerCase().replace(" ", "-");
                     Object value = method.invoke(metricProvider);
 
-                    MDC.put("application", application);
+                    MDC.put("application", providerAnnotation.application());
                     MDC.put("type", providerAnnotation.category());
                     MDC.put("category", providerAnnotation.category());
 

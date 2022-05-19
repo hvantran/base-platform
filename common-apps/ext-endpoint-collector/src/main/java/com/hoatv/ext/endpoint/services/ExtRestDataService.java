@@ -45,9 +45,10 @@ import java.util.stream.Collectors;
 
 import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.GeneratorType;
 import static com.hoatv.ext.endpoint.utils.SaltGeneratorUtils.getGeneratorMethodFunc;
+import static com.hoatv.fwk.common.constants.MetricProviders.OTHER_APPLICATION;
 
 @Service
-@MetricProvider(application = "External Rest Data Collection", category = "Application")
+@MetricProvider(application = OTHER_APPLICATION, category = "External Endpoint Metric Collector")
 public class ExtRestDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtRestDataService.class);
