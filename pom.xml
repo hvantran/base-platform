@@ -20,7 +20,4 @@
         <module>monitoring-management</module>
         <module>common-apps</module>
     </modules>
-
-    <dependencies>
-    </dependencies>
 </project>
