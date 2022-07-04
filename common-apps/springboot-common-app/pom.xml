@@ -13,6 +13,7 @@
     <name>base-platform/common-apps/${project.artifactId}</name>
 
     <dependencies>
+        <!-- Internal dependencies-->
         <dependency>
             <groupId>hoatv</groupId>
             <artifactId>metric-management</artifactId>
@@ -34,6 +35,13 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>hoatv</groupId>
+            <artifactId>task-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- External dependencies-->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
@@ -50,13 +58,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>hoatv</groupId>
-            <artifactId>task-management</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
