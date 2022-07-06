@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
-    <Properties>
+    <!--Properties>
         <Property name="LOG_PATTERN">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
     </Properties>
 
@@ -32,7 +32,6 @@
         </Console>
     </Appenders>
     <Loggers>
-        <!-- avoid duplicated logs with additivity=false -->
         <Logger name="HOATV" level="DEBUG" additivity="false">
             <AppenderRef ref="AccFile"/>
         </Logger>
@@ -46,5 +45,5 @@
             <AppenderRef ref="LogToFile"/>
             <AppenderRef ref="LogToConsole"/>
         </Root>
-    </Loggers>
+    </Loggers-->
 </Configuration>
