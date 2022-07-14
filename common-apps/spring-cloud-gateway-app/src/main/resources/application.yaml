@@ -2,7 +2,6 @@ server:
   port: 8081
 
 management:
-  endpoint:
   metrics:
     tags:
       job: spring_cloud_gateway_data
