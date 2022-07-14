@@ -1,12 +1,65 @@
 server:
   port: 8081
+
+management:
+  endpoint:
+  metrics:
+    tags:
+      job: spring_cloud_gateway_data
+  endpoints:
+    web:
+      exposure:
+        include: 'metrics,gateway,health,info,prometheus'
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+
 spring:
+  profiles:
+    active: ${spring.profiles.active}
+  application:
+    name: gateway.local
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: "dev"
   cloud:
     gateway:
       routes:
-        - id: api_rewritepath_route
-          uri: http://api.local:8082
+        - id: ecommerce.stats.dev
+          uri: http://ecommerce.stats:8082
           predicates:
-            - Path=/api/**
+            - Path=/api/e-commerce-statistics/**
+          filters:
+            - RewritePath=/api(?<segment>/?.*), $\{segment}
+        - id: api.external.collector.dev
+          uri: http://api.external.collector:8083
+          predicates:
+            - Path=/api/ext-endpoint-collector/**
+          filters:
+            - RewritePath=/api(?<segment>/?.*), $\{segment}
+---
+
+spring:
+  config:
+    activate:
+      on-profile: "prod"
+  cloud:
+    gateway:
+      routes:
+        - id: ecommerce.stats.prod
+          uri: http://ecommerce.stats
+          predicates:
+            - Path=/api/e-commerce-statistics/**
+          filters:
+            - RewritePath=/api(?<segment>/?.*), $\{segment}
+        - id: api.external.collector
+          uri: http://api.external.collector
+          predicates:
+            - Path=/api/ext-endpoint-collector/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
