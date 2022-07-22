@@ -12,6 +12,10 @@
     <artifactId>spring-cloud-gateway-app</artifactId>
     <name>base-platform/common-apps/${project.artifactId}</name>
 
+    <properties>
+        <application.startup.class>com.hoatv.spring.cloud.app.GatewayApplication</application.startup.class>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -34,5 +38,18 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>${application.startup.class}</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>
