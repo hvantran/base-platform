@@ -30,13 +30,13 @@ spring:
     gateway:
       routes:
         - id: ecommerce.stats.dev
-          uri: http://ecommerce.stats:8082
+          uri: http://${ecommerce.stats.service.name}:8082
           predicates:
-            - Path=/api/e-commerce-statistics/**
+            - Path=/api/e-commerce-stats/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
         - id: api.external.collector.dev
-          uri: http://api.external.collector:8083
+          uri: http://${ext.endpoint.collector.service.name}:8083
           predicates:
             - Path=/api/ext-endpoint-collector/**
           filters:
