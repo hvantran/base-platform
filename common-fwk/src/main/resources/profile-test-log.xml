@@ -1,0 +1,22 @@
+<included>
+    <appender name="Metric" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logback/metric.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logback/metric.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="Metric" level="DEBUG" additivity="false">
+        <appender-ref ref="Console" />
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="Console" />
+    </root>
+</included>

@@ -1,0 +1,14 @@
+<configuration debug="true" scan="true" scanPeriod="15 seconds">
+    <springProfile name="prod">
+        <include resource="profile-prod-log.xml" />
+    </springProfile>
+
+    <springProfile name="dev">
+        <include resource="profile-dev-log.xml" />
+    </springProfile>
+
+    <springProfile name="test">
+        <include resource="profile-test-log.xml" />
+    </springProfile>
+
+</configuration>
