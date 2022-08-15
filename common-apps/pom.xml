@@ -19,6 +19,5 @@
         <module>system-health-statistics</module>
         <module>springboot-webflux-app</module>
         <module>spring-cloud-gateway-app</module>
-        <module>native-db-client</module>
     </modules>
 </project>
