@@ -19,6 +19,13 @@ spring:
     active: ${spring.profiles.active}
   application:
     name: gateway.local
+  sleuth:
+    otel:
+      config:
+        trace-id-ratio-based: 1.0
+      exporter:
+        otlp:
+          endpoint: http://apmserver:8200
 
 ---
 
