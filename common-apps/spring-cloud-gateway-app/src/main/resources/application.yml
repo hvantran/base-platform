@@ -18,14 +18,7 @@ spring:
   profiles:
     active: ${spring.profiles.active}
   application:
-    name: gateway.local
-  sleuth:
-    otel:
-      config:
-        trace-id-ratio-based: 1.0
-      exporter:
-        otlp:
-          endpoint: http://apmserver:8200
+    name: api-gateway
 
 ---
 
@@ -33,17 +26,31 @@ spring:
   config:
     activate:
       on-profile: "dev"
+  sleuth:
+    otel:
+      config:
+        trace-id-ratio-based: 1.0
+      exporter:
+        otlp:
+          endpoint: http://localhost:8200
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 290c8864349c10a1b625
+            clientSecret: aaff6c9561986ea4e177fd675ac058e11b4e322e
   cloud:
     gateway:
       routes:
         - id: ecommerce.stats.dev
-          uri: http://${ecommerce.stats.service.name}:8082
+          uri: http://localhost:8082
           predicates:
             - Path=/api/e-commerce-stats/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
         - id: api.external.collector.dev
-          uri: http://${ext.endpoint.collector.service.name}:8083
+          uri: http://localhost:8083
           predicates:
             - Path=/api/ext-endpoint-collector/**
           filters:
@@ -54,18 +61,32 @@ spring:
   config:
     activate:
       on-profile: "prod"
+  sleuth:
+    otel:
+      config:
+        trace-id-ratio-based: 1.0
+      exporter:
+        otlp:
+          endpoint: http://apmserver:8200
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 290c8864349c10a1b625
+            clientSecret: aaff6c9561986ea4e177fd675ac058e11b4e322e
   cloud:
     gateway:
       routes:
         - id: ecommerce.stats.prod
-          uri: http://ecommerce.stats
+          uri: http://${ecommerce.stats.service.name}:8082
           predicates:
-            - Path=/api/e-commerce-statistics/**
+            - Path=/api/${ecommerce.stats.service.name}/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
         - id: api.external.collector
-          uri: http://api.external.collector
+          uri: http://${ext.endpoint.collector.service.name}:8083
           predicates:
-            - Path=/api/ext-endpoint-collector/**
+            - Path=/api/${ext.endpoint.collector.service.name}/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
