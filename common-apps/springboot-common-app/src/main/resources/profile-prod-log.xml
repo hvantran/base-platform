@@ -1,15 +1,17 @@
 <included>
+
+    <contextListener class="com.hoatv.fwk.common.logging.listener.LoggerStartupListener"/>
     <appender name="ApplicationLogstashUdp" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
         <host>${logstash.service.name}</host>
         <port>${logstash.udp.port}</port>
         <layout class="net.logstash.logback.layout.LogstashLayout">
-            <customFields>{"type":"application"}</customFields>
+            <customFields>{"type":"${app_name}-${iso_date}"}</customFields>
         </layout>
     </appender>
     <appender name="ApplicationLogstashTcp" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${logstash.service.name}:${logstash.tcp.port}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"type":"application"}</customFields>
+            <customFields>{"type":"${app_name}-${iso_date}"}</customFields>
         </encoder>
         <keepAliveDuration>5 minutes</keepAliveDuration>
     </appender>
@@ -25,11 +27,15 @@
     <appender name="MetricLogstashUdp" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
         <host>${logstash.service.name}</host>
         <port>${logstash.udp.port}</port>
-        <layout class="net.logstash.logback.layout.LogstashLayout"/>
+        <layout class="net.logstash.logback.layout.LogstashLayout">
+            <customFields>{"type":"metrics-${app_name}-${iso_date}"}</customFields>
+        </layout>
     </appender>
     <appender name="MetricLogstashTcp" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${logstash.service.name}:${logstash.tcp.port}</destination>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"type":"metrics-${app_name}-${iso_date}"}</customFields>
+        </encoder>
         <keepAliveDuration>5 minutes</keepAliveDuration>
     </appender>
     <appender name="Metric" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -48,8 +54,10 @@
 
     <logger name="Metric" level="DEBUG" additivity="false">
         <appender-ref ref="Console" />
+        <appender-ref ref="MetricLogstashUdp" />
     </logger>
     <root level="INFO">
         <appender-ref ref="Console" />
+        <appender-ref ref="ApplicationLogstashUdp" />
     </root>
 </included>

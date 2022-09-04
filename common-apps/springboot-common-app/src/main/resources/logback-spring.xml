@@ -1,8 +1,10 @@
 <configuration debug="true" scan="true" scanPeriod="15 seconds">
     <springProfile name="prod">
+        <springProperty scope="context" name="app_name" source="spring.application.name"/>
         <include resource="profile-prod-log.xml" />
     </springProfile>
     <springProfile name="stage">
+        <springProperty scope="context" name="app_name" source="spring.application.name"/>
         <include resource="profile-prod-log.xml" />
     </springProfile>
     <springProfile name="dev">
