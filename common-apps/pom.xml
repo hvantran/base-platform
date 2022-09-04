@@ -15,9 +15,7 @@
 
     <modules>
         <module>springboot-common-app</module>
-        <module>ext-endpoint-collector</module>
         <module>system-health-statistics</module>
         <module>springboot-webflux-app</module>
-        <module>spring-cloud-gateway-app</module>
     </modules>
 </project>
