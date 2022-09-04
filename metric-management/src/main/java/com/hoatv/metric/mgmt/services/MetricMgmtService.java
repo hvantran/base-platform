@@ -59,7 +59,6 @@ public class MetricMgmtService {
                     Object value = method.invoke(metricProvider);
 
                     MDC.put("application", providerAnnotation.application());
-                    MDC.put("type", providerAnnotation.category());
                     MDC.put("category", providerAnnotation.category());
 
                     if (value instanceof SimpleValue) {
