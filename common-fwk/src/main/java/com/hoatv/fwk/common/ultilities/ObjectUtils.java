@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class ObjectUtils {
 
@@ -20,6 +21,11 @@ public class ObjectUtils {
     public static void checkThenThrow(boolean predicate, String message) {
         if (predicate) {
             throw new AppException(message);
+        }
+    }
+    public static <X extends Throwable> void checkThenThrow(boolean predicate, Supplier<? extends X> exceptionSupplier) throws X {
+        if (predicate) {
+            throw (X) exceptionSupplier.get();
         }
     }
 
