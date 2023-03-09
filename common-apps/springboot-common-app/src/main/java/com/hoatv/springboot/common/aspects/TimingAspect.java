@@ -20,7 +20,7 @@ public class TimingAspect {
         this.methodStatisticCollector = methodStatisticCollector;
     }
 
-    @Around("@annotation(com.hoatv.monitor.mgmt.TimingMonitor)")
+    @Around("@annotation(com.hoatv.monitor.mgmt.TimingMetricMonitor)")
     public Object logMethodExecutionTime(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         Object returnValue = proceedingJoinPoint.proceed();
