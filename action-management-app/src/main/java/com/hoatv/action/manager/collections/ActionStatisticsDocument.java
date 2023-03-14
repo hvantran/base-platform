@@ -11,7 +11,7 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-@Document
+@Document("action-result-statistics")
 @Getter
 @Setter
 @Builder
@@ -25,5 +25,6 @@ public class ActionStatisticsDocument {
     private long createdAt;
     private long numberOfJobs;
     private long numberOfFailureJobs;
+    private long numberOfSuccessJobs;
     private double percentCompleted;
 }

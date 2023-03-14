@@ -1,5 +1,7 @@
 package com.hoatv.action.manager.services;
 
+import com.hoatv.action.manager.api.ActionManagerService;
+import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.collections.ActionDocument;
 import com.hoatv.action.manager.collections.ActionStatisticsDocument;
 import com.hoatv.action.manager.collections.ActionStatisticsDocument.ActionStatisticsDocumentBuilder;
@@ -7,18 +9,16 @@ import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.action.manager.dtos.JobDefinitionDTO;
 import com.hoatv.action.manager.repositories.ActionDocumentRepository;
 import com.hoatv.action.manager.repositories.ActionStatisticsDocumentRepository;
-import com.hoatv.fwk.common.services.CheckedConsumer;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
 import com.hoatv.monitor.mgmt.LoggingMonitor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -57,23 +57,25 @@ public class ActionManagerServiceImpl implements ActionManagerService {
 
         LOGGER.info("Processing the nested jobs inside {} action", actionName);
         List<JobDefinitionDTO> definitionJobs = actionDefinition.getJobs();
-        CheckedFunction<JobDefinitionDTO, JobResult> checkedJobProcessingFunction = jobManagerService::executeJob;
+        CheckedFunction<JobDefinitionDTO, JobResult> checkedJobProcessingFunction =
+                jobDefinitionDTO -> jobManagerService.executeJob(jobDefinitionDTO, actionDocument.getHash());
 
         List<JobResult> jobResults = definitionJobs.stream()
                 .map(checkedJobProcessingFunction)
                 .collect(Collectors.toList());
 
-        Predicate<JobResult> failureJobPredicate = jobResult -> Objects.nonNull(jobResult.getException());
+        Predicate<JobResult> failureJobPredicate = jobResult -> StringUtils.isNotEmpty(jobResult.getException());
         long numberOfFailureJobs = jobResults.stream().filter(failureJobPredicate).count();
 
         statisticsDocumentBuilder.numberOfFailureJobs(numberOfFailureJobs);
         long numberOfCompletedJobs = jobResults.size() - numberOfFailureJobs;
-        statisticsDocumentBuilder.percentCompleted((double) numberOfCompletedJobs / jobResults.size());
+        statisticsDocumentBuilder.numberOfSuccessJobs(numberOfCompletedJobs);
+        statisticsDocumentBuilder.percentCompleted((double) jobResults.size() * 100 / jobResults.size());
         LOGGER.info("All nested jobs inside {} action are processed", actionName);
 
         ActionStatisticsDocument actionStatisticsDocument = statisticsDocumentBuilder.build();
         actionStatisticsDocumentRepository.save(actionStatisticsDocument);
         LOGGER.info("Statistics for action {} are saved successfully", actionName);
-        return "TODO";
+        return actionDocument.getHash();
     }
 }

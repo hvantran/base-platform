@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Document("jobs")
+@Document("jobs-result-statistics")
 @Getter
 @Setter
 @Builder
@@ -31,6 +31,7 @@ public class JobExecutionResultDocument {
     private String failureNotes;
     private String jobId;
     private long createdAt;
+    private long endedAt;
     private long elapsedTime;
     private long startedAt;
 

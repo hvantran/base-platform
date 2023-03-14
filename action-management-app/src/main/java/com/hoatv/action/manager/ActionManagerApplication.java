@@ -4,6 +4,7 @@ import com.hoatv.action.manager.collections.ActionDocument;
 import com.hoatv.action.manager.repositories.ActionDocumentRepository;
 import com.hoatv.action.manager.services.JobResult;
 import com.hoatv.action.manager.services.ScriptEngineService;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,11 +14,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan({"com.hoatv.ext.endpoint", "com.hoatv.springboot.common"})
+@ComponentScan({"com.hoatv.action.manager", "com.hoatv.springboot.common"})
 @EnableMongoRepositories
 public class ActionManagerApplication {
 
@@ -58,9 +61,9 @@ public class ActionManagerApplication {
     @Bean
     public CommandLineRunner executeJobByEngine() {
         return args -> {
-            JobResult result = scriptEngineService.executeJobLauncher("" +
-                    "\nlet JobResult = Java.type('com.hoatv.action.manager.services.JobResult');" +
-                    "function execute() {return new JobResult('abc','')}");
+            File file = new File(ActionManagerApplication.class.getClassLoader().getResource("violation-executor.js").getFile());
+            String data = FileUtils.readFileToString(file, "UTF-8");
+            JobResult result = scriptEngineService.execute(data, Collections.emptyMap());
             System.out.println(result);
         };
     }
