@@ -1,6 +1,8 @@
 package com.hoatv.springboot.common.advices;
 
 import com.hoatv.fwk.common.exceptions.AppException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,13 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ControllerAdvice
 public class DefaultExceptionHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);
+
     @ResponseBody
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> methodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        LOGGER.error("An MethodArgumentNotValidException occurred while processing", ex);
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             String fieldName = error.getField();
@@ -36,6 +41,7 @@ public class DefaultExceptionHandler {
 
     @ExceptionHandler(value= {AppException.class})
     protected ResponseEntity<Object> handleAppException(RuntimeException ex, WebRequest request) {
+        LOGGER.error("An AppException occurred while processing", ex);
         String responseMessage = String.format("{\"message\": \"%s\"}", ex.getMessage());
         request.setAttribute("javax.servlet.error.exception", ex, 0);
         return ResponseEntity.internalServerError()
