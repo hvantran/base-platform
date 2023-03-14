@@ -11,6 +11,10 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.spi.ContextAwareBase;
 import ch.qos.logback.core.spi.LifeCycle;
 
+/**
+ * To getting environment variables and put into logback configuration XML files
+ * More details: https://stackoverflow.com/questions/1975939/read-environment-variables-from-logback-configuration-file
+ */
 public class LoggerStartupListener extends ContextAwareBase implements LoggerContextListener, LifeCycle {
 
     private boolean started = false;
