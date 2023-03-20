@@ -27,11 +27,12 @@ public class ScriptEngineService {
         this.methodStatisticCollector = methodStatisticCollector;
     }
 
-    public <TResult> TResult execute(String scriptContent, Map<String, Object> executionContext) {
+    public <T> T execute(String scriptContent, Map<String, Object> executionContext) {
         return execute(JobLauncher.class, scriptContent, executionContext);
     }
 
-    public <TResult> TResult execute(Class<? extends Launcher> klass, String scriptContent, Map<String, Object> executionContext) {
+    public <T> T execute(Class<? extends Launcher> klass, String scriptContent,
+                               Map<String, Object> executionContext) {
         ScriptEngine scriptEngine = ScriptEngineFactory.GRAAL_JS.getScriptEngine();
 
         scriptEngine.put("httpClientService", HttpClientService.INSTANCE);

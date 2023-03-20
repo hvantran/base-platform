@@ -46,7 +46,7 @@ public class JobDocument {
                 .jobDescription(jobDefinitionDTO.getJobDescription())
                 .configurations(jobDefinitionDTO.getConfigurations())
                 .jobContent(jobDefinitionDTO.getJobContent())
-                .jobCategory(jobDefinitionDTO.getJobCategory())
+                .jobCategory(JobCategory.valueOf(jobDefinitionDTO.getJobCategory()))
                 .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
                 .actionId(actionId)
                 .build();
@@ -58,7 +58,7 @@ public class JobDocument {
                 .jobDescription(jobDocument.getJobDescription())
                 .configurations(jobDocument.getConfigurations())
                 .jobContent(jobDocument.getJobContent())
-                .jobCategory(jobDocument.getJobCategory())
+                .jobCategory(jobDocument.getJobCategory().name())
                 .createdAt(jobDocument.getCreatedAt())
                 .build();
     }

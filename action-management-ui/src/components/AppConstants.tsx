@@ -1,71 +1,51 @@
-import * as React from 'react';
-import { Link } from "react-router-dom";
-import { ViewUpdate } from "@codemirror/view";
-import { LanguageSupport } from '@codemirror/language';
+
+export const ACTION_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/actions'
+export const JOB_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/jobs'
 
 
-export default function withLink(to: any, children: any) {
-    return <Link to={to}>{children}</Link>
-};
-
-export enum PropType {
-    InputText,
-    Textarea,
-    Selection,
-    CodeEditor
+export interface JobDefinition {
+    name: string | undefined
+    category: 'NORMAL' | 'SYSTEM' | undefined
+    description: string | undefined
+    configurations: string | undefined
+    content: string | undefined
+    createdAt?: number | undefined
 }
 
-export interface TextFieldMetadata {
-    onChangeEvent: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> | undefined
+export interface ActionDefinition {
+    name: string | undefined
+    description: string | undefined
+    configurations: string | undefined
+    createdAt?: number | undefined
+    relatedJobs: Array<JobDefinition> | undefined
 }
 
-export interface CodeEditorMetadata {
-    codeLanguges: Array<LanguageSupport>
-    onChangeEvent:((value: string, viewUpdate: ViewUpdate) => void) | undefined
-}
-
-export interface SelectionMetadata {
-    selections: Array<String>
-    onChangeEvent: CallableFunction
-}
-
-export interface PropertyMetadata {
-    propName: string
-    propType: PropType
-    propLabel?: string
-    propDescription?: string
-
-    codeEditorMeta?: CodeEditorMetadata
-    selectionMeta?: SelectionMetadata
-    textFieldMeta?: TextFieldMetadata
-
-}
-
-export interface EntityMetadata {
-    properties: Array<PropertyMetadata>
-}
-
-export interface Dictionary<T> {
-    [Key: string]: T;
-}
-
-export interface SpeedDialActionMetadata {
-    actionName: string
-    actionLabel: string
-    actionIcon: any
-    properties: Dictionary<string>
-    onClick: CallableFunction
-}
-
-
-export interface PageEntityMetadata {
-    floatingActions: Array<SpeedDialActionMetadata>
-    templateStepMetadata: StepMetadata
-}
-
-export interface StepMetadata extends EntityMetadata {
+export interface ActionOverview {
+    hash: string
     name: string
-    label: string
-    isOptional?: boolean
-    description?: string
+    numberOfJobs: number
+    numberOfSuccessJobs: number
+    numberOfFailureJobs: number
+    createdAt: number
+}
+
+export interface ActionDetails {
+    hash: string
+    name: string
+    numberOfJobs: number
+    numberOfSuccessJobs: number
+    numberOfFailureJobs: number
+    createdAt: number
+    description: string
+    configurations: string
+}
+
+export interface JobOverview {
+    hash: string
+    name: string
+    state: string
+    status: string
+    failureNotes?: string
+    startedAt: number
+    elapsedTime: number
 }

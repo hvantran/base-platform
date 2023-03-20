@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 
@@ -20,6 +22,7 @@ public class ActionDefinitionDTO {
 
     @Setter
     @JsonProperty("name")
+    @NotEmpty(message = "Action name cannot be NULL/empty")
     private String actionName;
 
     @Setter
@@ -28,11 +31,14 @@ public class ActionDefinitionDTO {
 
     @Setter
     @JsonProperty("configurations")
+    @NotEmpty(message = "Action configurations cannot be NULL/empty")
     private String configurations;
 
-    @JsonProperty("created_at")
+    @JsonProperty("createdAt")
     private long createdAt;
 
-    @JsonProperty("related_jobs")
+    @Valid
+    @JsonProperty("relatedJobs")
+    @NotEmpty(message = "Jobs cannot be NULL/empty")
     private List<JobDefinitionDTO> jobs;
 }

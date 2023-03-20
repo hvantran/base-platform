@@ -2,7 +2,10 @@ package com.hoatv.action.manager.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hoatv.springboot.common.validation.ValueOfEnum;
 import lombok.*;
+
+import javax.validation.constraints.NotEmpty;
 
 @Getter
 @Builder
@@ -17,14 +20,17 @@ public class JobDefinitionDTO {
 
     @Setter
     @JsonProperty("name")
+    @NotEmpty(message = "Job name cannot be NULL/empty")
     private String jobName;
 
     @Setter
     @JsonProperty("category")
-    private JobCategory jobCategory;
+    @ValueOfEnum(JobCategory.class)
+    private String jobCategory;
 
     @Setter
     @JsonProperty("content")
+    @NotEmpty(message = "Job content cannot be NULL/empty")
     private String jobContent;
 
     @Setter
@@ -33,6 +39,7 @@ public class JobDefinitionDTO {
 
     @Setter
     @JsonProperty("configurations")
+    @NotEmpty(message = "Job configurations cannot be NULL/empty")
     private String configurations;
 
     @JsonProperty("action_id")

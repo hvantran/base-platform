@@ -1,13 +1,14 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 import { Route, Routes } from "react-router-dom";
-import ActionContent from './components/ActionContent';
-import ActionCreationContent from './components/ActionCreationContent';
-import ActionDetailContent from './components/ActionDetailContent';
-import ErrorPage from './components/ErrorPage';
+import ActionSummary from './components/actions/ActionSummary';
+import ActionCreation from './components/actions/ActionCreation';
+import ActionDetail from './components/actions/ActionDetail';
+import ErrorPage from './components/common/ErrorPage';
 import HomeContent from './components/HomeContent';
-import JobContent from './components/JobContent';
 import PrimarySearchAppBar from './ResponsiveAppBar';
+import JobSummary from './components/jobs/JobSummary';
+import JobDetails from './components/jobs/JobDetails';
 
 
 function App() {
@@ -16,10 +17,11 @@ function App() {
       <PrimarySearchAppBar />
       <Routes>
         <Route path='/' element={<HomeContent />} errorElement={<ErrorPage />}></Route>
-        <Route path='/actions' element={<ActionContent />}></Route>
-        <Route path='/actions/:actionId' element={<ActionDetailContent />}></Route>
-        <Route path='/actions/new' element={<ActionCreationContent />}></Route>
-        <Route path='jobs' element={<JobContent />}></Route>
+        <Route path='/actions' element={<ActionSummary />}></Route>
+        <Route path='/actions/:actionId' element={<ActionDetail />}></Route>
+        <Route path='/actions/new' element={<ActionCreation />}></Route>
+        <Route path='jobs' element={<JobSummary />}></Route>
+        <Route path='/actions/:actionId/jobs/:jobId' element={<JobDetails />}></Route>
       </Routes>
     </Stack>
   );

@@ -3,10 +3,11 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import * as React from 'react';
+import { SpeedDialActionMetadata } from '../GenericConstants';
 
 export default function FloatingSpeedDialButtons(props: any) {
 
-  const actions = props.actions;
+  const actions: Array<SpeedDialActionMetadata> = props.actions;
   return (
     <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'absolute', bottom: 16, right: 16  }}>
       <SpeedDial
@@ -14,12 +15,12 @@ export default function FloatingSpeedDialButtons(props: any) {
         sx={{ position: 'absolute', bottom: 16, right: 16 }}
         icon={<SpeedDialIcon />}
       >
-        {actions.map((action: any) => (
+        {actions.map((action: SpeedDialActionMetadata) => (
           <SpeedDialAction
-            key={action.name}
-            icon={action.icon}
+            key={action.actionName}
+            icon={action.actionIcon}
             FabProps={action.properties}
-            tooltipTitle={action.name}
+            tooltipTitle={action.actionLabel}
             onClick={action.onClick}
           />
         ))}

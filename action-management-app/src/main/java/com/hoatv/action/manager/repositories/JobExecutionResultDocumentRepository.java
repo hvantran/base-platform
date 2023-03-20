@@ -11,4 +11,5 @@ import java.util.List;
 @Repository
 public interface JobExecutionResultDocumentRepository extends MongoRepository<JobExecutionResultDocument, String> {
 
+    List<JobExecutionResultDocument> findByJobIdIn(List<String> jobIds);
 }

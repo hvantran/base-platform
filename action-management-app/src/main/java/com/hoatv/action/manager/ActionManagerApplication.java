@@ -51,22 +51,22 @@ public class ActionManagerApplication {
             actionDocumentRepository.saveAll(List.of(cleanupHome, washYourDishes, cleanupYourBed));
         };
     }
-    //@Bean
-    public CommandLineRunner queries() {
-        return args -> {
-            ActionDocument cleanupYourBed = actionDocumentRepository.findActionByName("Cleanup your bed");
-            System.out.println(cleanupYourBed);
-        };
-    }
-    @Bean
-    public CommandLineRunner executeJobByEngine() {
-        return args -> {
-            File file = new File(ActionManagerApplication.class.getClassLoader().getResource("violation-executor.js").getFile());
-            String data = FileUtils.readFileToString(file, "UTF-8");
-            JobResult result = scriptEngineService.execute(data, Collections.emptyMap());
-            System.out.println(result);
-        };
-    }
+//    //@Bean
+//    public CommandLineRunner queries() {
+//        return args -> {
+//            ActionDocument cleanupYourBed = actionDocumentRepository.findActionByName("Cleanup your bed");
+//            System.out.println(cleanupYourBed);
+//        };
+//    }
+//    @Bean
+//    public CommandLineRunner executeJobByEngine() {
+//        return args -> {
+//            File file = new File(ActionManagerApplication.class.getClassLoader().getResource("violation-executor.js").getFile());
+//            String data = FileUtils.readFileToString(file, "UTF-8");
+//            JobResult result = scriptEngineService.execute(data, Collections.emptyMap());
+//            System.out.println(result);
+//        };
+//    }
 
     public static void main (String[] args) {
         SpringApplication.run(ActionManagerApplication.class, args);
