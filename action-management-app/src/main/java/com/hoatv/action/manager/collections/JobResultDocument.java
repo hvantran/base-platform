@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class JobExecutionResultDocument {
+public class JobResultDocument {
 
     @Id
     @Builder.Default

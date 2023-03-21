@@ -12,6 +12,7 @@ import {
   PageEntityMetadata,
   PropertyMetadata,
   PropType,
+  SnackbarAlertMetadata,
   SnackbarMessage,
   SpeedDialActionMetadata,
   StepMetadata,
@@ -21,6 +22,7 @@ import PageEntityRender from '../renders/PageEntityRender';
 import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
 import { ActionDefinition, ACTION_MANAGER_API_URL, JobDefinition } from '../AppConstants';
+import SnackbarAlert from '../common/SnackbarAlert';
 
 
 export default function ActionCreation() {
@@ -55,9 +57,35 @@ export default function ActionCreation() {
         }
       },
       {
+        propName: 'isAsync',
+        propLabel: 'Asynchronous',
+        propValue: true,
+        propType: PropType.Switcher,
+        switcherFieldMeta: {
+          onChangeEvent: function (event, propValue) {
+            let propName = event.target.name;
+            setStepMetadatas(onchangeStepDefault(propName, propValue))
+          }
+        }
+      },
+      {
+        propName: 'jobCategory',
+        propLabel: 'Category',
+        propValue: 'NORMAL',
+        propType: PropType.Selection,
+        selectionMeta: {
+          selections: ["SYSTEM", "NORMAL"],
+          onChangeEvent: function (event) {
+            let propValue = event.target.value;
+            let propName = event.target.name;
+            setStepMetadatas(onchangeStepDefault(propName, propValue))
+          }
+        }
+      },
+      {
         propName: 'jobDescription',
         propLabel: 'Description',
-        propValue: '',
+        propValue: true,
         propType: PropType.Textarea,
         textareaFieldMeta: {
           onChangeEvent: function (event) {
@@ -183,6 +211,32 @@ export default function ActionCreation() {
                   stepMetadata.label = propValue;
                 }
               }))
+            }
+          }
+        },
+        {
+          propName: 'isAsync',
+          propLabel: 'Asynchronous',
+          propValue: true,
+          propType: PropType.Switcher,
+          switcherFieldMeta: {
+            onChangeEvent: function (event, propValue) {
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue))
+            }
+          }
+        },
+        {
+          propName: 'jobCategory',
+          propLabel: 'Category',
+          propValue: 'NORMAL',
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: ["SYSTEM", "NORMAL"],
+            onChangeEvent: function (event) {
+              let propValue = event.target.value;
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue))
             }
           }
         },
@@ -315,14 +369,16 @@ export default function ActionCreation() {
           let description = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobDescription"))?.propValue;
           let configurations = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobConfigurations"))?.propValue;
           let content = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobContent"))?.propValue;
-          let category = 'NORMAL';
+          let isAsync = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("isAsync"))?.propValue;
+          let category = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobCategory"))?.propValue;
 
           return {
             name,
             category,
             description,
             configurations,
-            content
+            content,
+            isAsync
           } as JobDefinition
         })
     }
@@ -383,40 +439,24 @@ export default function ActionCreation() {
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
   const [processTracking, setCircleProcessOpen] = React.useState(false);
 
-  const handleCloseError = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenError(false);
-  };
-
-  const handleCloseSuccess = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenSuccess(false);
-  };
-
+  let snackbarAlertMetadata: SnackbarAlertMetadata = {
+    openError,
+    openSuccess,
+    setOpenError,
+    setOpenSuccess,
+    messageInfo
+  }
 
   return (
     <Stack spacing={4}>
       <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...initialPageEntityMetdata} />
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
-      <Snackbar open={openSuccess} autoHideDuration={6000} onClose={handleCloseSuccess}>
-        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-          {messageInfo?.message}
-        </Alert>
-      </Snackbar>
-      <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
-        <Alert onClose={handleCloseError} sx={{ width: '100%' }} severity="error">
-          {messageInfo?.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>
     </Stack>
   );
 
-  function onchangeStepDefault(propName: string, propValue: string, mapFunction?: (stepMetadata: StepMetadata) => void): React.SetStateAction<StepMetadata[]> {
+  function onchangeStepDefault(propName: string, propValue: any, mapFunction?: (stepMetadata: StepMetadata) => void): React.SetStateAction<StepMetadata[]> {
     return previous => {
       return [...previous].map((stepMetadata) => {
         let properties = stepMetadata.properties.map(prop => {

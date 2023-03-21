@@ -8,9 +8,10 @@ import Breadcrumbs from '../common/Breadcrumbs';
 import { useParams } from 'react-router-dom';
 import { ActionDetails, ACTION_MANAGER_API_URL } from '../AppConstants';
 import ProcessTracking from '../common/ProcessTracking';
-import { PageEntityMetadata, PropType } from '../GenericConstants';
+import { PageEntityMetadata, PropType, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
 import PageEntityRender from '../renders/PageEntityRender';
 import ActionJobTable from './ActionJobTable';
+import SnackbarAlert from '../common/SnackbarAlert';
 
 
 export default function ActionDetail() {
@@ -33,6 +34,9 @@ export default function ActionDetail() {
 
   const [processTracking, setCircleProcessOpen] = React.useState(false);
   const [actionDetailData, setActionDetailData] = React.useState(initialActionDetailData);
+  const [openError, setOpenError] = React.useState(false);
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/actions">Actions</Link>,
@@ -52,6 +56,14 @@ export default function ActionDetail() {
       let response = await fetch(`${ACTION_MANAGER_API_URL}/${encodeURIComponent(actionId)}`, requestOptions);
       let actionDetailResult = await response.json() as ActionDetails;
       setActionDetailData(actionDetailResult);
+
+      let successMessage = { 'message': 'Fetch action successfully!!', key: new Date().getTime() } as SnackbarMessage;
+      setMessageInfo(successMessage);
+      setOpenSuccess(true);
+    } catch(error: any) {
+      let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
+      setMessageInfo(messageInfo);
+      setOpenError(true);
     } finally {
       setCircleProcessOpen(false);
     }
@@ -76,6 +88,14 @@ export default function ActionDetail() {
   }
 
 
+  let snackbarAlertMetadata: SnackbarAlertMetadata = {
+    openError,
+    openSuccess,
+    setOpenError,
+    setOpenSuccess,
+    messageInfo
+  }
+
 
   return (
     <Stack spacing={4}>
@@ -83,6 +103,7 @@ export default function ActionDetail() {
       <PageEntityRender {...pageEntityMetadata}></PageEntityRender>
       <ActionJobTable setCircleProcessOpen={setCircleProcessOpen} actionId={actionId}></ActionJobTable>
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
+      <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>
     </Stack >
   );
 }

@@ -34,6 +34,7 @@ public class JobDocument {
     private String configurations;
     private String jobName;
     private String actionId;
+    private boolean isAsync;
     private long createdAt;
 
     public static JobDocument fromJobDefinition(JobDefinitionDTO jobDefinitionDTO) {
@@ -47,6 +48,7 @@ public class JobDocument {
                 .configurations(jobDefinitionDTO.getConfigurations())
                 .jobContent(jobDefinitionDTO.getJobContent())
                 .jobCategory(JobCategory.valueOf(jobDefinitionDTO.getJobCategory()))
+                .isAsync(jobDefinitionDTO.isAsync())
                 .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
                 .actionId(actionId)
                 .build();
@@ -60,6 +62,7 @@ public class JobDocument {
                 .jobContent(jobDocument.getJobContent())
                 .jobCategory(jobDocument.getJobCategory().name())
                 .createdAt(jobDocument.getCreatedAt())
+                .isAsync(jobDocument.isAsync())
                 .build();
     }
 }

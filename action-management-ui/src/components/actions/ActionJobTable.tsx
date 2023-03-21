@@ -6,13 +6,12 @@ import {
     ColumnMetadata, PageEntityMetadata, PagingOptionMetadata,
     PagingResult, TableMetadata
 } from '../GenericConstants';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import Error from '@mui/icons-material/Error';
 
 import { useNavigate } from 'react-router-dom';
 import { JobOverview, JOB_MANAGER_API_URL } from '../AppConstants';
+import JobStatus from '../common/JobStatus';
 import PageEntityRender from '../renders/PageEntityRender';
-import { green, red } from '@mui/material/colors';
+import TextTruncate from '../common/TextTruncate';
 
 
 export default function ActionJobTable(props: any) {
@@ -29,21 +28,21 @@ export default function ActionJobTable(props: any) {
         {
             id: 'state',
             label: 'State',
-            minWidth: 170,
+            minWidth: 100,
             align: 'right',
             format: (value: number) => value.toLocaleString('en-US'),
         },
         {
             id: 'status',
             label: 'Status',
-            minWidth: 170,
+            minWidth: 100,
             align: 'right',
-            format: (value: string) => 'SUCCESS' === value ? (<CheckCircleIcon sx={{color: green[900]}}/>) : (<Error sx={{color: red[900]}}/>)
+            format: (value: string) => (<JobStatus status={value}/>)
         },
         {
             id: 'startedAt',
             label: 'Started At',
-            minWidth: 170,
+            minWidth: 100,
             align: 'right',
             format: (value: number) => {
                 if (!value) {
@@ -58,9 +57,16 @@ export default function ActionJobTable(props: any) {
         {
             id: 'elapsedTime',
             label: 'Elapsed Time',
-            minWidth: 170,
+            minWidth: 100,
             align: 'right',
             format: (value: number) => value.toLocaleString('en-US')
+        },
+        {
+            id: 'failureNotes',
+            label: 'Failure Notes',
+            minWidth: 200,
+            align: 'left',
+            format: (value: string) => (<TextTruncate text={value} maxTextLength={100}/>)
         },
         {
             id: 'actions',

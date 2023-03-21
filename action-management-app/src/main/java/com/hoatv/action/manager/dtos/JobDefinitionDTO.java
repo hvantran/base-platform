@@ -38,6 +38,10 @@ public class JobDefinitionDTO {
     private String jobDescription;
 
     @Setter
+    @JsonProperty("isAsync")
+    private boolean isAsync;
+
+    @Setter
     @JsonProperty("configurations")
     @NotEmpty(message = "Job configurations cannot be NULL/empty")
     private String configurations;

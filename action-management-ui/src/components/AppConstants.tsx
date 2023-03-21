@@ -9,6 +9,7 @@ export interface JobDefinition {
     description: string | undefined
     configurations: string | undefined
     content: string | undefined
+    isAsync: boolean | undefined
     createdAt?: number | undefined
 }
 

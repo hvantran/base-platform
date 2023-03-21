@@ -3,7 +3,7 @@ package com.hoatv.action.manager.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.collections.JobDocument;
-import com.hoatv.action.manager.collections.JobExecutionResultDocument;
+import com.hoatv.action.manager.collections.JobResultDocument;
 import com.hoatv.action.manager.dtos.*;
 import com.hoatv.action.manager.repositories.JobDocumentRepository;
 import com.hoatv.action.manager.repositories.JobExecutionResultDocumentRepository;
@@ -59,16 +59,16 @@ public class JobManagerServiceImpl implements JobManagerService {
     public Page<JobOverviewDTO> getJobsFromAction(String actionId, PageRequest pageRequest) {
         Page<JobDocument> jobDocuments = jobDocumentRepository.findJobByActionId(actionId, pageRequest);
         List<String> jobIds = jobDocuments.stream().map(JobDocument::getHash).toList();
-        List<JobExecutionResultDocument> jobExecutionResultDocuments
+        List<JobResultDocument> jobResultDocuments
                 = jobExecutionResultDocumentRepository.findByJobIdIn(jobIds);
 
         return jobDocuments.map(jobDocument -> {
             String jobId = jobDocument.getHash();
-            Optional<JobExecutionResultDocument> jobExecutionResultDocument =
-                    jobExecutionResultDocuments.stream().filter(p -> p.getJobId().equals(jobId)).findFirst();
+            Optional<JobResultDocument> jobExecutionResultDocument =
+                    jobResultDocuments.stream().filter(p -> p.getJobId().equals(jobId)).findFirst();
 
-            Supplier<JobExecutionResultDocument> defaultJobResult = () -> JobExecutionResultDocument.builder().build();
-            JobExecutionResultDocument jobStat = jobExecutionResultDocument.orElseGet(defaultJobResult);
+            Supplier<JobResultDocument> defaultJobResult = () -> JobResultDocument.builder().build();
+            JobResultDocument jobStat = jobExecutionResultDocument.orElseGet(defaultJobResult);
             return JobOverviewDTO.builder()
                     .name(jobDocument.getJobName())
                     .hash(jobId)
@@ -118,7 +118,7 @@ public class JobManagerServiceImpl implements JobManagerService {
 
         JobStatus jobStatus = StringUtils.isNotEmpty(jobResult.getException()) ? JobStatus.FAILURE : JobStatus.SUCCESS;
         long endedAt = DateTimeUtils.getCurrentEpochTimeInSecond();
-        JobExecutionResultDocument jobExecutionResultDocument = JobExecutionResultDocument.builder()
+        JobResultDocument jobResultDocument = JobResultDocument.builder()
                 .jobState(JobState.COMPLETED)
                 .jobStatus(jobStatus)
                 .startedAt(startedAt)
@@ -128,8 +128,8 @@ public class JobManagerServiceImpl implements JobManagerService {
                 .elapsedTime(endedAt - startedAt)
                 .createdAt(startedAt)
                 .build();
-        jobExecutionResultDocumentRepository.save(jobExecutionResultDocument);
-        LOGGER.info("{} is created successfully.", jobExecutionResultDocument);
+        jobExecutionResultDocumentRepository.save(jobResultDocument);
+        LOGGER.info("{} is created successfully.", jobResultDocument);
 
         return jobResult;
     }

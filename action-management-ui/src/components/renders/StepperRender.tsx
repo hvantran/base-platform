@@ -1,7 +1,7 @@
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBeforeRounded';
+import NavigateNextIcon from '@mui/icons-material/NavigateNextRounded';
 import { IconButton, Stack, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Step from '@mui/material/Step';
@@ -72,7 +72,7 @@ export default function StepperRender(props: any) {
                                 activeStep !== initialStepMetadata.length - 1 ?
                                     (<IconButton onClick={handleNext} color="primary" aria-label="Next" component="label">
                                         <Tooltip title="Next">
-                                            <NavigateNextIcon />
+                                            <NavigateNextIcon/>
                                         </Tooltip>
                                     </IconButton>) 
                                     :

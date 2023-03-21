@@ -8,19 +8,24 @@ import { green, red, yellow } from '@mui/material/colors';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import {
-  PagingOptionMetadata,
-  PagingResult,
-  SpeedDialActionMetadata,
-  WithLink,
-  ColumnMetadata, PageEntityMetadata, TableMetadata
-} from '../GenericConstants';
 import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
+import {
+  ColumnMetadata,
+  PageEntityMetadata,
+  PagingOptionMetadata,
+  PagingResult,
+  SnackbarAlertMetadata,
+  SnackbarMessage,
+  SpeedDialActionMetadata,
+  TableMetadata,
+  WithLink
+} from '../GenericConstants';
 
 import { useNavigate } from 'react-router-dom';
-import PageEntityRender from '../renders/PageEntityRender';
 import { ActionOverview, ACTION_MANAGER_API_URL } from '../AppConstants';
+import SnackbarAlert from '../common/SnackbarAlert';
+import PageEntityRender from '../renders/PageEntityRender';
 
 
 
@@ -29,6 +34,9 @@ export default function ActionSummary() {
   const [processTracking, setCircleProcessOpen] = React.useState(false);
   let initialPagingResult: PagingResult = { totalElements: 0, content: [] };
   const [pagingResult, setPagingResult] = React.useState(initialPagingResult);
+  const [openError, setOpenError] = React.useState(false);
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href='#'>
@@ -107,6 +115,14 @@ export default function ActionSummary() {
       let response = await fetch(`${ACTION_MANAGER_API_URL}?pageIndex=${pageIndex}&pageSize=${pageSize}`, requestOptions);
       let actionPagingResult = await response.json() as PagingResult;
       setPagingResult(actionPagingResult);
+
+      let successMessage = { 'message': 'Fetch actions successfully!!', key: new Date().getTime() } as SnackbarMessage;
+      setMessageInfo(successMessage);
+      setOpenSuccess(true);
+    } catch(error: any) {
+      let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
+      setMessageInfo(messageInfo);
+      setOpenError(true);
     } finally {
       setCircleProcessOpen(false);
     }
@@ -171,11 +187,20 @@ export default function ActionSummary() {
     tableMetadata: tableMetadata
   }
 
+  let snackbarAlertMetadata: SnackbarAlertMetadata = {
+    openError,
+    openSuccess,
+    setOpenError,
+    setOpenSuccess,
+    messageInfo
+  }
+
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...pageEntityMetadata}></PageEntityRender>
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
+      <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>
     </Stack>
   );
 }

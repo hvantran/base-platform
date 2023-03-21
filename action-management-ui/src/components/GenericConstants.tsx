@@ -2,10 +2,19 @@ import * as React from 'react';
 import { Link } from "react-router-dom";
 import { ViewUpdate } from "@codemirror/view";
 import { LanguageSupport } from '@codemirror/language';
+import { SelectChangeEvent } from '@mui/material';
 
 export function WithLink(to: any, children: any) {
     return <Link to={to}>{children}</Link>
 };
+
+export interface SnackbarAlertMetadata {
+    openError: boolean
+    openSuccess: boolean
+    setOpenError: (previous: any) => void
+    setOpenSuccess: (previous: any) => void
+    messageInfo: SnackbarMessage | undefined
+}
 
 export interface SnackbarMessage {
     message: string;
@@ -16,7 +25,8 @@ export enum PropType {
     InputText,
     Textarea,
     Selection,
-    CodeEditor
+    CodeEditor,
+    Switcher
 }
 
 export interface TextFieldMetadata {
@@ -30,14 +40,19 @@ export interface CodeEditorMetadata {
     onChangeEvent: (propertyName: string) => (value: string, viewUpdate: ViewUpdate) => void
 }
 
+export interface SwitcherFieldMeta {
+    onChangeEvent: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void
+}
+
+
 export interface SelectionMetadata {
-    selections: Array<String>
-    onChangeEvent: CallableFunction
+    selections: Array<string>
+    onChangeEvent: (event: SelectChangeEvent, child: React.ReactNode) => void;
 }
 
 export interface PropertyMetadata {
     propName: string
-    propValue: string
+    propValue: any
     propType: PropType
     propLabel?: string
     isRequired?: boolean
@@ -47,6 +62,7 @@ export interface PropertyMetadata {
     selectionMeta?: SelectionMetadata
     textFieldMeta?: TextFieldMetadata
     textareaFieldMeta?: TextFieldMetadata
+    switcherFieldMeta?: SwitcherFieldMeta
 
 }
 
