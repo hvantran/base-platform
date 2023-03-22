@@ -4,13 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.collections.JobDocument;
 import com.hoatv.action.manager.collections.JobResultDocument;
-import com.hoatv.action.manager.dtos.*;
+import com.hoatv.action.manager.dtos.JobDefinitionDTO;
+import com.hoatv.action.manager.dtos.JobOverviewDTO;
+import com.hoatv.action.manager.dtos.JobState;
+import com.hoatv.action.manager.dtos.JobStatus;
 import com.hoatv.action.manager.repositories.JobDocumentRepository;
 import com.hoatv.action.manager.repositories.JobExecutionResultDocumentRepository;
 import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.fwk.common.services.TemplateEngineEnum;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
-import com.hoatv.monitor.mgmt.TimingMetricMonitor;
+import com.hoatv.fwk.common.ultilities.Pair;
+import com.hoatv.task.mgmt.services.TaskFactory;
+import com.hoatv.task.mgmt.services.TaskMgmtServiceV1;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +28,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Service
 public class JobManagerServiceImpl implements JobManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobManagerServiceImpl.class);
+    public static final int NUMBER_OF_JOB_THREADS = 20;
+    public static final String JOB_MANAGER_APPLICATION = "job-manager";
+    public static final int MAX_AWAIT_TERMINATION_MILLIS = 5000;
 
     private final ScriptEngineService scriptEngineService;
 
@@ -37,6 +46,8 @@ public class JobManagerServiceImpl implements JobManagerService {
     private final JobDocumentRepository jobDocumentRepository;
 
     private final JobExecutionResultDocumentRepository jobExecutionResultDocumentRepository;
+
+    private final TaskMgmtServiceV1 taskMgmtServiceV1;
 
     private static final Map<String, String> DEFAULT_CONFIGURATIONS = new HashMap<>();
 
@@ -52,6 +63,8 @@ public class JobManagerServiceImpl implements JobManagerService {
         this.scriptEngineService = scriptEngineService;
         this.jobDocumentRepository = jobDocumentRepository;
         this.jobExecutionResultDocumentRepository = jobExecutionResultDocumentRepository;
+        this.taskMgmtServiceV1 = TaskFactory.INSTANCE
+                .getTaskMgmtServiceV1(NUMBER_OF_JOB_THREADS, MAX_AWAIT_TERMINATION_MILLIS, JOB_MANAGER_APPLICATION);
         this.objectMapper = new ObjectMapper();
     }
 
@@ -80,16 +93,16 @@ public class JobManagerServiceImpl implements JobManagerService {
                     .build();
         });
     }
-
+/*
     @Override
     @TimingMetricMonitor
-    public JobResult executeJob(JobDefinitionDTO jobDefinitionDTO) {
-        return executeJob(jobDefinitionDTO, "");
+    public JobResult processJob(JobDefinitionDTO jobDefinitionDTO) {
+        return processJob(jobDefinitionDTO, "");
     }
 
     @Override
     @TimingMetricMonitor
-    public JobResult executeJob(JobDefinitionDTO jobDefinitionDTO, String actionId) {
+    public JobResult processJob(JobDefinitionDTO jobDefinitionDTO, String actionId) {
 
         long startedAt = DateTimeUtils.getCurrentEpochTimeInSecond();
         String jobName = jobDefinitionDTO.getJobName();
@@ -132,5 +145,80 @@ public class JobManagerServiceImpl implements JobManagerService {
         LOGGER.info("{} is created successfully.", jobResultDocument);
 
         return jobResult;
+    }*/
+
+    @Override
+    public void processBulkJobs(ActionExecutionContext actionExecutionContext) {
+        List<Pair<JobDocument, JobResultDocument>> jobDocumentTriplets =
+                actionExecutionContext.getJobDocumentPairs();
+        jobDocumentTriplets.forEach(pair -> {
+            JobDocument jobDocument = pair.getKey();
+            JobResultDocument jobResultDocument = pair.getValue();
+            processJob(jobDocument, jobResultDocument, actionExecutionContext.getOnCompletedJobCallback());
+        });
+    }
+
+    @Override
+    public void processJob(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> callback) {
+        if (jobDocument.isAsync()) {
+            processAsync(jobDocument, jobResultDocument, callback);
+            return;
+        }
+        processSync(jobDocument, jobResultDocument, callback);
+    }
+
+    private void processSync(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> callback) {
+
+        long startedAt = DateTimeUtils.getCurrentEpochTimeInSecond();
+        jobResultDocument.setStartedAt(startedAt);
+        jobResultDocument.setJobStatus(JobStatus.PROCESSING);
+        jobExecutionResultDocumentRepository.save(jobResultDocument);
+
+        String jobName = jobDocument.getJobName();
+        String templateName = String.format("%s-%s", jobName, jobDocument.getJobCategory());
+        String configurations = jobDocument.getConfigurations();
+        CheckedSupplier<Map<String, Object>> configurationToMapSupplier =
+                () -> objectMapper.readValue(configurations, Map.class);
+        Map<String, Object> configurationMap = configurationToMapSupplier.get();
+
+        String defaultTemplateEngine = DEFAULT_CONFIGURATIONS.get(TEMPLATE_ENGINE_NAME);
+        String templateEngineName = (String) configurationMap.getOrDefault(TEMPLATE_ENGINE_NAME, defaultTemplateEngine);
+        TemplateEngineEnum templateEngine = TemplateEngineEnum.getTemplateEngineFromName(templateEngineName);
+        String jobContent = templateEngine.process(templateName, jobDocument.getJobContent(), configurationMap);
+
+        Map<String, Object> jobExecutionContext = new HashMap<>(configurationMap);
+        jobExecutionContext.put("templateEngine", templateEngine);
+        JobResult jobResult = scriptEngineService.execute(jobContent, jobExecutionContext);
+        LOGGER.info("Async job: {} result: {}", jobName, jobResult);
+
+        JobStatus jobStatus = StringUtils.isNotEmpty(jobResult.getException()) ? JobStatus.FAILURE : JobStatus.SUCCESS;
+        long endedAt = DateTimeUtils.getCurrentEpochTimeInSecond();
+        jobResultDocument.setJobState(JobState.COMPLETED);
+        jobResultDocument.setJobStatus(jobStatus);
+        jobResultDocument.setEndedAt(endedAt);
+        jobResultDocument.setElapsedTime(endedAt - startedAt);
+        jobResultDocument.setFailureNotes(jobResult.getException());
+        jobExecutionResultDocumentRepository.save(jobResultDocument);
+        callback.accept(jobStatus);
+    }
+
+    private void processAsync(JobDocument jobDocument, JobResultDocument jobResultDocument,
+                              Consumer<JobStatus> callback) {
+        taskMgmtServiceV1.execute(() -> {
+            processSync(jobDocument, jobResultDocument, callback);
+
+        });
+    }
+
+    @Override
+    public Pair<JobDocument, JobResultDocument> initial(JobDefinitionDTO jobDefinitionDTO, String actionId) {
+        JobDocument jobDocument = jobDocumentRepository.save(JobDocument.fromJobDefinition(jobDefinitionDTO, actionId));
+        JobResultDocument.JobResultDocumentBuilder jobResultDocumentBuilder = JobResultDocument.builder()
+                .jobState(JobState.INITIAL)
+                .jobStatus(JobStatus.PENDING)
+                .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
+                .jobId(jobDocument.getHash());
+        JobResultDocument jobResultDocument = jobExecutionResultDocumentRepository.save(jobResultDocumentBuilder.build());
+        return Pair.of(jobDocument, jobResultDocument);
     }
 }

@@ -9,7 +9,9 @@ import java.util.Optional;
 
 public interface ActionManagerService {
 
-    String executeAction(ActionDefinitionDTO actionDefinition);
+//    String executeAction(ActionDefinitionDTO actionDefinition);
+
+    String processAction(ActionDefinitionDTO actionDefinition);
 
     Optional<ActionDefinitionDTO> getActionById(String hash);
 

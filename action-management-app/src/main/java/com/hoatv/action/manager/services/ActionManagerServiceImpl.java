@@ -5,16 +5,18 @@ import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.collections.ActionDocument;
 import com.hoatv.action.manager.collections.ActionStatisticsDocument;
 import com.hoatv.action.manager.collections.ActionStatisticsDocument.ActionStatisticsDocumentBuilder;
+import com.hoatv.action.manager.collections.JobDocument;
+import com.hoatv.action.manager.collections.JobResultDocument;
 import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.action.manager.dtos.ActionOverviewDTO;
 import com.hoatv.action.manager.dtos.JobDefinitionDTO;
+import com.hoatv.action.manager.dtos.JobStatus;
 import com.hoatv.action.manager.repositories.ActionDocumentRepository;
 import com.hoatv.action.manager.repositories.ActionStatisticsDocumentRepository;
+import com.hoatv.fwk.common.services.CheckedConsumer;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
-import com.hoatv.fwk.common.ultilities.ObjectUtils;
-import com.hoatv.monitor.mgmt.LoggingMonitor;
-import org.apache.commons.lang3.StringUtils;
+import com.hoatv.fwk.common.ultilities.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,55 @@ public class ActionManagerServiceImpl implements ActionManagerService {
 
         return getActionOverviewDTOS(actionDocuments);
     }
+    @Override
+    public Optional<ActionDefinitionDTO> getActionById(String hash) {
+        return actionDocumentRepository.findById(hash).map(ActionDocument::toActionDefinition);
+    }
+
+/*
+    @Override
+    @LoggingMonitor
+    public String executeAction(ActionDefinitionDTO actionDefinition) {
+        ActionDocument actionDocument = actionDocumentRepository.save(ActionDocument.fromActionDefinition(actionDefinition));
+
+        ActionStatisticsDocumentBuilder statisticsDocumentBuilder = ActionStatisticsDocument.builder();
+        statisticsDocumentBuilder.createdAt(DateTimeUtils.getCurrentEpochTimeInSecond());
+        statisticsDocumentBuilder.actionId(actionDocument.getHash());
+        statisticsDocumentBuilder.numberOfJobs(actionDefinition.getJobs().size());
+
+        String actionName = actionDefinition.getActionName();
+        LOGGER.info("A new action: {} is stored successfully.", actionName);
+
+        LOGGER.info("Processing the nested jobs inside {} action", actionName);
+        List<JobDefinitionDTO> definitionJobs = actionDefinition.getJobs();
+        CheckedFunction<JobDefinitionDTO, JobResult> checkedJobProcessingFunction =
+                jobDefinitionDTO -> jobManagerService.processJob(jobDefinitionDTO, actionDocument.getHash());
+
+        List<JobResult> jobResults = definitionJobs.stream()
+                .map(checkedJobProcessingFunction)
+                .toList();
+
+        Predicate<JobResult> failureJobPredicate = jobResult -> StringUtils.isNotEmpty(jobResult.getException());
+        long numberOfFailureJobs = jobResults.stream().filter(failureJobPredicate).count();
+
+        statisticsDocumentBuilder.numberOfFailureJobs(numberOfFailureJobs);
+        long numberOfCompletedJobs = jobResults.size() - numberOfFailureJobs;
+        statisticsDocumentBuilder.numberOfSuccessJobs(numberOfCompletedJobs);
+        statisticsDocumentBuilder.percentCompleted((double) jobResults.size() * 100 / jobResults.size());
+        LOGGER.info("All nested jobs inside {} action are processed", actionName);
+
+        ActionStatisticsDocument actionStatisticsDocument = statisticsDocumentBuilder.build();
+        actionStatisticsDocumentRepository.save(actionStatisticsDocument);
+        LOGGER.info("Statistics for action {} are saved successfully", actionName);
+        return actionDocument.getHash();
+    }*/
+
+    @Override
+    public String processAction(ActionDefinitionDTO actionDefinition) {
+        ActionExecutionContext actionExecutionContext = initial(actionDefinition);
+        jobManagerService.processBulkJobs(actionExecutionContext);
+        return actionExecutionContext.getActionDocument().getHash();
+    }
 
     private Page<ActionOverviewDTO> getActionOverviewDTOS(Page<ActionDocument> actionDocuments) {
         Set<String> actionIds = actionDocuments.stream().map(ActionDocument::getHash).collect(Collectors.toSet());
@@ -84,45 +134,54 @@ public class ActionManagerServiceImpl implements ActionManagerService {
         });
     }
 
-    @Override
-    public Optional<ActionDefinitionDTO> getActionById(String hash) {
-        return actionDocumentRepository.findById(hash).map(ActionDocument::toActionDefinition);
-    }
-
-    @Override
-    @LoggingMonitor
-    public String executeAction(ActionDefinitionDTO actionDefinition) {
+    private ActionExecutionContext initial(ActionDefinitionDTO actionDefinition) {
         ActionDocument actionDocument = actionDocumentRepository.save(ActionDocument.fromActionDefinition(actionDefinition));
+        LOGGER.info("ActionExecutionContext: actionDocument - {}", actionDocument);
 
         ActionStatisticsDocumentBuilder statisticsDocumentBuilder = ActionStatisticsDocument.builder();
         statisticsDocumentBuilder.createdAt(DateTimeUtils.getCurrentEpochTimeInSecond());
         statisticsDocumentBuilder.actionId(actionDocument.getHash());
         statisticsDocumentBuilder.numberOfJobs(actionDefinition.getJobs().size());
+        ActionStatisticsDocument actionStatisticsDocument =
+                actionStatisticsDocumentRepository.save(statisticsDocumentBuilder.build());
+        LOGGER.info("ActionExecutionContext: actionStatisticsDocument - {}", actionStatisticsDocument);
 
-        String actionName = actionDefinition.getActionName();
-        LOGGER.info("A new action: {} is stored successfully.", actionName);
-
-        LOGGER.info("Processing the nested jobs inside {} action", actionName);
         List<JobDefinitionDTO> definitionJobs = actionDefinition.getJobs();
-        CheckedFunction<JobDefinitionDTO, JobResult> checkedJobProcessingFunction =
-                jobDefinitionDTO -> jobManagerService.executeJob(jobDefinitionDTO, actionDocument.getHash());
-
-        List<JobResult> jobResults = definitionJobs.stream()
-                .map(checkedJobProcessingFunction)
+        CheckedFunction<JobDefinitionDTO, Pair<JobDocument, JobResultDocument>> initialJobFunction =
+                jobDefinitionDTO -> jobManagerService.initial(jobDefinitionDTO, actionDocument.getHash());
+        List<Pair<JobDocument, JobResultDocument>> jobDocumentPairs = definitionJobs.stream()
+                .map(initialJobFunction)
                 .toList();
+        LOGGER.info("ActionExecutionContext: jobDocumentPairs - {}", jobDocumentPairs);
 
-        Predicate<JobResult> failureJobPredicate = jobResult -> StringUtils.isNotEmpty(jobResult.getException());
-        long numberOfFailureJobs = jobResults.stream().filter(failureJobPredicate).count();
+        CheckedConsumer<JobStatus> onCompletedJobCallback = onCompletedJobCallback(actionStatisticsDocument);
 
-        statisticsDocumentBuilder.numberOfFailureJobs(numberOfFailureJobs);
-        long numberOfCompletedJobs = jobResults.size() - numberOfFailureJobs;
-        statisticsDocumentBuilder.numberOfSuccessJobs(numberOfCompletedJobs);
-        statisticsDocumentBuilder.percentCompleted((double) jobResults.size() * 100 / jobResults.size());
-        LOGGER.info("All nested jobs inside {} action are processed", actionName);
+        return ActionExecutionContext.builder()
+                .actionDocument(actionDocument)
+                .actionStatisticsDocument(actionStatisticsDocument)
+                .jobDocumentPairs(jobDocumentPairs)
+                .onCompletedJobCallback(onCompletedJobCallback)
+                .build();
+    }
 
-        ActionStatisticsDocument actionStatisticsDocument = statisticsDocumentBuilder.build();
-        actionStatisticsDocumentRepository.save(actionStatisticsDocument);
-        LOGGER.info("Statistics for action {} are saved successfully", actionName);
-        return actionDocument.getHash();
+    private CheckedConsumer<JobStatus> onCompletedJobCallback(ActionStatisticsDocument actionStatisticsDocument) {
+        return jobStatus -> {
+
+            switch (jobStatus) {
+                case SUCCESS:
+                    long numberOfSuccessJobs = actionStatisticsDocument.getNumberOfSuccessJobs();
+                    actionStatisticsDocument.setNumberOfSuccessJobs(numberOfSuccessJobs + 1);
+                    break;
+                case FAILURE:
+                default:
+                    long numberOfFailureJobs = actionStatisticsDocument.getNumberOfFailureJobs();
+                    actionStatisticsDocument.setNumberOfFailureJobs(numberOfFailureJobs + 1);
+                    break;
+            }
+            long currentProcessedJobs =
+                    actionStatisticsDocument.getNumberOfFailureJobs() + actionStatisticsDocument.getNumberOfSuccessJobs();
+            actionStatisticsDocument.setPercentCompleted((double) currentProcessedJobs * 100 / actionStatisticsDocument.getNumberOfJobs());
+            actionStatisticsDocumentRepository.save(actionStatisticsDocument);
+        };
     }
 }

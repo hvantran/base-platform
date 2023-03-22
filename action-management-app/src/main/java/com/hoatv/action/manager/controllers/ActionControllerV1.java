@@ -34,7 +34,7 @@ public class ActionControllerV1 {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> executeAction(@RequestBody @Valid ActionDefinitionDTO actionDefinition) {
-        String actionId = actionManagerService.executeAction(actionDefinition);
+        String actionId = actionManagerService.processAction(actionDefinition);
         return ResponseEntity.ok(Map.of("actionId", actionId));
     }
 
