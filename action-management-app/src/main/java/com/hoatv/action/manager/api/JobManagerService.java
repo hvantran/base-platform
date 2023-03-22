@@ -13,13 +13,12 @@ import org.springframework.data.domain.PageRequest;
 import java.util.function.Consumer;
 
 public interface JobManagerService {
-    /*
-    JobResult processJob(JobDefinitionDTO jobDefinitionDTO);
-    JobResult processJob(JobDefinitionDTO jobDefinitionDTO, String actionId);*/
 
     void processBulkJobs(ActionExecutionContext actionExecutionContext);
     void processJob(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> callback);
 
     Pair<JobDocument, JobResultDocument> initial(JobDefinitionDTO jobDefinitionDTO, String actionId);
     Page<JobOverviewDTO> getJobsFromAction(String actionId, PageRequest pageRequest);
+
+    void deleteJobsByActionId(String actionId);
 }

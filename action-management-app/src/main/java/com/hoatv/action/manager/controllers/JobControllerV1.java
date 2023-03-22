@@ -3,6 +3,7 @@ package com.hoatv.action.manager.controllers;
 
 import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.dtos.JobOverviewDTO;
+import com.hoatv.monitor.mgmt.LoggingMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ public class JobControllerV1 {
         this.jobManagerService = jobManagerService;
     }
 
+    @LoggingMonitor
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getJobsFromAction(@RequestParam("actionId") String actionId,
                                                @RequestParam("pageIndex") @Min(0) int pageIndex,

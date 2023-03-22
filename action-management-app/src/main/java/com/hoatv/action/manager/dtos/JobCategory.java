@@ -1,6 +1,6 @@
 package com.hoatv.action.manager.dtos;
 
 public enum JobCategory {
-    SYSTEM,
-    NORMAL
+    CPU,
+    IO
 }

@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface ActionManagerService {
 
-//    String executeAction(ActionDefinitionDTO actionDefinition);
-
     String processAction(ActionDefinitionDTO actionDefinition);
 
     Optional<ActionDefinitionDTO> getActionById(String hash);
@@ -18,4 +16,6 @@ public interface ActionManagerService {
     Page<ActionOverviewDTO> getAllActionsWithPaging(String search, Pageable pageable);
 
     Page<ActionOverviewDTO> getAllActionsWithPaging(Pageable pageable);
+
+    void deleteAction(String hash);
 }

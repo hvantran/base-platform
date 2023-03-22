@@ -17,6 +17,7 @@ import com.hoatv.fwk.common.services.CheckedConsumer;
 import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
 import com.hoatv.fwk.common.ultilities.Pair;
+import com.hoatv.monitor.mgmt.LoggingMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,65 +52,38 @@ public class ActionManagerServiceImpl implements ActionManagerService {
     }
 
     @Override
+    @LoggingMonitor
     public Page<ActionOverviewDTO> getAllActionsWithPaging(String search, Pageable pageable) {
         Page<ActionDocument> actionDocuments = actionDocumentRepository.findActionByName(search, pageable);
         return getActionOverviewDTOS(actionDocuments);
     }
 
     @Override
+    @LoggingMonitor
     public Page<ActionOverviewDTO> getAllActionsWithPaging(Pageable pageable) {
         Page<ActionDocument> actionDocuments = actionDocumentRepository.findAll(pageable);
 
         return getActionOverviewDTOS(actionDocuments);
     }
     @Override
+    @LoggingMonitor
     public Optional<ActionDefinitionDTO> getActionById(String hash) {
         return actionDocumentRepository.findById(hash).map(ActionDocument::toActionDefinition);
     }
 
-/*
     @Override
     @LoggingMonitor
-    public String executeAction(ActionDefinitionDTO actionDefinition) {
-        ActionDocument actionDocument = actionDocumentRepository.save(ActionDocument.fromActionDefinition(actionDefinition));
-
-        ActionStatisticsDocumentBuilder statisticsDocumentBuilder = ActionStatisticsDocument.builder();
-        statisticsDocumentBuilder.createdAt(DateTimeUtils.getCurrentEpochTimeInSecond());
-        statisticsDocumentBuilder.actionId(actionDocument.getHash());
-        statisticsDocumentBuilder.numberOfJobs(actionDefinition.getJobs().size());
-
-        String actionName = actionDefinition.getActionName();
-        LOGGER.info("A new action: {} is stored successfully.", actionName);
-
-        LOGGER.info("Processing the nested jobs inside {} action", actionName);
-        List<JobDefinitionDTO> definitionJobs = actionDefinition.getJobs();
-        CheckedFunction<JobDefinitionDTO, JobResult> checkedJobProcessingFunction =
-                jobDefinitionDTO -> jobManagerService.processJob(jobDefinitionDTO, actionDocument.getHash());
-
-        List<JobResult> jobResults = definitionJobs.stream()
-                .map(checkedJobProcessingFunction)
-                .toList();
-
-        Predicate<JobResult> failureJobPredicate = jobResult -> StringUtils.isNotEmpty(jobResult.getException());
-        long numberOfFailureJobs = jobResults.stream().filter(failureJobPredicate).count();
-
-        statisticsDocumentBuilder.numberOfFailureJobs(numberOfFailureJobs);
-        long numberOfCompletedJobs = jobResults.size() - numberOfFailureJobs;
-        statisticsDocumentBuilder.numberOfSuccessJobs(numberOfCompletedJobs);
-        statisticsDocumentBuilder.percentCompleted((double) jobResults.size() * 100 / jobResults.size());
-        LOGGER.info("All nested jobs inside {} action are processed", actionName);
-
-        ActionStatisticsDocument actionStatisticsDocument = statisticsDocumentBuilder.build();
-        actionStatisticsDocumentRepository.save(actionStatisticsDocument);
-        LOGGER.info("Statistics for action {} are saved successfully", actionName);
-        return actionDocument.getHash();
-    }*/
-
-    @Override
     public String processAction(ActionDefinitionDTO actionDefinition) {
         ActionExecutionContext actionExecutionContext = initial(actionDefinition);
         jobManagerService.processBulkJobs(actionExecutionContext);
         return actionExecutionContext.getActionDocument().getHash();
+    }
+
+    @Override
+    @LoggingMonitor
+    public void deleteAction(String hash) {
+        actionDocumentRepository.deleteById(hash);
+        jobManagerService.deleteJobsByActionId(hash);
     }
 
     private Page<ActionOverviewDTO> getActionOverviewDTOS(Page<ActionDocument> actionDocuments) {

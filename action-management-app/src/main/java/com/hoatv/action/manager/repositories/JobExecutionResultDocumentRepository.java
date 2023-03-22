@@ -10,4 +10,6 @@ import java.util.List;
 public interface JobExecutionResultDocumentRepository extends MongoRepository<JobResultDocument, String> {
 
     List<JobResultDocument> findByJobIdIn(List<String> jobIds);
+
+    void deleteByActionId(String actionId);
 }

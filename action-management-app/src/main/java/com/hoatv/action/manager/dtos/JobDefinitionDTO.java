@@ -27,7 +27,7 @@ public class JobDefinitionDTO {
     @Builder.Default
     @JsonProperty("category")
     @ValueOfEnum(JobCategory.class)
-    private String jobCategory = JobCategory.NORMAL.name();
+    private String jobCategory = JobCategory.IO.name();
 
     @Setter
     @JsonProperty("content")

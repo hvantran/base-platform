@@ -30,6 +30,7 @@ public class JobResultDocument {
     private JobStatus jobStatus;
     private String failureNotes;
     private String jobId;
+    private String actionId;
     private long createdAt;
     private long endedAt;
     private long elapsedTime;
