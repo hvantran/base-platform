@@ -1,6 +1,6 @@
 
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FavoriteIcon from '@mui/icons-material/GradeOutlined';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { Stack } from '@mui/material';
@@ -15,6 +15,7 @@ import {
   PageEntityMetadata,
   PagingOptionMetadata,
   PagingResult,
+  RestClient,
   SnackbarAlertMetadata,
   SnackbarMessage,
   SpeedDialActionMetadata,
@@ -37,6 +38,7 @@ export default function ActionSummary() {
   const [openError, setOpenError] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
+  const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href='#'>
@@ -91,18 +93,60 @@ export default function ActionSummary() {
       id: 'actions',
       label: '',
       align: 'right',
-      actions: [{
-        actionIcon: <ReadMoreIcon />,
-        actionLabel: "Action details",
-        actionName: "gotoActionDetail",
-        onClick: (row: ActionOverview) => {
-          return () => navigate(`/actions/${row.hash}`)
-        }
-      }]
+      actions: [
+        {
+          actionIcon: <ReadMoreIcon />,
+          actionLabel: "Action details",
+          actionName: "gotoActionDetail",
+          onClick: (row: ActionOverview) => {
+            return () => navigate(`/actions/${row.hash}`)
+          }
+        },
+        {
+          actionIcon: <DeleteIcon />,
+          properties: {sx:{color: red[800]}},
+          actionLabel: "Delete action",
+          actionName: "deleteAction",
+          onClick: (row: ActionOverview) => {
+            return () => deleteAction(row.hash);
+          }
+        },
+        {
+          actionIcon: <FavoriteIcon />,
+          properties: {sx:{color: yellow[800]}},
+          actionLabel: "Favorite action",
+          actionName: "favoriteAction",
+          onClick: (row: ActionOverview) => {
+            return () => favoriteAction(row.hash);
+          }
+        },
+      ]
     }
   ];
 
-  const fetchActionsAsync = async (pageIndex: number, pageSize: number) => {
+  const favoriteAction =async (actionId: string) => {
+  }
+
+  const deleteAction =async (actionId: string) => {
+
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+    const targetURL = `${ACTION_MANAGER_API_URL}/${actionId}`;
+    await restClient.sendRequest(requestOptions, targetURL, async () => {
+      return { 'message': 'Delete action successfully!!', key: new Date().getTime() } as SnackbarMessage;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
+
+    loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+  }
+
+  const loadActionsAsync = async (pageIndex: number, pageSize: number) => {
     const requestOptions = {
       method: "GET",
       headers: {
@@ -110,26 +154,19 @@ export default function ActionSummary() {
       }
     }
 
-    try {
-      setCircleProcessOpen(true);
-      let response = await fetch(`${ACTION_MANAGER_API_URL}?pageIndex=${pageIndex}&pageSize=${pageSize}`, requestOptions);
+    const targetURL = `${ACTION_MANAGER_API_URL}?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+    await restClient.sendRequest(requestOptions, targetURL, async (response) => {
       let actionPagingResult = await response.json() as PagingResult;
       setPagingResult(actionPagingResult);
-
-      let successMessage = { 'message': 'Fetch actions successfully!!', key: new Date().getTime() } as SnackbarMessage;
-      setMessageInfo(successMessage);
-      setOpenSuccess(true);
-    } catch(error: any) {
-      let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
-      setMessageInfo(messageInfo);
-      setOpenError(true);
-    } finally {
-      setCircleProcessOpen(false);
-    }
+      return { 'message': 'Load actions successfully!!', key: new Date().getTime() } as SnackbarMessage;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
   }
 
   React.useEffect(() => {
-    fetchActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+    loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
   }, [])
 
   const actions: Array<SpeedDialActionMetadata> = [
@@ -142,26 +179,6 @@ export default function ActionSummary() {
           }
         }
       }
-    },
-    {
-      actionIcon: <DeleteIcon />, actionName: 'delete', actionLabel: 'Delete Selected Actions', properties: {
-        sx: {
-          bgcolor: red[500],
-          '&:hover': {
-            bgcolor: red[800],
-          }
-        }
-      }
-    },
-    {
-      actionIcon: <FavoriteIcon />, actionName: 'favorite', actionLabel: 'Favorite', properties: {
-        sx: {
-          bgcolor: yellow[500],
-          '&:hover': {
-            bgcolor: yellow[800],
-          }
-        }
-      }
     }
   ];
 
@@ -171,7 +188,7 @@ export default function ActionSummary() {
     pageSize: 10,
     rowsPerPageOptions: [5, 10, 20],
     onPageChange: (pageIndex: number, pageSize: number) => {
-      fetchActionsAsync(pageIndex, pageSize);
+      loadActionsAsync(pageIndex, pageSize);
     }
   }
 

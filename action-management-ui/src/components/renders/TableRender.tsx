@@ -68,7 +68,8 @@ export default function TableRender(props: TableMetadata) {
                                                                     onClick={action.onClick(row)}
                                                                     color="primary"
                                                                     aria-label="Next"
-                                                                    component="label" >
+                                                                    component="label" 
+                                                                    {...action.properties}>
                                                                     <Tooltip title={action.actionLabel}>
                                                                         {action.actionIcon}
                                                                     </Tooltip>

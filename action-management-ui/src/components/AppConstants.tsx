@@ -1,6 +1,36 @@
+import { SnackbarMessage } from "./GenericConstants"
 
+export const JOB_CATEGORY_VALUES = ["IO", "CPU"]
 export const ACTION_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/actions'
 export const JOB_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/jobs'
+export const DEFAULT_JOB_CONTENT: string = `let Collections = Java.type('java.util.Collections');
+let List = Java.type('java.util.List');
+let ArrayList = Java.type('java.util.ArrayList');
+let Map = Java.type('java.util.Map');
+let HashMap = Java.type('java.util.HashMap');
+let HttpResponse = Java.type('java.net.http.HttpResponse');
+let Configuration = Java.type('com.jayway.jsonpath.Configuration');
+let DocumentContext = Java.type('com.jayway.jsonpath.DocumentContext');
+let JsonPath = Java.type('com.jayway.jsonpath.JsonPath');
+let String = Java.type('java.lang.String');
+
+let HttpClient = Java.type('java.net.http.HttpClient');
+let Pair = Java.type('com.hoatv.fwk.common.ultilities.Pair');
+let Triplet = Java.type('com.hoatv.fwk.common.ultilities.Triplet');
+let CheckedFunction = Java.type('com.hoatv.fwk.common.services.CheckedFunction');
+let CheckSupplier = Java.type('com.hoatv.fwk.common.services.CheckedSupplier');
+let CheckConsumer = Java.type('com.hoatv.fwk.common.services.CheckedConsumer');
+
+let DateTimeUtils = Java.type('com.hoatv.fwk.common.ultilities.DateTimeUtils');
+let ObjectUtils = Java.type('com.hoatv.fwk.common.ultilities.ObjectUtils');
+let JobResult = Java.type('com.hoatv.action.manager.services.JobResult');
+let RequestParams = Java.type('com.hoatv.fwk.common.services.HttpClientService.RequestParams');
+let HttpMethod = Java.type('com.hoatv.fwk.common.services.HttpClientService.HttpMethod');
+let HttpClientService = Java.type('com.hoatv.fwk.common.services.HttpClientService');
+
+function execute() {
+}
+`
 
 
 export interface JobDefinition {

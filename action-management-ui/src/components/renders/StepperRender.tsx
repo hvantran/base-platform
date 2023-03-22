@@ -2,7 +2,7 @@
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBeforeRounded';
 import NavigateNextIcon from '@mui/icons-material/NavigateNextRounded';
-import { IconButton, Stack, Tooltip } from '@mui/material';
+import { Grid, IconButton, Stack, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -54,46 +54,50 @@ export default function StepperRender(props: any) {
                         );
                     })}
                 </Stepper>
-                    <React.Fragment>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2, px: "100px" }}>
-                            <IconButton
-                                disabled={activeStep === 0}
-                                sx={{ mr: 1 }}
-                                color="inherit"
-                                onClick={handleBack}
-                                aria-label="Next"
-                                component="label">
-                                <Tooltip title="Back">
-                                    <NavigateBeforeIcon />
-                                </Tooltip>
-                            </IconButton>
-                            <Box sx={{ flex: '1 1 auto' }} />
-                            {
-                                activeStep !== initialStepMetadata.length - 1 ?
-                                    (<IconButton onClick={handleNext} color="primary" aria-label="Next" component="label">
-                                        <Tooltip title="Next">
-                                            <NavigateNextIcon/>
-                                        </Tooltip>
-                                    </IconButton>) 
-                                    :
-                                    (<IconButton onClick={handleFinish} color="primary" aria-label="Next" component="label">
-                                        <Tooltip title="Finish">
-                                            <DoneAllIcon />
-                                        </Tooltip>
-                                    </IconButton>)
-                            }
-                        </Box>
+                <React.Fragment>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2, px: "100px" }}>
+                        <IconButton
+                            disabled={activeStep === 0}
+                            sx={{ mr: 1 }}
+                            color="inherit"
+                            onClick={handleBack}
+                            aria-label="Next"
+                            component="label">
+                            <Tooltip title="Back">
+                                <NavigateBeforeIcon />
+                            </Tooltip>
+                        </IconButton>
+                        <Box sx={{ flex: '1 1 auto' }} />
+                        {
+                            activeStep !== initialStepMetadata.length - 1 ?
+                                (<IconButton onClick={handleNext} color="primary" aria-label="Next" component="label">
+                                    <Tooltip title="Next">
+                                        <NavigateNextIcon />
+                                    </Tooltip>
+                                </IconButton>)
+                                :
+                                (<IconButton onClick={handleFinish} color="primary" aria-label="Next" component="label">
+                                    <Tooltip title="Finish">
+                                        <DoneAllIcon />
+                                    </Tooltip>
+                                </IconButton>)
+                        }
+                    </Box>
 
-                        {/* Render the Stepper properties */}
-                        <Box sx={{ px: '100px' }}>
+                    {/* Render the Stepper properties */}
+                    <Box sx={{ px: '100px' }}>
+                        <Grid container spacing={2} sx={{ py: 1 }}>
                             {initialStepMetadata
                                 .filter((_, index) => index === activeStep)
                                 .flatMap((stepDefinition) => stepDefinition.properties)
                                 .flatMap((propertyMeta) => {
-                                    return (<PropertyRender key={propertyMeta.propName} property={propertyMeta} />)
+                                    return (
+                                        <PropertyRender key={propertyMeta.propName} property={propertyMeta} />
+                                    )
                                 })}
-                        </Box>
-                    </React.Fragment>
+                        </Grid>
+                    </Box>
+                </React.Fragment>
             </Stack>
         </Box >
     )

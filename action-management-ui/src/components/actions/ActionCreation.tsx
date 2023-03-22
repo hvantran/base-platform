@@ -2,16 +2,21 @@ import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import AddTaskTwoToneIcon from '@mui/icons-material/AddTaskTwoTone';
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
-import { Alert, Snackbar, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { blue, green } from '@mui/material/colors';
 
 import LinkBreadcrumd from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
+import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES } from '../AppConstants';
+import Breadcrumbs from '../common/Breadcrumbs';
+import ProcessTracking from '../common/ProcessTracking';
+import SnackbarAlert from '../common/SnackbarAlert';
 import {
   PageEntityMetadata,
   PropertyMetadata,
   PropType,
+  RestClient,
   SnackbarAlertMetadata,
   SnackbarMessage,
   SpeedDialActionMetadata,
@@ -19,16 +24,17 @@ import {
   WithLink
 } from '../GenericConstants';
 import PageEntityRender from '../renders/PageEntityRender';
-import Breadcrumbs from '../common/Breadcrumbs';
-import ProcessTracking from '../common/ProcessTracking';
-import { ActionDefinition, ACTION_MANAGER_API_URL, JobDefinition } from '../AppConstants';
-import SnackbarAlert from '../common/SnackbarAlert';
 
 
 export default function ActionCreation() {
 
   let initialStepsV3: Array<StepMetadata> = []
+  const [openError, setOpenError] = React.useState(false);
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
+  const [processTracking, setCircleProcessOpen] = React.useState(false);
   const [stepMetadatas, setStepMetadatas] = React.useState(initialStepsV3);
+  const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
   let initialTemplateStep: StepMetadata = {
     name: "job",
@@ -40,6 +46,9 @@ export default function ActionCreation() {
         propLabel: 'Name',
         isRequired: true,
         propValue: '',
+        layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 2},
+        valueElementProperties: {xs: 10},
         propDescription: 'This is name of job',
         propType: PropType.InputText,
         textFieldMeta: {
@@ -59,7 +68,11 @@ export default function ActionCreation() {
       {
         propName: 'isAsync',
         propLabel: 'Asynchronous',
-        propValue: true,
+        propValue: '',
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 4},
+        valueElementProperties: {xs: 8},
+        propDefaultValue: true,
         propType: PropType.Switcher,
         switcherFieldMeta: {
           onChangeEvent: function (event, propValue) {
@@ -71,10 +84,14 @@ export default function ActionCreation() {
       {
         propName: 'jobCategory',
         propLabel: 'Category',
-        propValue: 'NORMAL',
+        propValue: '',
+        propDefaultValue: JOB_CATEGORY_VALUES[0],
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 1.5},
+        valueElementProperties: {xs: 10.5},
         propType: PropType.Selection,
         selectionMeta: {
-          selections: ["SYSTEM", "NORMAL"],
+          selections: JOB_CATEGORY_VALUES,
           onChangeEvent: function (event) {
             let propValue = event.target.value;
             let propName = event.target.name;
@@ -85,7 +102,10 @@ export default function ActionCreation() {
       {
         propName: 'jobDescription',
         propLabel: 'Description',
-        propValue: true,
+        propValue: '',
+        layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 2},
+        valueElementProperties: {xs: 10},
         propType: PropType.Textarea,
         textareaFieldMeta: {
           onChangeEvent: function (event) {
@@ -100,6 +120,10 @@ export default function ActionCreation() {
         propLabel: 'Configurations',
         isRequired: true,
         propValue: '',
+        propDefaultValue: '{}',
+        layoutProperties: {xs: 12},
+        labelElementProperties: {xs: 2},
+        valueElementProperties: {xs: 10},
         propType: PropType.CodeEditor,
         codeEditorMeta:
         {
@@ -119,6 +143,10 @@ export default function ActionCreation() {
         isRequired: true,
         propValue: '',
         propType: PropType.CodeEditor,
+        layoutProperties: {xs: 12},
+        labelElementProperties: {xs: 2},
+        valueElementProperties: {xs: 10},
+        propDefaultValue: DEFAULT_JOB_CONTENT,
         codeEditorMeta:
         {
           codeLanguges: [javascript({ jsx: true })],
@@ -132,7 +160,8 @@ export default function ActionCreation() {
       }
     ]
   }
-  let initialStepsV2: Array<StepMetadata> = [
+
+  let initialStepMetadatas: Array<StepMetadata> = [
     {
       name: "action",
       label: 'Action',
@@ -143,6 +172,9 @@ export default function ActionCreation() {
           propLabel: 'Name',
           propValue: '',
           isRequired: true,
+          layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           propDescription: 'This is name of action',
           propType: PropType.InputText,
           textFieldMeta: {
@@ -162,6 +194,9 @@ export default function ActionCreation() {
           propName: 'actionDescription',
           propLabel: 'Description',
           propValue: '',
+          layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           propType: PropType.Textarea,
           textareaFieldMeta: {
             onChangeEvent: function (event) {
@@ -175,6 +210,10 @@ export default function ActionCreation() {
           propName: 'actionConfigurations',
           propLabel: 'Configurations',
           propValue: '',
+          propDefaultValue: '{}',
+          layoutProperties: {xs: 12},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           isRequired: true,
           propType: PropType.CodeEditor,
           codeEditorMeta:
@@ -202,6 +241,9 @@ export default function ActionCreation() {
           isRequired: true,
           propDescription: 'This is name of job',
           propType: PropType.InputText,
+          layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           textFieldMeta: {
             onChangeEvent: function (event) {
               let propValue = event.target.value;
@@ -217,7 +259,11 @@ export default function ActionCreation() {
         {
           propName: 'isAsync',
           propLabel: 'Asynchronous',
-          propValue: true,
+          propValue: '',
+          layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 4},
+          valueElementProperties: {xs: 8},
+          propDefaultValue: true,
           propType: PropType.Switcher,
           switcherFieldMeta: {
             onChangeEvent: function (event, propValue) {
@@ -229,10 +275,14 @@ export default function ActionCreation() {
         {
           propName: 'jobCategory',
           propLabel: 'Category',
-          propValue: 'NORMAL',
+          propValue: '',
+          propDefaultValue: JOB_CATEGORY_VALUES[0],
+          layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 1.5},
+          valueElementProperties: {xs: 10.5},
           propType: PropType.Selection,
           selectionMeta: {
-            selections: ["SYSTEM", "NORMAL"],
+            selections: JOB_CATEGORY_VALUES,
             onChangeEvent: function (event) {
               let propValue = event.target.value;
               let propName = event.target.name;
@@ -244,6 +294,9 @@ export default function ActionCreation() {
           propName: 'jobDescription',
           propLabel: 'Description',
           propValue: '',
+          layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           propType: PropType.Textarea,
           textareaFieldMeta: {
             onChangeEvent: function (event) {
@@ -258,6 +311,10 @@ export default function ActionCreation() {
           propLabel: 'Configurations',
           isRequired: true,
           propValue: '',
+          propDefaultValue: '{}',
+          layoutProperties: {xs: 12},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           propType: PropType.CodeEditor,
           codeEditorMeta:
           {
@@ -274,8 +331,12 @@ export default function ActionCreation() {
         {
           propName: 'jobContent',
           propLabel: 'Job Content',
+          layoutProperties: {xs: 12},
+          labelElementProperties: {xs: 2},
+          valueElementProperties: {xs: 10},
           isRequired: true,
           propValue: '',
+          propDefaultValue: DEFAULT_JOB_CONTENT,
           propType: PropType.CodeEditor,
           codeEditorMeta:
           {
@@ -295,47 +356,29 @@ export default function ActionCreation() {
       label: 'Review',
       description: 'This step is used to review all steps',
       properties: [],
-      onFinishStepClick: (currentStepMetadata: Array<StepMetadata>) => {
-
+      onFinishStepClick: async (currentStepMetadata: Array<StepMetadata>) => {
         let action: ActionDefinition = getActionFromStepper(currentStepMetadata);
+
         const requestOptions = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(action)
         };
 
-        setCircleProcessOpen(true);
-        fetch(ACTION_MANAGER_API_URL, requestOptions)
-          .then(response => {
-            if (response.ok) {
-              return response.json().then(text => {
-                let message = `Action ${text['actionId']} is created`;
-                return { 'message': message, key: new Date().getTime() } as SnackbarMessage;
-              })
-            }
-            return response.text().then(text => {
-              let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
-              throw new Error(JSON.stringify(messageInfo));
-            });
-          })
-          .then(messageInfo => {
-            setMessageInfo((prev) => messageInfo);
-            setOpenSuccess(true);
-          })
-          .catch((error: Error) => {
-            let messageInfo = JSON.parse(error.message) as SnackbarMessage;
-            setMessageInfo((prev) => messageInfo);
-            setOpenError(true);
-          })
-          .finally(() => {
-            setCircleProcessOpen(false);
-          });
+        const targetURL = `${ACTION_MANAGER_API_URL}`;
+        await restClient.sendRequest(requestOptions, targetURL, async (response) => {
+          let responseJSON = await response.json();
+          let message = `Action ${responseJSON['actionId']} is created`;
+          return { 'message': message, key: new Date().getTime() } as SnackbarMessage;
+        }, async (response: Response) => {
+          return { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
+        });
       }
     }
   ]
 
   React.useEffect(() => {
-    setStepMetadatas(initialStepsV2);
+    setStepMetadatas(initialStepMetadatas);
   }, [])
 
   const getActionFromStepper = (currentStepMetadata: Array<StepMetadata>) => {
@@ -433,11 +476,6 @@ export default function ActionCreation() {
     <LinkBreadcrumd underline="hover" key="1" color="inherit" href="/actions">Actions</LinkBreadcrumd>,
     <Typography key="3" color="text.primary">new</Typography>
   ]
-
-  const [openError, setOpenError] = React.useState(false);
-  const [openSuccess, setOpenSuccess] = React.useState(false);
-  const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
-  const [processTracking, setCircleProcessOpen] = React.useState(false);
 
   let snackbarAlertMetadata: SnackbarAlertMetadata = {
     openError,

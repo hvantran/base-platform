@@ -8,6 +8,48 @@ export function WithLink(to: any, children: any) {
     return <Link to={to}>{children}</Link>
 };
 
+export class RestClient {
+    setCircleProcessOpen:(value: boolean) => void
+    setMessageInfo:(message: SnackbarMessage) => void
+    setOpenError:(value: boolean) => void
+    setOpenSuccess:(value: boolean) => void
+
+    constructor(setCircleProcessOpen:(value: boolean) => void,
+    setMessageInfo:(message: SnackbarMessage) => void,
+    setOpenError:(value: boolean) => void,
+    setOpenSuccess:(value: boolean) => void
+    )  {
+        this.setCircleProcessOpen = setCircleProcessOpen;
+        this.setMessageInfo = setMessageInfo;
+        this.setOpenError = setOpenError;
+        this.setOpenSuccess = setOpenSuccess;
+    }
+
+    async sendRequest(requestOptions: any, targetURL: string, successCallback: (response: Response) => Promise<SnackbarMessage>, errorCallback: (response: Response) => Promise<SnackbarMessage>) {
+
+          try {
+            this.setCircleProcessOpen(true);
+            let response = await fetch(targetURL, requestOptions);
+            if (!response.ok) {
+              let errorSnackbarMessage = errorCallback(response);
+              this.setMessageInfo(await errorSnackbarMessage);
+              this.setOpenError(true);
+              return;
+            }
+      
+            let successSnackbarMessage = successCallback(response);
+            this.setMessageInfo(await successSnackbarMessage);
+            this.setOpenSuccess(true);
+          } catch (error: any) {
+            let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
+            this.setMessageInfo(messageInfo);
+            this.setOpenError(true);
+          } finally {
+            this.setCircleProcessOpen(false);
+          }
+    }
+}
+
 export interface SnackbarAlertMetadata {
     openError: boolean
     openSuccess: boolean
@@ -53,10 +95,14 @@ export interface SelectionMetadata {
 export interface PropertyMetadata {
     propName: string
     propValue: any
+    propDefaultValue?: any
     propType: PropType
     propLabel?: string
     isRequired?: boolean
     propDescription?: string
+    layoutProperties?: any
+    labelElementProperties?: any
+    valueElementProperties?: any
 
     codeEditorMeta?: CodeEditorMetadata
     selectionMeta?: SelectionMetadata

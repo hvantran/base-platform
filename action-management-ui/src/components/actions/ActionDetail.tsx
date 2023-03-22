@@ -8,10 +8,10 @@ import Breadcrumbs from '../common/Breadcrumbs';
 import { useParams } from 'react-router-dom';
 import { ActionDetails, ACTION_MANAGER_API_URL } from '../AppConstants';
 import ProcessTracking from '../common/ProcessTracking';
-import { PageEntityMetadata, PropType, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
+import SnackbarAlert from '../common/SnackbarAlert';
+import { PageEntityMetadata, PropType, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
 import PageEntityRender from '../renders/PageEntityRender';
 import ActionJobTable from './ActionJobTable';
-import SnackbarAlert from '../common/SnackbarAlert';
 
 
 export default function ActionDetail() {
@@ -37,13 +37,14 @@ export default function ActionDetail() {
   const [openError, setOpenError] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
+  const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/actions">Actions</Link>,
     <Typography key="3" color="text.primary">{actionId}</Typography>,
   ];
 
-  const fetchActionDetailAsync = async () => {
+  const loadActionDetailAsync = async () => {
     const requestOptions = {
       method: "GET",
       headers: {
@@ -51,26 +52,19 @@ export default function ActionDetail() {
       }
     }
 
-    try {
-      setCircleProcessOpen(true);
-      let response = await fetch(`${ACTION_MANAGER_API_URL}/${encodeURIComponent(actionId)}`, requestOptions);
+    const targetURL = `${ACTION_MANAGER_API_URL}/${encodeURIComponent(actionId)}`;
+    await restClient.sendRequest(requestOptions, targetURL, async (response) => {
       let actionDetailResult = await response.json() as ActionDetails;
       setActionDetailData(actionDetailResult);
-
-      let successMessage = { 'message': 'Fetch action successfully!!', key: new Date().getTime() } as SnackbarMessage;
-      setMessageInfo(successMessage);
-      setOpenSuccess(true);
-    } catch(error: any) {
-      let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
-      setMessageInfo(messageInfo);
-      setOpenError(true);
-    } finally {
-      setCircleProcessOpen(false);
-    }
+      return { 'message': 'Load action successfully!!', key: new Date().getTime() } as SnackbarMessage;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
   }
 
   React.useEffect(() => {
-    fetchActionDetailAsync();
+    loadActionDetailAsync();
   }, []);
 
   let pageEntityMetadata: PageEntityMetadata = {
@@ -96,12 +90,19 @@ export default function ActionDetail() {
     messageInfo
   }
 
+  let actionJobTableParams = {
+    setCircleProcessOpen,
+    setMessageInfo,
+    setOpenError,
+    setOpenSuccess
+  }
+
 
   return (
     <Stack spacing={4}>
       <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...pageEntityMetadata}></PageEntityRender>
-      <ActionJobTable setCircleProcessOpen={setCircleProcessOpen} actionId={actionId}></ActionJobTable>
+      <ActionJobTable {...actionJobTableParams} actionId={actionId}></ActionJobTable>
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
       <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>
     </Stack >
