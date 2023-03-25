@@ -19,6 +19,7 @@ import org.slf4j.MDC;
 import java.lang.reflect.Method;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -63,9 +64,15 @@ public class MetricMgmtService {
 
                     if (value instanceof SimpleValue) {
                         processSimpleValue(metricEntry, name, (SimpleValue) value);
+                    } else if (value instanceof String metricValue) {
+                        processSimpleValue(metricEntry, name, Long.valueOf(metricValue));
+                    } else if (value instanceof Long metricValue) {
+                        processSimpleValue(metricEntry, name, metricValue);
+                    } else if (value instanceof Integer metricValue) {
+                        processSimpleValue(metricEntry, name, metricValue.longValue());
                     } else if (value instanceof Collection<?>) {
                         @SuppressWarnings("unchecked")
-                        List<ComplexValue> complexValues = (List<ComplexValue>) value;
+                        Collection<ComplexValue> complexValues = (Collection<ComplexValue>) value;
                         complexValues.forEach(complexValue -> processComplexValue(metricEntry, name, complexValue));
                     } else {
                         processComplexValue(metricEntry, name, (ComplexValue) value);
@@ -83,6 +90,10 @@ public class MetricMgmtService {
         MDC.put(METRIC_NAME, name);
         logMetricRecord(name, simpleValue.getValue(), metricEntry.getUnit());
     }
+    private void processSimpleValue(MetricEntry metricEntry, String name, Long simpleValue) {
+        MDC.put(METRIC_NAME, name);
+        logMetricRecord(name, simpleValue, metricEntry.getUnit());
+    }
 
     private void processComplexValue(MetricEntry metricEntry, String name, ComplexValue complexValue) {
         Collection<MetricTag> metricTags = complexValue.getTags();
@@ -96,9 +107,14 @@ public class MetricMgmtService {
             if (attributes.isEmpty()) {
                 MDC.put(METRIC_NAME, name);
             } else if (Objects.nonNull(nameTag)) {
-                attributes.remove("name");
+                Predicate<Map.Entry<String, String>> filterOutName = p -> !"name".equals(p.getKey());
+                Map<String, String> newAttributes =
+                        attributes.entrySet()
+                                .stream()
+                                .filter(filterOutName)
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 String nameReplaced = nameTag.toLowerCase().replace(" ", "-");
-                String attNames = attributes.values().stream().map(MetricMgmtService::deAccent).collect(Collectors.joining("-"));
+                String attNames = newAttributes.values().stream().map(MetricMgmtService::deAccent).collect(Collectors.joining("-"));
                 String metricNameFormatted = deAccent(nameReplaced).concat("-").concat(attNames);
                 metricNameCompute = metricNameFormatted;
                 MDC.put(METRIC_NAME, metricNameFormatted);

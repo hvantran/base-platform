@@ -8,9 +8,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 public class MetricService {
 
     private final Map<String, ComplexValue> metrics = new ConcurrentHashMap<>();
+
+    public Map<String, ComplexValue> getMetrics() {
+        return metrics;
+    }
 
     public ComplexValue getMetric(String name) {
         return metrics.get(name);
