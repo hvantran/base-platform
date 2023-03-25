@@ -68,6 +68,7 @@ export default function PropertyRender(props: any) {
                         labelId={"demo-select-small".concat(property.propName)}
                         id={"demo-select-small".concat(property.propName)}
                         value={value}
+                        multiple={selectionMeta.isMultiple}
                         name={property.propName}
                         label={property.propLabel}
                         onChange={selectionMeta.onChangeEvent}

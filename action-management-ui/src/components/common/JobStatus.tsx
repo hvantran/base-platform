@@ -1,7 +1,7 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import PendingIcon from '@mui/icons-material/Pending';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Tooltip } from '@mui/material';
 import { red, yellow } from "@mui/material/colors";
 import React from "react";
 
@@ -15,13 +15,13 @@ export default function JobStatus(props: any) {
     }
     switch (status) {
         case "SUCCESS":
-            return (<CheckCircleIcon fontSize="large" color="success" />)
+            return (<Tooltip title={status}><CheckCircleIcon fontSize="large" color="success" /></Tooltip>)
         case "FAILURE":
-            return (<ErrorIcon fontSize="large" sx={{ color: red[900] }} />)
+            return (<Tooltip title={status}><ErrorIcon fontSize="large" sx={{ color: red[900] }} /></Tooltip>)
         case "PROCESSING":
-            return (<CircularProgress size='35px'/>)
+            return (<Tooltip title={status}><CircularProgress size='35px'/></Tooltip>)
         case "PENDING":
         default:
-            return (<PendingIcon fontSize="large" sx={{ color: yellow[900] }} />)
+            return (<Tooltip title={status}><PendingIcon fontSize="large" sx={{ color: yellow[900] }} /></Tooltip>)
     }
 }

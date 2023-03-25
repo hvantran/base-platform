@@ -33,21 +33,21 @@ export default function ActionJobTable(props: any) {
             id: 'state',
             label: 'State',
             minWidth: 100,
-            align: 'right',
+            align: 'left',
             format: (value: number) => value.toLocaleString('en-US'),
         },
         {
             id: 'status',
             label: 'Status',
             minWidth: 100,
-            align: 'right',
+            align: 'left',
             format: (value: string) => (<JobStatus status={value}/>)
         },
         {
             id: 'startedAt',
             label: 'Started At',
             minWidth: 100,
-            align: 'right',
+            align: 'left',
             format: (value: number) => {
                 if (!value) {
                     return "";
@@ -62,8 +62,8 @@ export default function ActionJobTable(props: any) {
             id: 'elapsedTime',
             label: 'Elapsed Time',
             minWidth: 100,
-            align: 'right',
-            format: (value: number) => value.toLocaleString('en-US')
+            align: 'left',
+            format: (value: string) => value
         },
         {
             id: 'failureNotes',
@@ -75,7 +75,7 @@ export default function ActionJobTable(props: any) {
         {
             id: 'actions',
             label: '',
-            align: 'right',
+            align: 'left',
             actions: [{
                 actionIcon: <ReadMoreIcon />,
                 actionLabel: "Job details",

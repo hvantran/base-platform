@@ -89,7 +89,8 @@ export interface SwitcherFieldMeta {
 
 export interface SelectionMetadata {
     selections: Array<string>
-    onChangeEvent: (event: SelectChangeEvent, child: React.ReactNode) => void;
+    isMultiple?: boolean
+    onChangeEvent: (event: SelectChangeEvent, child: React.ReactNode) => void
 }
 
 export interface PropertyMetadata {

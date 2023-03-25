@@ -6,6 +6,9 @@ function truncate(text: string, maxTextLength: number) {
 }
 
 export default function TextTruncate(props: any) {
+    if (!props.text) {
+        return (<span></span>);
+    }
     return (
         (<Tooltip title={props.text.length >= props.maxTextLength ? props.text : ""}>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>

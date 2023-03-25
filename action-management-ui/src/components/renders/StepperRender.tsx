@@ -90,7 +90,7 @@ export default function StepperRender(props: any) {
                             {initialStepMetadata
                                 .filter((_, index) => index === activeStep)
                                 .flatMap((stepDefinition) => stepDefinition.properties)
-                                .flatMap((propertyMeta) => {
+                                .flatMap((propertyMeta, index) => {
                                     return (
                                         <PropertyRender key={propertyMeta.propName} property={propertyMeta} />
                                     )

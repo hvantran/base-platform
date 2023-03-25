@@ -56,28 +56,28 @@ export default function ActionSummary() {
       id: 'numberOfJobs',
       label: 'Total Jobs',
       minWidth: 170,
-      align: 'right',
+      align: 'left',
       format: (value: number) => value.toLocaleString('en-US'),
     },
     {
       id: 'numberOfFailureJobs',
       label: 'Number of failure Jobs',
       minWidth: 170,
-      align: 'right',
+      align: 'left',
       format: (value: number) => value.toLocaleString('en-US'),
     },
     {
       id: 'numberOfSuccessJobs',
       label: 'Number of success Jobs',
       minWidth: 170,
-      align: 'right',
-      format: (value: number) => value.toFixed(2),
+      align: 'left',
+      format: (value: number) => value,
     },
     {
       id: 'createdAt',
       label: 'Created at',
       minWidth: 170,
-      align: 'right',
+      align: 'left',
       format: (value: number) => {
 
         if (!value) {

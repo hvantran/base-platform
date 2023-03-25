@@ -8,7 +8,7 @@ import { blue, green } from '@mui/material/colors';
 import LinkBreadcrumd from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
-import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES } from '../AppConstants';
+import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES, JOB_OUTPUT_TARGET_VALUES } from '../AppConstants';
 import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
@@ -46,9 +46,9 @@ export default function ActionCreation() {
         propLabel: 'Name',
         isRequired: true,
         propValue: '',
-        layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
-        labelElementProperties: {xs: 2},
-        valueElementProperties: {xs: 10},
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 4},
+        valueElementProperties: {xs: 8},
         propDescription: 'This is name of job',
         propType: PropType.InputText,
         textFieldMeta: {
@@ -68,11 +68,11 @@ export default function ActionCreation() {
       {
         propName: 'isAsync',
         propLabel: 'Asynchronous',
-        propValue: '',
-        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
-        labelElementProperties: {xs: 4},
-        valueElementProperties: {xs: 8},
+        propValue: true,
         propDefaultValue: true,
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
+        valueElementProperties: {xs: 8},
         propType: PropType.Switcher,
         switcherFieldMeta: {
           onChangeEvent: function (event, propValue) {
@@ -82,13 +82,32 @@ export default function ActionCreation() {
         }
       },
       {
+        propName: 'jobOutputTargets',
+        propLabel: 'Output',
+        propValue: [JOB_OUTPUT_TARGET_VALUES[0]],
+        propDefaultValue: JOB_OUTPUT_TARGET_VALUES[0],
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 4},
+        valueElementProperties: {xs: 8},
+        propType: PropType.Selection,
+        selectionMeta: {
+          selections: JOB_OUTPUT_TARGET_VALUES,
+          isMultiple: true,
+          onChangeEvent: function (event) {
+            let propValue = event.target.value;
+            let propName = event.target.name;
+            setStepMetadatas(onchangeStepDefault(propName, propValue))
+          }
+        }
+      },
+      {
         propName: 'jobCategory',
         propLabel: 'Category',
-        propValue: '',
+        propValue: JOB_CATEGORY_VALUES[0],
         propDefaultValue: JOB_CATEGORY_VALUES[0],
         layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
-        labelElementProperties: {xs: 1.5},
-        valueElementProperties: {xs: 10.5},
+        labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
+        valueElementProperties: {xs: 8},
         propType: PropType.Selection,
         selectionMeta: {
           selections: JOB_CATEGORY_VALUES,
@@ -119,7 +138,7 @@ export default function ActionCreation() {
         propName: 'jobConfigurations',
         propLabel: 'Configurations',
         isRequired: true,
-        propValue: '',
+        propValue: '{}',
         propDefaultValue: '{}',
         layoutProperties: {xs: 12},
         labelElementProperties: {xs: 2},
@@ -141,7 +160,7 @@ export default function ActionCreation() {
         propName: 'jobContent',
         propLabel: 'Job Content',
         isRequired: true,
-        propValue: '',
+        propValue: DEFAULT_JOB_CONTENT,
         propType: PropType.CodeEditor,
         layoutProperties: {xs: 12},
         labelElementProperties: {xs: 2},
@@ -209,7 +228,7 @@ export default function ActionCreation() {
         {
           propName: 'actionConfigurations',
           propLabel: 'Configurations',
-          propValue: '',
+          propValue: '{}',
           propDefaultValue: '{}',
           layoutProperties: {xs: 12},
           labelElementProperties: {xs: 2},
@@ -241,9 +260,9 @@ export default function ActionCreation() {
           isRequired: true,
           propDescription: 'This is name of job',
           propType: PropType.InputText,
-          layoutProperties: {xs: 12, alignItems:"center", justifyContent:"center"},
-          labelElementProperties: {xs: 2},
-          valueElementProperties: {xs: 10},
+          layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 4},
+          valueElementProperties: {xs: 8},
           textFieldMeta: {
             onChangeEvent: function (event) {
               let propValue = event.target.value;
@@ -259,9 +278,9 @@ export default function ActionCreation() {
         {
           propName: 'isAsync',
           propLabel: 'Asynchronous',
-          propValue: '',
+          propValue: true,
           layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
-          labelElementProperties: {xs: 4},
+          labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
           valueElementProperties: {xs: 8},
           propDefaultValue: true,
           propType: PropType.Switcher,
@@ -273,13 +292,32 @@ export default function ActionCreation() {
           }
         },
         {
+          propName: 'jobOutputTargets',
+          propLabel: 'Output',
+          propValue: [JOB_OUTPUT_TARGET_VALUES[0]],
+          propDefaultValue: JOB_OUTPUT_TARGET_VALUES[0],
+          layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 4, alignItems:"center", justifyContent:"center"},
+          valueElementProperties: {xs: 8},
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: JOB_OUTPUT_TARGET_VALUES,
+            isMultiple: true,
+            onChangeEvent: function (event) {
+              let propValue = event.target.value;
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue))
+            }
+          }
+        },
+        {
           propName: 'jobCategory',
           propLabel: 'Category',
-          propValue: '',
+          propValue: JOB_CATEGORY_VALUES[0],
           propDefaultValue: JOB_CATEGORY_VALUES[0],
           layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
-          labelElementProperties: {xs: 1.5},
-          valueElementProperties: {xs: 10.5},
+          labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
+          valueElementProperties: {xs: 8},
           propType: PropType.Selection,
           selectionMeta: {
             selections: JOB_CATEGORY_VALUES,
@@ -310,7 +348,7 @@ export default function ActionCreation() {
           propName: 'jobConfigurations',
           propLabel: 'Configurations',
           isRequired: true,
-          propValue: '',
+          propValue: '{}',
           propDefaultValue: '{}',
           layoutProperties: {xs: 12},
           labelElementProperties: {xs: 2},
@@ -335,7 +373,7 @@ export default function ActionCreation() {
           labelElementProperties: {xs: 2},
           valueElementProperties: {xs: 10},
           isRequired: true,
-          propValue: '',
+          propValue: DEFAULT_JOB_CONTENT,
           propDefaultValue: DEFAULT_JOB_CONTENT,
           propType: PropType.CodeEditor,
           codeEditorMeta:
@@ -414,6 +452,7 @@ export default function ActionCreation() {
           let content = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobContent"))?.propValue;
           let isAsync = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("isAsync"))?.propValue;
           let category = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobCategory"))?.propValue;
+          let outputTargets = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobOutputTargets"))?.propValue;
 
           return {
             name,
@@ -421,6 +460,7 @@ export default function ActionCreation() {
             description,
             configurations,
             content,
+            outputTargets,
             isAsync
           } as JobDefinition
         })

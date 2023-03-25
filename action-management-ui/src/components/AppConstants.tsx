@@ -1,6 +1,6 @@
-import { SnackbarMessage } from "./GenericConstants"
 
 export const JOB_CATEGORY_VALUES = ["IO", "CPU"]
+export const JOB_OUTPUT_TARGET_VALUES = ["CONSOLE", "METRIC"]
 export const ACTION_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/actions'
 export const JOB_MANAGER_API_URL: string = 'http://localhost:8082/action-manager/v1/jobs'
 export const DEFAULT_JOB_CONTENT: string = `let Collections = Java.type('java.util.Collections');
@@ -40,6 +40,7 @@ export interface JobDefinition {
     configurations: string | undefined
     content: string | undefined
     isAsync: boolean | undefined
+    outputTargets: Array<String> | undefined
     createdAt?: number | undefined
 }
 
