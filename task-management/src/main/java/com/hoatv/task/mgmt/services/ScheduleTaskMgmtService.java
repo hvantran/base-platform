@@ -36,7 +36,7 @@ public class ScheduleTaskMgmtService extends CloseableTask {
         return null;
     }
 
-    public void scheduleFixedRateTask(TaskEntry taskEntry, int waitingTime, TimeUnit timeUnit) {
+    public ScheduledFuture<?> scheduleFixedRateTask(TaskEntry taskEntry, int waitingTime, TimeUnit timeUnit) {
         if (concurrentAccountLocks.tryAcquire(taskEntry, waitingTime, timeUnit)) {
             APP_LOGGER.info(
                     "Schedule period task - {} under application - {}, delay - {} milliseconds, period - {} milliseconds",
@@ -44,8 +44,10 @@ public class ScheduleTaskMgmtService extends CloseableTask {
             RunnableWorker runnableWorker = TaskWorkerFactory.getRunnableWorker(taskEntry.getTaskHandler(),
                     concurrentAccountLocks, taskEntry.getPeriodInMillis(), taskEntry);
             ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) this.executorService;
-            scheduledExecutorService.scheduleAtFixedRate(runnableWorker, taskEntry.getDelayInMillis(), taskEntry.getPeriodInMillis(), TimeUnit.MILLISECONDS);
+            return scheduledExecutorService.scheduleAtFixedRate(runnableWorker, taskEntry.getDelayInMillis(),
+                    taskEntry.getPeriodInMillis(), TimeUnit.MILLISECONDS);
         }
+        return null;
     }
 
     public void scheduleTasks(TaskCollection taskCollection, int waitingTime, TimeUnit timeUnit) {
