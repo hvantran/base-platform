@@ -1,9 +1,11 @@
 package com.hoatv.action.manager.collections;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.hoatv.action.manager.dtos.JobCategory;
 import com.hoatv.action.manager.dtos.JobDefinitionDTO;
+import com.hoatv.action.manager.dtos.JobOutputTarget;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -35,6 +37,9 @@ public class JobDocument {
     private String jobName;
     private String actionId;
     private boolean isAsync;
+    private List<String> outputTargets;
+    private boolean isScheduled;
+
     private long createdAt;
 
     public static JobDocument fromJobDefinition(JobDefinitionDTO jobDefinitionDTO) {
@@ -49,6 +54,7 @@ public class JobDocument {
                 .jobContent(jobDefinitionDTO.getJobContent())
                 .jobCategory(JobCategory.valueOf(jobDefinitionDTO.getJobCategory()))
                 .isAsync(jobDefinitionDTO.isAsync())
+                .outputTargets(jobDefinitionDTO.getOutputTargets())
                 .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
                 .actionId(actionId)
                 .build();
@@ -61,6 +67,7 @@ public class JobDocument {
                 .configurations(jobDocument.getConfigurations())
                 .jobContent(jobDocument.getJobContent())
                 .jobCategory(jobDocument.getJobCategory().name())
+                .outputTargets(jobDocument.getOutputTargets())
                 .createdAt(jobDocument.getCreatedAt())
                 .isAsync(jobDocument.isAsync())
                 .build();

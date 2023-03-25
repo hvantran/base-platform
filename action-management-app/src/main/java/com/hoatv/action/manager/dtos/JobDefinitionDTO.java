@@ -6,6 +6,7 @@ import com.hoatv.springboot.common.validation.ValueOfEnum;
 import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 @Getter
 @Builder
@@ -41,6 +42,10 @@ public class JobDefinitionDTO {
     @Setter
     @JsonProperty("isAsync")
     private boolean isAsync;
+
+    @Setter
+    @JsonProperty("outputTargets")
+    private List<String> outputTargets = List.of(JobOutputTarget.CONSOLE.name());
 
     @Setter
     @JsonProperty("configurations")

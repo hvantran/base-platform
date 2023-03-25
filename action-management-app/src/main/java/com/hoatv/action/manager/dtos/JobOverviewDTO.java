@@ -31,5 +31,5 @@ public class JobOverviewDTO {
     private long startedAt;
 
     @JsonProperty("elapsedTime")
-    private long elapsedTime;
+    private String elapsedTime;
 }
