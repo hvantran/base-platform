@@ -12,4 +12,8 @@ public class DateTimeUtils {
     public static long getCurrentEpochTimeInSecond() {
         return LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond();
     }
+
+    public static long getCurrentEpochTimeInMillisecond() {
+        return System.currentTimeMillis();
+    }
 }

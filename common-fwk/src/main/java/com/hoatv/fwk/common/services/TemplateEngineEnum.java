@@ -5,6 +5,7 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import lombok.Builder;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,12 @@ public enum TemplateEngineEnum implements GenericTemplateEngine {
 
         @Override
         public String process(String templateName, String templateString, Map<String, Object> objectData) {
+            return this.process(templateName, templateString, objectData, CONFIGURATION.configuration);
+        }
+
+        @Override
+        public String process(String templateName, String templateString, Map<String, Object> objectData,
+                              Configuration configuration) {
             CheckedSupplier<String> processSupplier = () -> {
                 super.process(templateName, templateString, objectData);
                 Template template = new Template(templateName, templateString, CONFIGURATION.configuration);
