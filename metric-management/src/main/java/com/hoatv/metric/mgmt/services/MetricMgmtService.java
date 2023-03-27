@@ -62,8 +62,8 @@ public class MetricMgmtService {
                     MDC.put("application", providerAnnotation.application());
                     MDC.put("category", providerAnnotation.category());
 
-                    if (value instanceof SimpleValue) {
-                        processSimpleValue(metricEntry, name, (SimpleValue) value);
+                    if (value instanceof SimpleValue simpleValue) {
+                        processSimpleValue(metricEntry, name, simpleValue);
                     } else if (value instanceof String metricValue) {
                         processSimpleValue(metricEntry, name, Long.valueOf(metricValue));
                     } else if (value instanceof Long metricValue) {
