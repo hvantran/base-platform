@@ -29,6 +29,7 @@ public class ActionDocument {
     private String hash = UUID.randomUUID().toString();
 
     private String actionName;
+    private boolean isFavorite;
     private String actionDescription;
     private String configurations;
     private long createdAt;
@@ -38,6 +39,7 @@ public class ActionDocument {
                 .actionName(actionDefinitionDTO.getActionName())
                 .actionDescription(actionDefinitionDTO.getActionDescription())
                 .configurations(actionDefinitionDTO.getConfigurations())
+                .isFavorite(actionDefinitionDTO.isFavorite())
                 .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
                 .build();
     }
@@ -45,6 +47,7 @@ public class ActionDocument {
     public static ActionDefinitionDTO toActionDefinition(ActionDocument actionDocument) {
         return ActionDefinitionDTO.builder()
                 .actionName(actionDocument.getActionName())
+                .isFavorite(actionDocument.isFavorite())
                 .actionDescription(actionDocument.getActionDescription())
                 .configurations(actionDocument.getConfigurations())
                 .createdAt(actionDocument.getCreatedAt())

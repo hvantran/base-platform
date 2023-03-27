@@ -10,6 +10,7 @@ import com.hoatv.monitor.mgmt.LoggingMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,9 @@ public class ActionControllerV1 {
     public ResponseEntity<?> getAllActionsWithPaging(
             @RequestParam("pageIndex") @Min(0) int pageIndex,
             @RequestParam("pageSize") @Min(0) int pageSize) {
+        Sort defaultSorting = Sort.by(Sort.Order.desc("isFavorite"), Sort.Order.desc("createdAt"));
         Page<ActionOverviewDTO> actionResults =
-                actionManagerService.getAllActionsWithPaging(PageRequest.of(pageIndex, pageSize));
+                actionManagerService.getAllActionsWithPaging(PageRequest.of(pageIndex, pageSize, defaultSorting));
         return ResponseEntity.ok(actionResults);
     }
 
@@ -53,6 +55,15 @@ public class ActionControllerV1 {
     @GetMapping(value = "/{hash}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getActionDetail(@PathVariable("hash") String hash) {
         Optional<ActionDefinitionDTO> actionResult = actionManagerService.getActionById(hash);
+        actionResult.orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
+        return ResponseEntity.ok(actionResult);
+    }
+
+    @LoggingMonitor
+    @PatchMapping(value = "/{hash}/favorite", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> setFavoriteActionValue(@PathVariable("hash") String hash,
+                                               @RequestParam("isFavorite") boolean isFavorite) {
+        Optional<ActionDefinitionDTO> actionResult = actionManagerService.setFavoriteActionValue(hash, isFavorite);
         actionResult.orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
         return ResponseEntity.ok(actionResult);
     }

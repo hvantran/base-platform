@@ -30,6 +30,10 @@ public class ActionDefinitionDTO {
     private String actionDescription;
 
     @Setter
+    @JsonProperty("isFavorite")
+    private boolean isFavorite;
+
+    @Setter
     @JsonProperty("configurations")
     @NotEmpty(message = "Action configurations cannot be NULL/empty")
     private String configurations;

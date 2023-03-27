@@ -72,6 +72,18 @@ public class ActionManagerServiceImpl implements ActionManagerService {
     }
 
     @Override
+    public Optional<ActionDefinitionDTO> setFavoriteActionValue(String hash, boolean isFavorite) {
+        Optional<ActionDocument> actionDocumentOptional = actionDocumentRepository.findById(hash);
+        if (actionDocumentOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        ActionDocument actionDocument = actionDocumentOptional.get();
+        actionDocument.setFavorite(isFavorite);
+        ActionDocument document = actionDocumentRepository.save(actionDocument);
+        return Optional.of(ActionDocument.toActionDefinition(document));
+    }
+
+    @Override
     @LoggingMonitor
     public String processAction(ActionDefinitionDTO actionDefinition) {
         ActionExecutionContext actionExecutionContext = initial(actionDefinition);
@@ -102,6 +114,7 @@ public class ActionManagerServiceImpl implements ActionManagerService {
                     .hash(actionId)
                     .numberOfFailureJobs(actionStat.getNumberOfFailureJobs())
                     .numberOfJobs(actionStat.getNumberOfJobs())
+                    .isFavorite(actionDocument.isFavorite())
                     .createdAt(actionDocument.getCreatedAt())
                     .numberOfSuccessJobs(actionStat.getNumberOfSuccessJobs())
                     .build();

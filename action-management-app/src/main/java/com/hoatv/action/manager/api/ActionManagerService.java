@@ -13,6 +13,8 @@ public interface ActionManagerService {
 
     Optional<ActionDefinitionDTO> getActionById(String hash);
 
+    Optional<ActionDefinitionDTO> setFavoriteActionValue(String hash, boolean isFavorite);
+
     Page<ActionOverviewDTO> getAllActionsWithPaging(String search, Pageable pageable);
 
     Page<ActionOverviewDTO> getAllActionsWithPaging(Pageable pageable);
