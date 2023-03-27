@@ -69,6 +69,13 @@ public class ActionControllerV1 {
     }
 
     @LoggingMonitor
+    @GetMapping(value = "/{hash}/replay", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> replayAction(@PathVariable("hash") String hash) {
+        boolean isReplaySuccess = actionManagerService.replayAction(hash);
+        return ResponseEntity.ok(Map.of("status", isReplaySuccess));
+    }
+
+    @LoggingMonitor
     @DeleteMapping(value = "/{hash}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteAction(@PathVariable("hash") String hash) {
         Optional<ActionDefinitionDTO> actionResult = actionManagerService.getActionById(hash);

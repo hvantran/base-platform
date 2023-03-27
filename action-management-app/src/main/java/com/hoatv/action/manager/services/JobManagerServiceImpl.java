@@ -9,7 +9,6 @@ import com.hoatv.action.manager.repositories.JobDocumentRepository;
 import com.hoatv.action.manager.repositories.JobExecutionResultDocumentRepository;
 import com.hoatv.fwk.common.constants.MetricProviders;
 import com.hoatv.fwk.common.exceptions.AppException;
-import com.hoatv.fwk.common.services.CheckedFunction;
 import com.hoatv.fwk.common.services.CheckedSupplier;
 import com.hoatv.fwk.common.services.TemplateEngineEnum;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
@@ -18,12 +17,10 @@ import com.hoatv.metric.mgmt.annotations.Metric;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricTag;
-import com.hoatv.metric.mgmt.entities.SimpleValue;
 import com.hoatv.metric.mgmt.services.MetricService;
 import com.hoatv.monitor.mgmt.LoggingMonitor;
 import com.hoatv.task.mgmt.services.TaskFactory;
 import com.hoatv.task.mgmt.services.TaskMgmtServiceV1;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -34,12 +31,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 @MetricProvider(application = MetricProviders.OTHER_APPLICATION, category = MetricProviders.MetricCategories.STATS_DATA_CATEGORY)
@@ -88,19 +84,19 @@ public class JobManagerServiceImpl implements JobManagerService {
         this.objectMapper = new ObjectMapper();
     }
 
-    @Metric(name="job-management")
+    @Metric(name="job-manager")
     public Collection<ComplexValue> getMetricValues() {
         return metricService.getMetrics().values();
     }
-    @Metric(name="job-management-number-of-jobs")
+    @Metric(name="job-manager-number-of-jobs")
     public long getTotalNumberOfJobs() {
         return jobManagementStatistics.totalNumberOfJobs.get();
     }
-    @Metric(name="job-management-number-of-failure-jobs")
+    @Metric(name="job-manager-number-of-failure-jobs")
     public long getTotalNumberOfFailureJobs() {
         return jobManagementStatistics.numberOfFailureJobs.get();
     }
-    @Metric(name="job-management-total-number-of-activate-jobs")
+    @Metric(name="job-manager-total-number-of-activate-jobs")
     public long getTotalNumberOfActiveJobs() {
         return jobManagementStatistics.numberOfActiveJobs.get();
     }
@@ -130,6 +126,19 @@ public class JobManagerServiceImpl implements JobManagerService {
                     .failureNotes(jobStat.getFailureNotes())
                     .build();
         });
+    }
+
+    @Override
+    public List<Pair<JobDocument, JobResultDocument>> getJobsFromAction(String actionId) {
+        List<JobDocument> jobDocuments = jobDocumentRepository.findJobByActionId(actionId);
+        List<String> jobIds = jobDocuments.stream().map(JobDocument::getHash).toList();
+        List<JobResultDocument> jobResultDocuments = jobExecutionResultDocumentRepository.findByJobIdIn(jobIds);
+        Map<String, JobResultDocument> jobResultMapping = jobResultDocuments.stream()
+                .map(p -> new SimpleEntry<>(p.getJobId(), p))
+                .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+
+        return jobDocuments.stream().map(jobDocument -> Pair.of(jobDocument,
+                jobResultMapping.get(jobDocument.getHash()))).toList();
     }
 
     @Override
@@ -215,20 +224,17 @@ public class JobManagerServiceImpl implements JobManagerService {
         List<String> jobOutputTargets = jobDocument.getOutputTargets();
         jobOutputTargets.forEach(target -> {
            JobOutputTarget jobOutputTarget = JobOutputTarget.valueOf(target);
-           switch (jobOutputTarget) {
-               case CONSOLE:
-                   LOGGER.info("Async job: {} result: {}", jobName, jobResult);
-                   break;
-               case METRIC:
-                   ArrayList<MetricTag> metricTags = new ArrayList<>();
-                   MetricTag metricTag = new MetricTag(jobResult.getData());
-                   metricTag.setAttributes(Map.of("name", String.format("job-management-%s", jobName)));
-                   metricTags.add(metricTag);
-                   metricService.setMetric(jobName, metricTags);
-                   break;
-               default:
-                   throw new AppException("Unsupported output target " + target);
-           }
+            switch (jobOutputTarget) {
+                case CONSOLE -> LOGGER.info("Async job: {} result: {}", jobName, jobResult);
+                case METRIC -> {
+                    ArrayList<MetricTag> metricTags = new ArrayList<>();
+                    MetricTag metricTag = new MetricTag(jobResult.getData());
+                    metricTag.setAttributes(Map.of("name", String.format("job-management-%s", jobName)));
+                    metricTags.add(metricTag);
+                    metricService.setMetric(jobName, metricTags);
+                }
+                default -> throw new AppException("Unsupported output target " + target);
+            }
         });
     }
 
@@ -246,7 +252,7 @@ public class JobManagerServiceImpl implements JobManagerService {
 
     @Override
     @LoggingMonitor
-    public Pair<JobDocument, JobResultDocument> initial(JobDefinitionDTO jobDefinitionDTO, String actionId) {
+    public Pair<JobDocument, JobResultDocument> initialJobs(JobDefinitionDTO jobDefinitionDTO, String actionId) {
         JobDocument jobDocument = jobDocumentRepository.save(JobDocument.fromJobDefinition(jobDefinitionDTO, actionId));
         JobResultDocument.JobResultDocumentBuilder jobResultDocumentBuilder = JobResultDocument.builder()
                 .jobState(JobState.INITIAL)
@@ -258,16 +264,10 @@ public class JobManagerServiceImpl implements JobManagerService {
         return Pair.of(jobDocument, jobResultDocument);
     }
 
-    /**
-     * @totalNumberOfJobs: Total number of process jobs
-     * @numberOfActiveJobs: Total number of active jobs
-     * @numberOfFailureJobs: Total number of failure jobs
-     */
-
     private static class JobManagementStatistics {
 
-        private AtomicLong totalNumberOfJobs = new AtomicLong(0);
-        private AtomicLong numberOfActiveJobs = new AtomicLong(0);
-        private AtomicLong numberOfFailureJobs = new AtomicLong(0);
+        private final AtomicLong totalNumberOfJobs = new AtomicLong(0);
+        private final AtomicLong numberOfActiveJobs = new AtomicLong(0);
+        private final AtomicLong numberOfFailureJobs = new AtomicLong(0);
     }
 }

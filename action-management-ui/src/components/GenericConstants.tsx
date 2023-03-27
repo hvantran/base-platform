@@ -26,7 +26,7 @@ export class RestClient {
     }
 
     async sendRequest(requestOptions: any, targetURL: string,
-        successCallback: (response: Response) => Promise<SnackbarMessage> | undefined,
+        successCallback: (response: Response) => Promise<SnackbarMessage | undefined> | undefined,
         errorCallback: (response: Response) => Promise<SnackbarMessage> | undefined) {
 
         try {
@@ -43,8 +43,11 @@ export class RestClient {
 
             let successSnackbarMessage = successCallback(response);
             if (successSnackbarMessage) {
-                this.setMessageInfo(await successSnackbarMessage);
-                this.setOpenSuccess(true);
+                let snackbarMessage = await successSnackbarMessage;
+                if (snackbarMessage) {
+                    this.setMessageInfo(snackbarMessage);
+                    this.setOpenSuccess(true);
+                }
             }
         } catch (error: any) {
             let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
@@ -201,6 +204,5 @@ export interface DialogMetadata {
     negativeText: string
     positiveText: string
     negativeAction?: () => void
-    handleClose?: () => void
     positiveAction?: () => void
 }

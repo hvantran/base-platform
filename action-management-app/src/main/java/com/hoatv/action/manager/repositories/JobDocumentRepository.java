@@ -12,7 +12,8 @@ import java.util.List;
 @Repository
 public interface JobDocumentRepository extends MongoRepository<JobDocument, String> {
 
-    //@Query("{actionId: '?0'}")
+    List<JobDocument> findJobByActionId(String actionId);
+
     Page<JobDocument> findJobByActionId(String actionId, Pageable pageable);
 
     void deleteByActionId(String actionId);

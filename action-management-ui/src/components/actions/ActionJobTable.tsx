@@ -19,6 +19,7 @@ export default function ActionJobTable(props: any) {
     const navigate = useNavigate();
     const targetAction = props.actionId
     const setCircleProcessOpen = props.setCircleProcessOpen;
+    const replayFlag = props.replayFlag;
     const setMessageInfo = props.setMessageInfo;
     const setOpenError = props.setOpenError;
     const setOpenSuccess = props.setOpenSuccess;
@@ -107,7 +108,7 @@ export default function ActionJobTable(props: any) {
 
     React.useEffect(() => {
         loadRelatedJobsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
-    }, [])
+    }, [replayFlag])
 
     let pagingOptions: PagingOptionMetadata = {
         pageIndex: 0,

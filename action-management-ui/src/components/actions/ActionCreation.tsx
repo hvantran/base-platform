@@ -7,9 +7,8 @@ import { blue, green } from '@mui/material/colors';
 
 import LinkBreadcrumd from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import * as React from 'react';
+import React from 'react';
 import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES, JOB_OUTPUT_TARGET_VALUES } from '../AppConstants';
-import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
 import {
@@ -508,14 +507,13 @@ export default function ActionCreation() {
   let initialPageEntityMetdata: PageEntityMetadata = {
     pageName: 'action-creation',
     floatingActions: initialFloatingActions,
+    breadcumbsMeta: [
+      <LinkBreadcrumd underline="hover" key="1" color="inherit" href="/actions">Actions</LinkBreadcrumd>,
+      <Typography key="3" color="text.primary">new</Typography>
+    ],
     stepMetadatas: stepMetadatas
   }
 
-
-  const breadcrumbs = [
-    <LinkBreadcrumd underline="hover" key="1" color="inherit" href="/actions">Actions</LinkBreadcrumd>,
-    <Typography key="3" color="text.primary">new</Typography>
-  ]
 
   let snackbarAlertMetadata: SnackbarAlertMetadata = {
     openError,
@@ -527,7 +525,6 @@ export default function ActionCreation() {
 
   return (
     <Stack spacing={4}>
-      <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...initialPageEntityMetdata} />
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
       <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>

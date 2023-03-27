@@ -42,6 +42,7 @@ export default function ActionDetail() {
   const [openError, setOpenError] = React.useState(false);
   const [deleteConfirmationDialogOpen, setDeleteConfirmationDialogOpen] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [replayFlag, setReplayActionFlag] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
   const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
@@ -57,7 +58,7 @@ export default function ActionDetail() {
     await restClient.sendRequest(requestOptions, targetURL, async (response) => {
       let actionDetailResult = await response.json() as ActionDetails;
       setActionDetailData(actionDetailResult);
-      return { 'message': 'Load action successfully!!', key: new Date().getTime() } as SnackbarMessage;
+      return undefined;
     }, async (response: Response) => {
       let responseJSON = await response.json();
       return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
@@ -82,6 +83,24 @@ export default function ActionDetail() {
     });
   }
 
+  const replayAction =async (actionId: string) => {
+
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+    const targetURL = `${ACTION_MANAGER_API_URL}/${actionId}/replay`;
+    await restClient.sendRequest(requestOptions, targetURL, async () => {
+      setReplayActionFlag(previous => !previous);
+      return undefined
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
+  }
+
   React.useEffect(() => {
     loadActionDetailAsync();
   }, []);
@@ -97,9 +116,7 @@ export default function ActionDetail() {
         actionIcon: <ReplayIcon />,
         actionLabel: "Replay action",
         actionName: "replayAction",
-        onClick: () => {
-          return;
-        }
+        onClick: () => () => replayAction(actionId)
       },
       {
         actionIcon: <DeleteIcon />,
@@ -126,7 +143,8 @@ export default function ActionDetail() {
     setCircleProcessOpen,
     setMessageInfo,
     setOpenError,
-    setOpenSuccess
+    setOpenSuccess,
+    replayFlag
   }
 
   let confirmationDeleteDialogMeta: DialogMetadata = {

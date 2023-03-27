@@ -20,4 +20,6 @@ public interface ActionManagerService {
     Page<ActionOverviewDTO> getAllActionsWithPaging(Pageable pageable);
 
     void deleteAction(String hash);
+
+    boolean replayAction(String hash);
 }

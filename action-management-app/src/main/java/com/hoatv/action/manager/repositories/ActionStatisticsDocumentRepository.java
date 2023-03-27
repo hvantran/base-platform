@@ -11,4 +11,6 @@ import java.util.Set;
 public interface ActionStatisticsDocumentRepository extends MongoRepository<ActionStatisticsDocument, String> {
 
     List<ActionStatisticsDocument> findByActionIdIn(Set<String> actionId);
+
+    ActionStatisticsDocument findByActionId(String actionId);
 }
