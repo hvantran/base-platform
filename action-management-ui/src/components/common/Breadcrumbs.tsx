@@ -3,7 +3,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import * as React from 'react';
 
 
-export default function CustomSeparator(props: any) {
+export default function BreadcrumbsComponent(props: any) {
     const breadcrumbs1 = props.breadcrumbs
 
     return (

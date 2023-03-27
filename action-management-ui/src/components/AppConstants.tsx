@@ -59,6 +59,7 @@ export interface ActionOverview {
     numberOfSuccessJobs: number
     numberOfFailureJobs: number
     createdAt: number
+    isFavorite: boolean
 }
 
 export interface ActionDetails {

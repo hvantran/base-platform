@@ -1,7 +1,8 @@
 
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FavoriteIcon from '@mui/icons-material/GradeOutlined';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarIcon from '@mui/icons-material/Star';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { Stack } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
@@ -12,6 +13,7 @@ import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
 import {
   ColumnMetadata,
+  DialogMetadata,
   PageEntityMetadata,
   PagingOptionMetadata,
   PagingResult,
@@ -27,6 +29,7 @@ import { useNavigate } from 'react-router-dom';
 import { ActionOverview, ACTION_MANAGER_API_URL } from '../AppConstants';
 import SnackbarAlert from '../common/SnackbarAlert';
 import PageEntityRender from '../renders/PageEntityRender';
+import ConfirmationDialog from '../common/ConfirmationDialog';
 
 
 
@@ -38,6 +41,7 @@ export default function ActionSummary() {
   const [openError, setOpenError] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
+  const [deleteConfirmationDialogOpen, setDeleteConfirmationDialogOpen] = React.useState(false);
   const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
   const breadcrumbs = [
@@ -108,23 +112,51 @@ export default function ActionSummary() {
           actionLabel: "Delete action",
           actionName: "deleteAction",
           onClick: (row: ActionOverview) => {
-            return () => deleteAction(row.hash);
+            return () => {
+              setDeleteConfirmationDialogOpen(true);
+            }
           }
         },
         {
-          actionIcon: <FavoriteIcon />,
-          properties: {sx:{color: yellow[800]}},
+          actionIcon: <StarBorderIcon />,
           actionLabel: "Favorite action",
+          enabled: (row: ActionOverview) => !row.isFavorite,
           actionName: "favoriteAction",
           onClick: (row: ActionOverview) => {
-            return () => favoriteAction(row.hash);
+            return () => setFavoriteAction(row.hash, true);
+          }
+        },
+        {
+          actionIcon: <StarIcon />,
+          properties: {sx:{color: yellow[800]}},
+          actionLabel: "Unfavorite action",
+          enabled: (row: ActionOverview) => row.isFavorite,
+          actionName: "unFavoriteAction",
+          onClick: (row: ActionOverview) => {
+            return () => setFavoriteAction(row.hash, false);
           }
         },
       ]
     }
   ];
 
-  const favoriteAction =async (actionId: string) => {
+  const setFavoriteAction =async (actionId: string, isFavorite: boolean) => {
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+
+    const targetURL = `${ACTION_MANAGER_API_URL}/${actionId}/favorite?isFavorite=${isFavorite}`;
+    await restClient.sendRequest(requestOptions, targetURL, () => {
+      loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+      return undefined;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
   }
 
   const deleteAction =async (actionId: string) => {
@@ -136,14 +168,13 @@ export default function ActionSummary() {
       }
     }
     const targetURL = `${ACTION_MANAGER_API_URL}/${actionId}`;
-    await restClient.sendRequest(requestOptions, targetURL, async () => {
-      return { 'message': 'Delete action successfully!!', key: new Date().getTime() } as SnackbarMessage;
+    await restClient.sendRequest(requestOptions, targetURL, () => {
+      loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+      return undefined;
     }, async (response: Response) => {
       let responseJSON = await response.json();
       return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
     });
-
-    loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
   }
 
   const loadActionsAsync = async (pageIndex: number, pageSize: number) => {
@@ -201,7 +232,8 @@ export default function ActionSummary() {
   let pageEntityMetadata: PageEntityMetadata = {
     pageName: 'action-summary',
     floatingActions: actions,
-    tableMetadata: tableMetadata
+    tableMetadata: tableMetadata,
+    breadcumbsMeta: breadcrumbs
   }
 
   let snackbarAlertMetadata: SnackbarAlertMetadata = {
@@ -214,7 +246,6 @@ export default function ActionSummary() {
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...pageEntityMetadata}></PageEntityRender>
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
       <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>

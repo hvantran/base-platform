@@ -9,44 +9,50 @@ export function WithLink(to: any, children: any) {
 };
 
 export class RestClient {
-    setCircleProcessOpen:(value: boolean) => void
-    setMessageInfo:(message: SnackbarMessage) => void
-    setOpenError:(value: boolean) => void
-    setOpenSuccess:(value: boolean) => void
+    setCircleProcessOpen: (value: boolean) => void
+    setMessageInfo: (message: SnackbarMessage) => void
+    setOpenError: (value: boolean) => void
+    setOpenSuccess: (value: boolean) => void
 
-    constructor(setCircleProcessOpen:(value: boolean) => void,
-    setMessageInfo:(message: SnackbarMessage) => void,
-    setOpenError:(value: boolean) => void,
-    setOpenSuccess:(value: boolean) => void
-    )  {
+    constructor(setCircleProcessOpen: (value: boolean) => void,
+        setMessageInfo: (message: SnackbarMessage) => void,
+        setOpenError: (value: boolean) => void,
+        setOpenSuccess: (value: boolean) => void
+    ) {
         this.setCircleProcessOpen = setCircleProcessOpen;
         this.setMessageInfo = setMessageInfo;
         this.setOpenError = setOpenError;
         this.setOpenSuccess = setOpenSuccess;
     }
 
-    async sendRequest(requestOptions: any, targetURL: string, successCallback: (response: Response) => Promise<SnackbarMessage>, errorCallback: (response: Response) => Promise<SnackbarMessage>) {
+    async sendRequest(requestOptions: any, targetURL: string,
+        successCallback: (response: Response) => Promise<SnackbarMessage> | undefined,
+        errorCallback: (response: Response) => Promise<SnackbarMessage> | undefined) {
 
-          try {
+        try {
             this.setCircleProcessOpen(true);
             let response = await fetch(targetURL, requestOptions);
             if (!response.ok) {
-              let errorSnackbarMessage = errorCallback(response);
-              this.setMessageInfo(await errorSnackbarMessage);
-              this.setOpenError(true);
-              return;
+                let errorSnackbarMessage = errorCallback(response);
+                if (errorSnackbarMessage) {
+                    this.setMessageInfo(await errorSnackbarMessage);
+                    this.setOpenError(true);
+                }
+                return;
             }
-      
+
             let successSnackbarMessage = successCallback(response);
-            this.setMessageInfo(await successSnackbarMessage);
-            this.setOpenSuccess(true);
-          } catch (error: any) {
+            if (successSnackbarMessage) {
+                this.setMessageInfo(await successSnackbarMessage);
+                this.setOpenSuccess(true);
+            }
+        } catch (error: any) {
             let messageInfo = { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
             this.setMessageInfo(messageInfo);
             this.setOpenError(true);
-          } finally {
+        } finally {
             this.setCircleProcessOpen(false);
-          }
+        }
     }
 }
 
@@ -121,7 +127,12 @@ export interface ActionMetadata {
     actionName: string
     actionLabel: string
     actionIcon: any
+    enabled?: (row: any) => boolean | boolean
     properties?: any
+}
+
+export interface GenericActionMetadata extends ActionMetadata {
+    onClick: (data?: any) => void
 }
 
 export interface ColumnActionMetadata extends ActionMetadata {
@@ -170,6 +181,8 @@ export interface PageEntityMetadata {
     floatingActions?: Array<SpeedDialActionMetadata>
     stepMetadatas?: Array<StepMetadata>
     tableMetadata?: TableMetadata
+    breadcumbsMeta?: Array<React.ReactNode>
+    pageEntityActions?: Array<GenericActionMetadata>
     properties?: Array<PropertyMetadata>
 }
 
@@ -179,4 +192,15 @@ export interface StepMetadata extends EntityMetadata {
     isOptional?: boolean
     description?: string
     onFinishStepClick?: (currentStepMetadata: Array<StepMetadata>) => void
+}
+
+export interface DialogMetadata {
+    open: boolean
+    title: string,
+    content: string,
+    negativeText: string
+    positiveText: string
+    negativeAction?: () => void
+    handleClose?: () => void
+    positiveAction?: () => void
 }

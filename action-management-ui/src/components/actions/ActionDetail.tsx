@@ -3,20 +3,25 @@ import { Stack } from '@mui/material';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import Breadcrumbs from '../common/Breadcrumbs';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 import { useParams } from 'react-router-dom';
 import { ActionDetails, ACTION_MANAGER_API_URL } from '../AppConstants';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
-import { PageEntityMetadata, PropType, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
+import { DialogMetadata, PageEntityMetadata, PropType, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
 import PageEntityRender from '../renders/PageEntityRender';
 import ActionJobTable from './ActionJobTable';
+import { red } from '@mui/material/colors';
+import { useNavigate } from 'react-router-dom';
+import ConfirmationDialog from '../common/ConfirmationDialog';
 
 
 export default function ActionDetail() {
 
   const targetAction = useParams();
+  const navigate = useNavigate();
   const initialActionDetailData: ActionDetails = {
     hash: '',
     name: '',
@@ -33,16 +38,12 @@ export default function ActionDetail() {
   }
 
   const [processTracking, setCircleProcessOpen] = React.useState(false);
-  const [actionDetailData, setActionDetailData] = React.useState(initialActionDetailData);
+  const [_, setActionDetailData] = React.useState(initialActionDetailData);
   const [openError, setOpenError] = React.useState(false);
+  const [deleteConfirmationDialogOpen, setDeleteConfirmationDialogOpen] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
   const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
-
-  const breadcrumbs = [
-    <Link underline="hover" key="1" color="inherit" href="/actions">Actions</Link>,
-    <Typography key="3" color="text.primary">{actionId}</Typography>,
-  ];
 
   const loadActionDetailAsync = async () => {
     const requestOptions = {
@@ -63,21 +64,52 @@ export default function ActionDetail() {
     });
   }
 
+  const deleteAction =async (actionId: string) => {
+
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+    const targetURL = `${ACTION_MANAGER_API_URL}/${actionId}`;
+    await restClient.sendRequest(requestOptions, targetURL, () => {
+      navigate("/actions");
+      return undefined;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
+  }
+
   React.useEffect(() => {
     loadActionDetailAsync();
   }, []);
 
   let pageEntityMetadata: PageEntityMetadata = {
     pageName: 'action-details',
-    properties: [
+    breadcumbsMeta: [
+      <Link underline="hover" key="1" color="inherit" href="/actions">Actions</Link>,
+      <Typography key="3" color="text.primary">{actionId}</Typography>,
+    ],
+    pageEntityActions: [
       {
-        propName: 'actionName',
-        propLabel: 'Name',
-        propValue: actionDetailData.name,
-        isRequired: true,
-        propDescription: 'This is name of action',
-        propType: PropType.InputText
+        actionIcon: <ReplayIcon />,
+        actionLabel: "Replay action",
+        actionName: "replayAction",
+        onClick: () => {
+          return;
+        }
+      },
+      {
+        actionIcon: <DeleteIcon />,
+        properties: {sx:{color: red[800]}},
+        actionLabel: "Delete action",
+        actionName: "deleteAction",
+        onClick: () => () => setDeleteConfirmationDialogOpen(true)
       }
+    ],
+    properties: [
     ]
   }
 
@@ -97,14 +129,28 @@ export default function ActionDetail() {
     setOpenSuccess
   }
 
+  let confirmationDeleteDialogMeta: DialogMetadata = {
+    open: deleteConfirmationDialogOpen,
+    title: "Delete Action",
+    content: "Are you sure you want to delete this action?",
+    positiveText: "Yes",
+    negativeText: "No",
+    negativeAction() {
+      setDeleteConfirmationDialogOpen(false);
+    },
+    positiveAction() {
+      deleteAction(actionId);
+    },
+  }
+
 
   return (
     <Stack spacing={4}>
-      <Breadcrumbs breadcrumbs={breadcrumbs} />
       <PageEntityRender {...pageEntityMetadata}></PageEntityRender>
       <ActionJobTable {...actionJobTableParams} actionId={actionId}></ActionJobTable>
       <ProcessTracking isLoading={processTracking}></ProcessTracking>
       <SnackbarAlert {...snackbarAlertMetadata}></SnackbarAlert>
+      <ConfirmationDialog {...confirmationDeleteDialogMeta}></ConfirmationDialog>
     </Stack >
   );
 }

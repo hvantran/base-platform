@@ -60,8 +60,7 @@ export default function TableRender(props: TableMetadata) {
                                                         sx={{ display: column.isHidden ? 'none' : 'table-cell' }}
                                                         key={column.id}
                                                         align={column.align}>
-
-                                                        {column.actions.map(action => {
+                                                        {column.actions.filter(action => !action.enabled || action.enabled(row)).map(action => {
                                                             return (
                                                                 <IconButton
                                                                     key={action.actionName}
@@ -69,6 +68,7 @@ export default function TableRender(props: TableMetadata) {
                                                                     color="primary"
                                                                     aria-label="Next"
                                                                     component="label" 
+                                                                    
                                                                     {...action.properties}>
                                                                     <Tooltip title={action.actionLabel}>
                                                                         {action.actionIcon}
