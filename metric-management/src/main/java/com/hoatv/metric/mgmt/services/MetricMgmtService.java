@@ -12,6 +12,7 @@ import com.hoatv.task.mgmt.annotations.SchedulePoolSettings;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import com.hoatv.task.mgmt.annotations.ThreadPoolSettings;
 import net.logstash.logback.argument.StructuredArguments;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -115,7 +116,14 @@ public class MetricMgmtService {
                                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 String nameReplaced = nameTag.toLowerCase().replace(" ", "-");
                 String attNames = newAttributes.values().stream().map(MetricMgmtService::deAccent).collect(Collectors.joining("-"));
-                String metricNameFormatted = deAccent(nameReplaced).concat("-").concat(attNames);
+
+                StringJoiner stringJoiner = new StringJoiner("-");
+                stringJoiner.add(deAccent(nameReplaced));
+                if (StringUtils.isNotEmpty(attNames)) {
+                    stringJoiner.add(attNames);
+                }
+
+                String metricNameFormatted = stringJoiner.toString();
                 metricNameCompute = metricNameFormatted;
                 MDC.put(METRIC_NAME, metricNameFormatted);
                 attributes.forEach(MDC::put);

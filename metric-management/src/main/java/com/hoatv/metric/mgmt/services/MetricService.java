@@ -16,9 +16,12 @@ public class MetricService {
     public Map<String, ComplexValue> getMetrics() {
         return metrics;
     }
-
     public ComplexValue getMetric(String name) {
         return metrics.get(name);
+    }
+
+    public ComplexValue removeMetric(String name) {
+        return metrics.remove(name);
     }
 
     public void setMetric(String name, Collection<MetricTag> metricTags) {
