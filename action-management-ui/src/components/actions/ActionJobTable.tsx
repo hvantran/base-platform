@@ -54,8 +54,7 @@ export default function ActionJobTable(props: any) {
                     return "";
                 }
 
-                let createdAtDate = new Date(0);
-                createdAtDate.setUTCSeconds(value);
+                let createdAtDate = new Date(value);
                 return createdAtDate.toISOString();
             }
         },

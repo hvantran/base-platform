@@ -61,13 +61,14 @@ export default function PropertyRender(props: any) {
             if (!property.selectionMeta) {
                 throw new Error(`selectionMeta is required for ${property.propName} selection property`);
             }
-            let selectionMeta = property.selectionMeta
+            let selectionMeta = property.selectionMeta;
             renderNode = (
                 <FormControl sx={{ m: 1, width: '100%' }} size="small">
                     <Select
                         labelId={"demo-select-small".concat(property.propName)}
                         id={"demo-select-small".concat(property.propName)}
                         value={value}
+                        disabled={property.disabled}
                         multiple={selectionMeta.isMultiple}
                         name={property.propName}
                         label={property.propLabel}

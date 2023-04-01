@@ -97,7 +97,7 @@ export interface SwitcherFieldMeta {
 
 
 export interface SelectionMetadata {
-    selections: Array<string>
+    selections: Array<string> | Array<number>
     isMultiple?: boolean
     onChangeEvent: (event: SelectChangeEvent, child: React.ReactNode) => void
 }
@@ -109,6 +109,7 @@ export interface PropertyMetadata {
     propType: PropType
     propLabel?: string
     isRequired?: boolean
+    disabled?: boolean
     propDescription?: string
     layoutProperties?: any
     labelElementProperties?: any
@@ -130,7 +131,7 @@ export interface ActionMetadata {
     actionName: string
     actionLabel: string
     actionIcon: any
-    enabled?: (row: any) => boolean | boolean
+    visible?: (row: any) => boolean | boolean
     properties?: any
 }
 

@@ -9,11 +9,9 @@ import { green, red, yellow } from '@mui/material/colors';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import Breadcrumbs from '../common/Breadcrumbs';
 import ProcessTracking from '../common/ProcessTracking';
 import {
   ColumnMetadata,
-  DialogMetadata,
   PageEntityMetadata,
   PagingOptionMetadata,
   PagingResult,
@@ -29,7 +27,6 @@ import { useNavigate } from 'react-router-dom';
 import { ActionOverview, ACTION_MANAGER_API_URL } from '../AppConstants';
 import SnackbarAlert from '../common/SnackbarAlert';
 import PageEntityRender from '../renders/PageEntityRender';
-import ConfirmationDialog from '../common/ConfirmationDialog';
 
 
 
@@ -41,7 +38,6 @@ export default function ActionSummary() {
   const [openError, setOpenError] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
-  const [deleteConfirmationDialogOpen, setDeleteConfirmationDialogOpen] = React.useState(false);
   const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
   const breadcrumbs = [
@@ -58,21 +54,28 @@ export default function ActionSummary() {
     { id: 'name', label: 'Name', minWidth: 100 },
     {
       id: 'numberOfJobs',
-      label: 'Total Jobs',
+      label: 'Total jobs',
       minWidth: 170,
       align: 'left',
       format: (value: number) => value.toLocaleString('en-US'),
     },
     {
       id: 'numberOfFailureJobs',
-      label: 'Number of failure Jobs',
+      label: 'Number of failure jobs',
       minWidth: 170,
       align: 'left',
       format: (value: number) => value.toLocaleString('en-US'),
     },
     {
       id: 'numberOfSuccessJobs',
-      label: 'Number of success Jobs',
+      label: 'Number of success jobs',
+      minWidth: 170,
+      align: 'left',
+      format: (value: number) => value,
+    },
+    {
+      id: 'numberOfScheduleJobs',
+      label: 'Number of schedule jobs',
       minWidth: 170,
       align: 'left',
       format: (value: number) => value,
@@ -112,15 +115,13 @@ export default function ActionSummary() {
           actionLabel: "Delete action",
           actionName: "deleteAction",
           onClick: (row: ActionOverview) => {
-            return () => {
-              setDeleteConfirmationDialogOpen(true);
-            }
+            return () => deleteAction(row.hash)
           }
         },
         {
           actionIcon: <StarBorderIcon />,
           actionLabel: "Favorite action",
-          enabled: (row: ActionOverview) => !row.isFavorite,
+          visible: (row: ActionOverview) => !row.isFavorite,
           actionName: "favoriteAction",
           onClick: (row: ActionOverview) => {
             return () => setFavoriteAction(row.hash, true);
@@ -130,7 +131,7 @@ export default function ActionSummary() {
           actionIcon: <StarIcon />,
           properties: {sx:{color: yellow[800]}},
           actionLabel: "Unfavorite action",
-          enabled: (row: ActionOverview) => row.isFavorite,
+          visible: (row: ActionOverview) => row.isFavorite,
           actionName: "unFavoriteAction",
           onClick: (row: ActionOverview) => {
             return () => setFavoriteAction(row.hash, false);

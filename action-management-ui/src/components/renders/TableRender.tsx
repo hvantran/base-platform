@@ -60,7 +60,7 @@ export default function TableRender(props: TableMetadata) {
                                                         sx={{ display: column.isHidden ? 'none' : 'table-cell' }}
                                                         key={column.id}
                                                         align={column.align}>
-                                                        {column.actions.filter(action => !action.enabled || action.enabled(row)).map(action => {
+                                                        {column.actions.filter(action => !action.visible || action.visible(row)).map(action => {
                                                             return (
                                                                 <IconButton
                                                                     key={action.actionName}

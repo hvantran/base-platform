@@ -8,7 +8,7 @@ import { blue, green } from '@mui/material/colors';
 import LinkBreadcrumd from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES, JOB_OUTPUT_TARGET_VALUES } from '../AppConstants';
+import { ActionDefinition, ACTION_MANAGER_API_URL, DEFAULT_JOB_CONTENT, JobDefinition, JOB_CATEGORY_VALUES, JOB_OUTPUT_TARGET_VALUES, JOB_SCHEDULE_TIME_SELECTION } from '../AppConstants';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
 import {
@@ -110,6 +110,44 @@ export default function ActionCreation() {
         propType: PropType.Selection,
         selectionMeta: {
           selections: JOB_CATEGORY_VALUES,
+          onChangeEvent: function (event) {
+            let propValue = event.target.value;
+            let propName = event.target.name;
+            setStepMetadatas(onchangeStepDefault(propName, propValue))
+          }
+        }
+      },
+      {
+        propName: 'isScheduledJob',
+        propLabel: 'Supported schedule',
+        propValue: true,
+        layoutProperties: {xs: 6},
+        labelElementProperties: {xs: 4},
+        valueElementProperties: {xs: 8},
+        propDefaultValue: false,
+        propType: PropType.Switcher,
+        switcherFieldMeta: {
+          onChangeEvent: function (event, propValue) {
+            let propName = event.target.name;
+            setStepMetadatas(onchangeStepDefault(propName, propValue, undefined, (propertyMetadata) => {
+              if (propertyMetadata.propName === 'scheduleInterval') {
+                propertyMetadata.disabled = !propValue;
+              }
+            }));
+          }
+        }
+      },
+      {
+        propName: 'scheduleInterval',
+        propLabel: 'Interval minutes',
+        propValue: [JOB_SCHEDULE_TIME_SELECTION[0]],
+        propDefaultValue: JOB_SCHEDULE_TIME_SELECTION[0],
+        layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+        labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
+        valueElementProperties: {xs: 8},
+        propType: PropType.Selection,
+        selectionMeta: {
+          selections: JOB_SCHEDULE_TIME_SELECTION,
           onChangeEvent: function (event) {
             let propValue = event.target.value;
             let propName = event.target.name;
@@ -328,6 +366,45 @@ export default function ActionCreation() {
           }
         },
         {
+          propName: 'isScheduledJob',
+          propLabel: 'Supported schedule',
+          propValue: false,
+          layoutProperties: {xs: 6},
+          labelElementProperties: {xs: 4},
+          valueElementProperties: {xs: 8},
+          propDefaultValue: false,
+          propType: PropType.Switcher,
+          switcherFieldMeta: {
+            onChangeEvent: function (event, propValue) {
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue, undefined, (propertyMetadata) => {
+                if (propertyMetadata.propName === 'scheduleInterval') {
+                  propertyMetadata.disabled = !propValue;
+                }
+              }));
+            }
+          }
+        },
+        {
+          propName: 'scheduleInterval',
+          propLabel: 'Interval minutes',
+          disabled: true,
+          propValue: [JOB_SCHEDULE_TIME_SELECTION[0]],
+          propDefaultValue: JOB_SCHEDULE_TIME_SELECTION[0],
+          layoutProperties: {xs: 6, alignItems:"center", justifyContent:"center"},
+          labelElementProperties: {xs: 4, sx:{textAlign: 'center'}},
+          valueElementProperties: {xs: 8},
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: JOB_SCHEDULE_TIME_SELECTION,
+            onChangeEvent: function (event) {
+              let propValue = event.target.value;
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue));
+            }
+          }
+        },
+        {
           propName: 'jobDescription',
           propLabel: 'Description',
           propValue: '',
@@ -452,6 +529,8 @@ export default function ActionCreation() {
           let isAsync = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("isAsync"))?.propValue;
           let category = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobCategory"))?.propValue;
           let outputTargets = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("jobOutputTargets"))?.propValue;
+          let isScheduled = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("isScheduledJob"))?.propValue;
+          let scheduleInterval = findStepPropertyByCondition(stepMetadata, property => property.propName.startsWith("scheduleInterval"))?.propValue;
 
           return {
             name,
@@ -460,7 +539,9 @@ export default function ActionCreation() {
             configurations,
             content,
             outputTargets,
-            isAsync
+            isAsync,
+            isScheduled,
+            scheduleInterval: isScheduled ? scheduleInterval : 0
           } as JobDefinition
         })
     }
@@ -531,19 +612,23 @@ export default function ActionCreation() {
     </Stack>
   );
 
-  function onchangeStepDefault(propName: string, propValue: any, mapFunction?: (stepMetadata: StepMetadata) => void): React.SetStateAction<StepMetadata[]> {
+  function onchangeStepDefault(propName: string, propValue: any, stepMetadataCallback?: (stepMetadata: StepMetadata) => void,
+  propertyCallback?: (property: PropertyMetadata) => void): React.SetStateAction<StepMetadata[]> {
     return previous => {
       return [...previous].map((stepMetadata) => {
         let properties = stepMetadata.properties.map(prop => {
           if (prop.propName === propName) {
             prop.propValue = propValue;
           }
+          if (propertyCallback) {
+            propertyCallback(prop);
+          }
           return prop;
         });
 
         stepMetadata.properties = properties;
-        if (mapFunction) {
-          mapFunction(stepMetadata);
+        if (stepMetadataCallback) {
+          stepMetadataCallback(stepMetadata);
         }
         return stepMetadata;
       });
