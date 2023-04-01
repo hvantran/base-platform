@@ -14,6 +14,7 @@ import com.hoatv.task.mgmt.entities.TaskCollection;
 import com.hoatv.task.mgmt.services.ScheduleTaskMgmtService;
 import com.hoatv.task.mgmt.services.ScheduleTaskRegistryService;
 import com.hoatv.task.mgmt.services.TaskFactory;
+import org.apache.commons.collections4.CollectionUtils;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -92,9 +95,21 @@ public class InitializeConfigurations {
                 SchedulePoolSettings schedulePoolSettings = applicationObj.getClass().getAnnotation(SchedulePoolSettings.class);
                 ScheduleTaskMgmtService taskMgmtExecutorV1 = TaskFactory.INSTANCE.newScheduleTaskMgmtService(schedulePoolSettings);
 
-                Predicate<Field> isContainScheduleTaskMgmtServiceField = field -> "scheduleTaskMgmtService".equals(field.getName());
+                Predicate<Field> isContainScheduleTaskMgmtServiceField =
+                        field -> "scheduleTaskMgmtService".equals(field.getName());
                 CheckedConsumer<Field> scheduleTaskSettingConsumer = field -> field.set(applicationObj, taskMgmtExecutorV1);
-                ReflectionUtils.getFields(applicationObj.getClass(), isContainScheduleTaskMgmtServiceField).forEach(scheduleTaskSettingConsumer);
+                Set<Field> fields = ReflectionUtils.getFields(applicationObj.getClass(), isContainScheduleTaskMgmtServiceField);
+                fields.forEach(scheduleTaskSettingConsumer);
+
+                // Using set method to set scheduleTaskMgmtService
+                if (CollectionUtils.isEmpty(fields)) {
+                    Predicate<Method> isContainSetScheduleTaskMgmtServiceMethod =
+                            method -> "setScheduleTaskMgmtService".equals(method.getName());
+                    CheckedConsumer<Method> setScheduleTaskForInstance =
+                            method -> method.invoke(applicationObj, taskMgmtExecutorV1);
+                    ReflectionUtils.getMethods(applicationObj.getClass(), isContainSetScheduleTaskMgmtServiceMethod)
+                            .forEach(setScheduleTaskForInstance);
+                }
                 scheduleTaskExecutorService.register(schedulePoolSettings.application(), taskMgmtExecutorV1);
                 TaskCollection taskCollection = TaskCollection.fromObject(applicationObj);
                 taskMgmtExecutorV1.scheduleTasks(taskCollection, 5000, TimeUnit.MILLISECONDS);
