@@ -13,4 +13,6 @@ public interface ActionStatisticsDocumentRepository extends MongoRepository<Acti
     List<ActionStatisticsDocument> findByActionIdIn(Set<String> actionId);
 
     ActionStatisticsDocument findByActionId(String actionId);
+
+    void deleteByActionId(String actionId);
 }

@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoatv.springboot.common.validation.ValueOfEnum;
 import lombok.*;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 @Builder
@@ -42,6 +44,19 @@ public class JobDefinitionDTO {
     @Setter
     @JsonProperty("isAsync")
     private boolean isAsync;
+
+    @Setter
+    @JsonProperty("isScheduled")
+    private boolean isScheduled;
+
+    @Setter
+    @JsonProperty("scheduleInterval")
+    @Min(value = 0, message = "Schedule interval cannot less than zero")
+    private int scheduleInterval;
+
+    @Builder.Default
+    @JsonProperty("scheduleTimeUnit")
+    private String scheduleTimeUnit = TimeUnit.MINUTES.name();
 
     @Setter
     @JsonProperty("outputTargets")

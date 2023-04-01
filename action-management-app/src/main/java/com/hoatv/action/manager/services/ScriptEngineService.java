@@ -38,6 +38,7 @@ public class ScriptEngineService {
         scriptEngine.put("httpClientService", HttpClientService.INSTANCE);
         scriptEngine.put("taskFactory", TaskFactory.INSTANCE);
         scriptEngine.put("methodStatisticCollector", methodStatisticCollector);
+        scriptEngine.put("LOGGER", LOGGER);
 
         LOGGER.info("Putting execution context into script engine: {}", executionContext);
         executionContext.forEach(scriptEngine::put);

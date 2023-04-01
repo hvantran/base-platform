@@ -26,5 +26,6 @@ public class ActionStatisticsDocument {
     private long numberOfJobs;
     private long numberOfFailureJobs;
     private long numberOfSuccessJobs;
+    private long numberOfScheduleJobs;
     private double percentCompleted;
 }

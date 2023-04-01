@@ -29,5 +29,5 @@ function execute() {
     let document = Configuration.defaultConfiguration().jsonProvider().parse(responseString);
     let documentContext = JsonPath.parse(document);
     let hitCount = documentContext.read('$.rawResponse.hits.total', String.class);
-    return new JobResult(`hit count ${r"${hitCount}"}`,'')
+    return new JobResult(`${r"${hitCount}"}`,'')
 }

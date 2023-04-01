@@ -2,6 +2,7 @@ package com.hoatv.action.manager.collections;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import com.hoatv.action.manager.dtos.JobCategory;
 import com.hoatv.action.manager.dtos.JobDefinitionDTO;
@@ -39,6 +40,8 @@ public class JobDocument {
     private boolean isAsync;
     private List<String> outputTargets;
     private boolean isScheduled;
+    private int scheduleInterval;
+    private String scheduleUnit;
 
     private long createdAt;
 
@@ -54,6 +57,9 @@ public class JobDocument {
                 .jobContent(jobDefinitionDTO.getJobContent())
                 .jobCategory(JobCategory.valueOf(jobDefinitionDTO.getJobCategory()))
                 .isAsync(jobDefinitionDTO.isAsync())
+                .scheduleUnit(jobDefinitionDTO.getScheduleTimeUnit())
+                .isScheduled(jobDefinitionDTO.isScheduled())
+                .scheduleInterval(jobDefinitionDTO.getScheduleInterval())
                 .outputTargets(jobDefinitionDTO.getOutputTargets())
                 .createdAt(DateTimeUtils.getCurrentEpochTimeInSecond())
                 .actionId(actionId)
@@ -68,6 +74,9 @@ public class JobDocument {
                 .jobContent(jobDocument.getJobContent())
                 .jobCategory(jobDocument.getJobCategory().name())
                 .outputTargets(jobDocument.getOutputTargets())
+                .isScheduled(jobDocument.isScheduled())
+                .scheduleInterval(jobDocument.getScheduleInterval())
+                .scheduleTimeUnit(jobDocument.getScheduleUnit())
                 .createdAt(jobDocument.getCreatedAt())
                 .isAsync(jobDocument.isAsync())
                 .build();

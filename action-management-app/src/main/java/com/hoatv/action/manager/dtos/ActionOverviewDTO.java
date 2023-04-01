@@ -33,6 +33,9 @@ public class ActionOverviewDTO {
     @JsonProperty("numberOfFailureJobs")
     private long numberOfFailureJobs;
 
+    @JsonProperty("numberOfScheduleJobs")
+    private long numberOfScheduleJobs;
+
     @JsonProperty("isFavorite")
     private boolean isFavorite;
 }
