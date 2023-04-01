@@ -24,6 +24,11 @@ public class ScheduleTaskMgmtService extends CloseableTask {
         this.executorService = Executors.newScheduledThreadPool(corePoolSize, new AbmThreadFactory(application));
     }
 
+    ScheduleTaskMgmtService(String application, int numberOfThreads, int maxAwaitTerminationMillis) {
+        super(numberOfThreads, maxAwaitTerminationMillis);
+        this.executorService = Executors.newScheduledThreadPool(numberOfThreads, new AbmThreadFactory(application));
+    }
+
     public Future<?> scheduleTask(TaskEntry taskEntry, int waitingTime, TimeUnit timeUnit) {
         if (concurrentAccountLocks.tryAcquire(taskEntry, waitingTime, timeUnit)) {
             APP_LOGGER.info("Schedule one time execution task - {} under application - {}", taskEntry.getName(),
@@ -48,6 +53,11 @@ public class ScheduleTaskMgmtService extends CloseableTask {
                     taskEntry.getPeriodInMillis(), TimeUnit.MILLISECONDS);
         }
         return null;
+    }
+
+    public void cancel(ScheduledFuture<?> scheduledFuture) {
+        scheduledFuture.cancel(false);
+        concurrentAccountLocks.release(1);
     }
 
     public void scheduleTasks(TaskCollection taskCollection, int waitingTime, TimeUnit timeUnit) {

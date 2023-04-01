@@ -53,9 +53,16 @@ public enum TaskFactory {
     }
 
     public ScheduleTaskMgmtService newScheduleTaskMgmtService(SchedulePoolSettings schedulePoolSettings) {
-        serviceRegistry.putIfAbsent(schedulePoolSettings.application(), new LinkedList<>());
-        LinkedList<? super CloseableTask> services = serviceRegistry.get(schedulePoolSettings.application());
-        ScheduleTaskMgmtService scheduleTaskMgmtService = new ScheduleTaskMgmtService(schedulePoolSettings);
+        ThreadPoolSettings threadPoolSettings = schedulePoolSettings.threadPoolSettings();
+        return newScheduleTaskMgmtService(schedulePoolSettings.application(),
+                threadPoolSettings.numberOfThreads(),
+                threadPoolSettings.maxAwaitTerminationMillis());
+    }
+
+    public ScheduleTaskMgmtService newScheduleTaskMgmtService(String application, int numberOfThreads, int maxAwaitTerminationMillis) {
+        serviceRegistry.putIfAbsent(application, new LinkedList<>());
+        LinkedList<? super CloseableTask> services = serviceRegistry.get(application);
+        ScheduleTaskMgmtService scheduleTaskMgmtService = new ScheduleTaskMgmtService(application, numberOfThreads, maxAwaitTerminationMillis);
         services.add(scheduleTaskMgmtService);
         return scheduleTaskMgmtService;
     }

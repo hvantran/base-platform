@@ -26,6 +26,10 @@ public abstract class CloseableTask implements Closeable {
         this.concurrentAccountLocks = new TaskMgmtSemaphore(this.numberOfThreads);
     }
 
+    public long getActiveTasks() {
+        return (long)concurrentAccountLocks.getInitialPermits() - concurrentAccountLocks.availablePermits();
+    }
+
     protected CloseableTask(ThreadPoolSettings threadPoolSettings) {
         this(threadPoolSettings.numberOfThreads(), threadPoolSettings.maxAwaitTerminationMillis());
     }
