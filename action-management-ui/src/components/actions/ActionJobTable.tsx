@@ -12,6 +12,8 @@ import { JobOverview, JOB_MANAGER_API_URL } from '../AppConstants';
 import JobStatus from '../common/JobStatus';
 import TextTruncate from '../common/TextTruncate';
 import PageEntityRender from '../renders/PageEntityRender';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import TimesOneMobiledataIcon from '@mui/icons-material/TimesOneMobiledata';
 
 
 export default function ActionJobTable(props: any) {
@@ -45,8 +47,29 @@ export default function ActionJobTable(props: any) {
             format: (value: string) => (<JobStatus status={value}/>)
         },
         {
+            id: 'schedule',
+            label: 'Type',
+            minWidth: 100,
+            align: 'left',
+            format: (value: boolean) => value ? (<ScheduleIcon/>): (<TimesOneMobiledataIcon/>)
+        },
+        {
             id: 'startedAt',
             label: 'Started At',
+            minWidth: 100,
+            align: 'left',
+            format: (value: number) => {
+                if (!value) {
+                    return "";
+                }
+
+                let createdAtDate = new Date(value);
+                return createdAtDate.toISOString();
+            }
+        },
+        {
+            id: 'updatedAt',
+            label: 'Last run',
             minWidth: 100,
             align: 'left',
             format: (value: number) => {

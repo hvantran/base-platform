@@ -130,6 +130,7 @@ export interface EntityMetadata {
 export interface ActionMetadata {
     actionName: string
     actionLabel: string
+    actionLabelContent?: any
     actionIcon: any
     visible?: (row: any) => boolean | boolean
     properties?: any
@@ -154,7 +155,7 @@ export interface ColumnMetadata {
     minWidth?: number
     isKeyColumn?: boolean
     align?: "center" | "right" | "left" | "inherit" | "justify" | undefined
-    format?: (value: any) => string | React.ReactNode
+    format?: any
     actions?: Array<ColumnActionMetadata>
 }
 

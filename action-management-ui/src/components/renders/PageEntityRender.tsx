@@ -31,7 +31,14 @@ export default function PageRender(props: PageEntityMetadata) {
                         component="label"
 
                         {...action.properties}>
-                        <Tooltip title={action.actionLabel}>
+                        <Tooltip
+                            title={
+                                <>
+                                    {action.actionLabel}
+                                    {action.actionLabelContent ? (action.actionLabelContent): ""
+                                    }
+                                </>
+                            }>
                             {action.actionIcon}
                         </Tooltip>
                     </IconButton>

@@ -1,10 +1,12 @@
 
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReplayIcon from '@mui/icons-material/Replay';
+import InfoIcon from '@mui/icons-material/Info';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { useParams } from 'react-router-dom';
 import { ActionDetails, ACTION_MANAGER_API_URL } from '../AppConstants';
@@ -113,8 +115,19 @@ export default function ActionDetail() {
     ],
     pageEntityActions: [
       {
+        actionIcon: <RefreshIcon />,
+        actionLabel: "Refresh action",
+        actionName: "refreshAction",
+        onClick: () => () => loadActionDetailAsync()
+      },
+      {
         actionIcon: <ReplayIcon />,
         actionLabel: "Replay action",
+        actionLabelContent: 
+        <Box sx={{ display: 'flex', alignItems: "center", flexDirection: 'row' }}>
+            <InfoIcon />
+            <p>Replay function only support for one time jobs, <b>doesn't support for schedule jobs</b></p>
+        </Box>,
         actionName: "replayAction",
         onClick: () => () => replayAction(actionId)
       },

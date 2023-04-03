@@ -85,4 +85,6 @@ export interface JobOverview {
     failureNotes?: string
     startedAt: number
     elapsedTime: number
+    updatedAt: number
+    schedule: boolean
 }

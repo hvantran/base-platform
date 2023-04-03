@@ -4,6 +4,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 import { Stack } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
 import Link from '@mui/material/Link';
@@ -37,6 +39,8 @@ export default function ActionSummary() {
   const [pagingResult, setPagingResult] = React.useState(initialPagingResult);
   const [openError, setOpenError] = React.useState(false);
   const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
   const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(undefined);
   const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
@@ -198,8 +202,8 @@ export default function ActionSummary() {
   }
 
   React.useEffect(() => {
-    loadActionsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
-  }, [])
+    loadActionsAsync(pageIndex, pageSize);
+  }, [pageIndex, pageSize])
 
   const actions: Array<SpeedDialActionMetadata> = [
     {
@@ -215,12 +219,13 @@ export default function ActionSummary() {
   ];
 
   let pagingOptions: PagingOptionMetadata = {
-    pageIndex: 0,
+    pageIndex,
+    pageSize,
     component: 'div',
-    pageSize: 10,
     rowsPerPageOptions: [5, 10, 20],
     onPageChange: (pageIndex: number, pageSize: number) => {
-      loadActionsAsync(pageIndex, pageSize);
+      setPageIndex(pageIndex);
+      setPageSize(pageSize);
     }
   }
 
@@ -234,7 +239,15 @@ export default function ActionSummary() {
     pageName: 'action-summary',
     floatingActions: actions,
     tableMetadata: tableMetadata,
-    breadcumbsMeta: breadcrumbs
+    breadcumbsMeta: breadcrumbs,
+    pageEntityActions: [
+      {
+        actionIcon: <RefreshIcon />,
+        actionLabel: "Refresh action",
+        actionName: "refreshAction",
+        onClick: () => () => loadActionsAsync(pageIndex, pageSize)
+      }
+    ]
   }
 
   let snackbarAlertMetadata: SnackbarAlertMetadata = {
