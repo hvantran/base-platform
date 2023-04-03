@@ -35,5 +35,6 @@ public class JobResultDocument {
     private long endedAt;
     private long elapsedTime;
     private long startedAt;
+    private long updatedAt;
 
 }

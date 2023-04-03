@@ -24,11 +24,17 @@ public class JobOverviewDTO {
     @JsonProperty("status")
     private String jobStatus;
 
+    @JsonProperty("isSchedule")
+    private boolean isSchedule;
+
     @JsonProperty("failureNotes")
     private String failureNotes;
 
     @JsonProperty("startedAt")
     private long startedAt;
+
+    @JsonProperty("updatedAt")
+    private long updatedAt;
 
     @JsonProperty("elapsedTime")
     private String elapsedTime;

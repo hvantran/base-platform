@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @MetricProvider(application = JobManagerServiceImpl.ACTION_MANAGER, category = MetricProviders.MetricCategories.STATS_DATA_CATEGORY)
@@ -108,7 +107,8 @@ public class JobManagerServiceImpl implements JobManagerService {
 
     @PostConstruct
     public void init() {
-        long numberOfJobs = jobDocumentRepository.count();
+        Example<JobDocument> jobEx = Example.of(JobDocument.builder().isScheduled(false).build());
+        long numberOfJobs = jobDocumentRepository.count(jobEx);
         jobManagementStatistics.totalNumberOfJobs.set(numberOfJobs);
         Example<JobResultDocument> failureJobEx = Example.of(JobResultDocument.builder().jobStatus(JobStatus.FAILURE).build());
         long numberOfFailureJobs = jobResultDocumentRepository.count(failureJobEx);
@@ -177,6 +177,11 @@ public class JobManagerServiceImpl implements JobManagerService {
     }
 
     @Override
+    public long count(Example<JobDocument> example) {
+        return jobDocumentRepository.count(example);
+    }
+
+    @Override
     public List<Pair<JobDocument, JobResultDocument>> getScheduleJobPairs() {
         List<JobDocument> scheduledJobDocuments = jobDocumentRepository.findByIsScheduledTrue();
         List<JobResultDocument> jobResultDocuments = getJobResultDocuments(scheduledJobDocuments);
@@ -204,7 +209,9 @@ public class JobManagerServiceImpl implements JobManagerService {
                     .hash(jobId)
                     .jobState(jobState)
                     .jobStatus(jobStatus)
+                    .isSchedule(jobDocument.isScheduled())
                     .startedAt(jobStat.getStartedAt())
+                    .updatedAt(jobStat.getUpdatedAt())
                     .elapsedTime(DurationFormatUtils.formatDuration(jobStat.getElapsedTime(), "HH:mm:ss.S"))
                     .failureNotes(jobStat.getFailureNotes())
                     .build();
@@ -219,21 +226,28 @@ public class JobManagerServiceImpl implements JobManagerService {
     }
 
     @Override
+    public List<Pair<JobDocument, JobResultDocument>> getOneTimeJobsFromAction(String actionId) {
+        List<JobDocument> jobDocuments = jobDocumentRepository.findByIsScheduledFalseAndActionId(actionId);
+        List<JobResultDocument> jobResultDocuments = getJobResultDocuments(jobDocuments);
+        return getJobDocumentPairs(jobDocuments, jobResultDocuments);
+    }
+
+    @Override
     @LoggingMonitor
     public void deleteJobsByActionId(String actionId) {
-        LOGGER.info("Deleted the job result documents on action {}", actionId);
+        LOGGER.info("Deleted the job result documents belong to action {}", actionId);
         List<JobDocumentRepository.JobId> jobIds = jobDocumentRepository.findByIsScheduledTrueAndActionId(actionId);
         List<String> jobIdStrings = jobIds.stream().map(JobDocumentRepository.JobId::getHash).toList();
 
         scheduledJobRegistry.entrySet().stream()
                 .filter(p -> jobIdStrings.contains(p.getKey()))
                 .filter(p -> Objects.nonNull(p.getValue()))
-                .peek(p -> LOGGER.info("Delete the schedule job - {}", p.getKey()))
+                .peek(p -> LOGGER.info("Delete the schedule tasks - {}", p.getKey()))
                 .map(Map.Entry::getValue)
                 .forEach(scheduleTaskMgmtService::cancel);
         jobIdStrings.forEach(metricService::removeMetric);
         jobDocumentRepository.deleteByActionId(actionId);
-        LOGGER.info("Deleted the job documents on action {}", actionId);
+        LOGGER.info("Deleted the job documents belong to action {}", actionId);
         jobResultDocumentRepository.deleteByActionId(actionId);
     }
 
@@ -255,19 +269,17 @@ public class JobManagerServiceImpl implements JobManagerService {
 
     @Override
     public void processJob(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> callback) {
+        jobManagementStatistics.totalNumberOfJobs.incrementAndGet();
         if (jobDocument.isScheduled()) {
             ScheduledFuture<?> scheduledFuture = processScheduleJob(jobDocument, jobResultDocument, callback);
             scheduledJobRegistry.put(jobDocument.getHash(), scheduledFuture);
             return;
         }
-        jobManagementStatistics.totalNumberOfJobs.incrementAndGet();
-        jobManagementStatistics.numberOfActiveJobs.incrementAndGet();
         if (jobDocument.isAsync()) {
             processAsync(jobDocument, jobResultDocument, callback);
             return;
         }
         processSync(jobDocument, jobResultDocument, callback);
-        jobManagementStatistics.numberOfActiveJobs.decrementAndGet();
     }
 
     private ScheduledFuture<?> processScheduleJob(JobDocument jobDocument, JobResultDocument jobResultDocument,
@@ -289,10 +301,13 @@ public class JobManagerServiceImpl implements JobManagerService {
     }
 
     private void processSync(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> onJobStatusChange) {
-        long startedAt = DateTimeUtils.getCurrentEpochTimeInMillisecond();
-        JobStatus prevJobStatus = jobResultDocument.getJobStatus();
+        jobManagementStatistics.numberOfActiveJobs.incrementAndGet();
+        long currentEpochTimeInMillisecond = DateTimeUtils.getCurrentEpochTimeInMillisecond();
         try {
-            jobResultDocument.setStartedAt(startedAt);
+            if (jobResultDocument.getStartedAt() == 0) {
+                jobResultDocument.setStartedAt(currentEpochTimeInMillisecond);
+            }
+            jobResultDocument.setUpdatedAt(currentEpochTimeInMillisecond);
             jobResultDocument.setJobStatus(JobStatus.PROCESSING);
             jobResultDocumentRepository.save(jobResultDocument);
 
@@ -315,27 +330,24 @@ public class JobManagerServiceImpl implements JobManagerService {
             processOutputTargets(jobDocument, jobName, jobResult);
 
             JobStatus nextJobStatus = StringUtils.isNotEmpty(jobResult.getException()) ? JobStatus.FAILURE : JobStatus.SUCCESS;
-            updateJobResultDocument(jobResultDocument, nextJobStatus, startedAt, jobResult.getException());
-            onJobStatusChangeCallback(jobDocument, onJobStatusChange, prevJobStatus, nextJobStatus);
+            updateJobResultDocument(jobResultDocument, nextJobStatus, currentEpochTimeInMillisecond, jobResult.getException());
+            processJobResultCallback(jobDocument, onJobStatusChange, nextJobStatus);
         } catch (Exception exception) {
             LOGGER.error("An exception occurred while processing job", exception);
-            updateJobResultDocument(jobResultDocument, JobStatus.FAILURE, startedAt, exception.getMessage());
-            onJobStatusChangeCallback(jobDocument, onJobStatusChange, prevJobStatus, JobStatus.FAILURE);
+            updateJobResultDocument(jobResultDocument, JobStatus.FAILURE, currentEpochTimeInMillisecond, exception.getMessage());
+            processJobResultCallback(jobDocument, onJobStatusChange, JobStatus.FAILURE);
         }
     }
 
-    private void onJobStatusChangeCallback(JobDocument jobDocument,
-                                           Consumer<JobStatus> onJobStatusChange,
-                                           JobStatus prevJobStatus,
-                                           JobStatus nextJobStatus) {
-        if (prevJobStatus != nextJobStatus && !jobDocument.isScheduled()) {
+    private void processJobResultCallback(JobDocument jobDocument,
+                                          Consumer<JobStatus> onJobStatusChange, JobStatus nextJobStatus) {
+        if (!jobDocument.isScheduled()) {
             onJobStatusChange.accept(nextJobStatus);
-            if (nextJobStatus == JobStatus.SUCCESS && jobManagementStatistics.numberOfFailureJobs.get() > 0) {
-                jobManagementStatistics.numberOfFailureJobs.decrementAndGet();
-                return;
+            if (nextJobStatus == JobStatus.FAILURE) {
+                jobManagementStatistics.numberOfFailureJobs.incrementAndGet();
             }
-            jobManagementStatistics.numberOfFailureJobs.incrementAndGet();
         }
+        jobManagementStatistics.numberOfActiveJobs.decrementAndGet();
     }
 
     private void updateJobResultDocument(JobResultDocument jobResultDocument, JobStatus nextJobStatus, long startedAt, String jobResult) {

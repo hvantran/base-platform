@@ -164,7 +164,7 @@ public class ActionManagerServiceImpl implements ActionManagerService {
     @Override
     @LoggingMonitor
     public boolean replayAction(String actionId) {
-        ActionExecutionContext actionExecutionContext = getActionExecutionContext(actionId);
+        ActionExecutionContext actionExecutionContext = getActionExecutionContextForReplay(actionId);
         jobManagerService.processBulkJobs(actionExecutionContext);
         actionStatistics.numberOfReplayActions.incrementAndGet();
         return true;
@@ -184,7 +184,6 @@ public class ActionManagerServiceImpl implements ActionManagerService {
                 .map(ActionDocument::getHash)
                 .collect(Collectors.toSet());
         List<ActionStatisticsDocument> actionStatics = actionStatisticsDocumentRepository.findByActionIdIn(actionIds);
-
         return actionDocuments.map(actionDocument -> {
             String actionId = actionDocument.getHash();
             Optional<ActionStatisticsDocument> actionStatistic =
@@ -192,24 +191,29 @@ public class ActionManagerServiceImpl implements ActionManagerService {
 
             Supplier<ActionStatisticsDocument> defaultActionStat = () -> ActionStatisticsDocument.builder().build();
             ActionStatisticsDocument actionStat = actionStatistic.orElseGet(defaultActionStat);
+            long numberOfJobs = actionStat.getNumberOfJobs();
+            long numberOfFailureJobs = actionStat.getNumberOfFailureJobs();
+            long numberOfSuccessJobs = actionStat.getNumberOfSuccessJobs();
+            long numberOfScheduleJobs = numberOfJobs - numberOfFailureJobs - numberOfSuccessJobs;
             return ActionOverviewDTO.builder()
                     .name(actionDocument.getActionName())
                     .hash(actionId)
-                    .numberOfFailureJobs(actionStat.getNumberOfFailureJobs())
-                    .numberOfJobs(actionStat.getNumberOfJobs())
+                    .numberOfScheduleJobs(numberOfScheduleJobs)
+                    .numberOfFailureJobs(numberOfFailureJobs)
+                    .numberOfJobs(numberOfJobs)
                     .isFavorite(actionDocument.isFavorite())
                     .createdAt(actionDocument.getCreatedAt())
-                    .numberOfSuccessJobs(actionStat.getNumberOfSuccessJobs())
+                    .numberOfSuccessJobs(numberOfSuccessJobs)
                     .build();
         });
     }
 
-    private ActionExecutionContext getActionExecutionContext(String actionId) {
+    private ActionExecutionContext getActionExecutionContextForReplay(String actionId) {
         Optional<ActionDocument> actionDocumentOptional = actionDocumentRepository.findById(actionId);
         ActionDocument actionDocument = actionDocumentOptional
                 .orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + actionId));
         ActionStatisticsDocument actionStatisticsDocument = actionStatisticsDocumentRepository.findByActionId(actionId);
-        List<Pair<JobDocument, JobResultDocument>> jobDocumentPairs = jobManagerService.getJobsFromAction(actionId);
+        List<Pair<JobDocument, JobResultDocument>> jobDocumentPairs = jobManagerService.getOneTimeJobsFromAction(actionId);
         CheckedConsumer<JobStatus> onCompletedJobCallback = onCompletedJobCallback(actionStatisticsDocument);
 
         return ActionExecutionContext.builder()

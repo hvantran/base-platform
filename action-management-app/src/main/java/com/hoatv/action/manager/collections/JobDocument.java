@@ -45,6 +45,8 @@ public class JobDocument {
 
     private long createdAt;
 
+    private long updatedAt;
+
     public static JobDocument fromJobDefinition(JobDefinitionDTO jobDefinitionDTO) {
         return fromJobDefinition(jobDefinitionDTO, "");
     }
