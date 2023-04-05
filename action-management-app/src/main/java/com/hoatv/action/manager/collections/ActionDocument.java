@@ -2,8 +2,6 @@ package com.hoatv.action.manager.collections;
 
 import java.util.UUID;
 
-import javax.annotation.Generated;
-
 import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
 import org.springframework.data.annotation.Id;

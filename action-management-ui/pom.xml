@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>hoatv</groupId>
+        <artifactId>base-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>action-management-ui</artifactId>
+    <name>microservices/${artifactId}</name>
+    <packaging>pom</packaging>
+
+    <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <!-- Required: The following will ensure `yarn install` is called
+                             before anything else during the 'Default Lifecycle' -->
+                        <execution>
+                            <id>npm install (initialize)</id>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                            <configuration>
+                                <executable>yarn</executable>
+                                <arguments>
+                                    <argument>install</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <!-- Required: The following will ensure `yarn install` is called
+                             before anything else during the 'Clean Lifecycle' -->
+                        <execution>
+                            <id>npm install (clean)</id>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <phase>pre-clean</phase>
+                            <configuration>
+                                <executable>yarn</executable>
+                                <arguments>
+                                    <argument>install</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <!-- Required: This following calls `yarn run build` where 'build' is
+                             the script name I used in my project, change this if yours is
+                                 different -->
+                        <execution>
+                            <id>npm run build (compile)</id>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <phase>compile</phase>
+                            <configuration>
+                                <executable>yarn</executable>
+                                <arguments>
+                                    <argument>run</argument>
+                                    <argument>build</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+    </build>
+</project>

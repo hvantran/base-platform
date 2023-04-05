@@ -23,9 +23,9 @@ public class ActionManagerExceptionHandler {
     @ExceptionHandler(value = {EntityNotFoundException.class})
     protected ResponseEntity<Object> handleAppException(RuntimeException ex, WebRequest request) {
         LOGGER.error("An AppException occurred while processing", ex);
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
+        request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         String responseMessage = String.format("{\"message\": \"%s\"}", ex.getMessage());
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
+        request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(responseMessage);

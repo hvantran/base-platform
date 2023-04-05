@@ -23,51 +23,6 @@ import java.util.List;
 @ComponentScan({"com.hoatv.action.manager", "com.hoatv.springboot.common"})
 @EnableMongoRepositories
 public class ActionManagerApplication {
-
-   @Autowired(required = false)
-    private ActionDocumentRepository actionDocumentRepository;
-
-   @Autowired
-   private ScriptEngineService scriptEngineService;
-
-    //@Bean
-    public CommandLineRunner createActions() {
-        return args -> {
-            ActionDocument cleanupHome = ActionDocument.builder()
-                .createdAt(System.currentTimeMillis()/1000)
-                .actionName("Cleanup home")
-                .configurations("{'tools': 'pen'}")
-                .build();
-            ActionDocument washYourDishes = ActionDocument.builder()
-                .createdAt(System.currentTimeMillis()/1000)
-                .actionName("Wash your dishes")
-                .configurations("{'tools': 'pen'}")
-                .build();
-            ActionDocument cleanupYourBed = ActionDocument.builder()
-                .createdAt(System.currentTimeMillis()/1000)
-                .actionName("Cleanup your bed")
-                .configurations("{'tools': 'pen'}")
-                .build();
-            actionDocumentRepository.saveAll(List.of(cleanupHome, washYourDishes, cleanupYourBed));
-        };
-    }
-//    //@Bean
-//    public CommandLineRunner queries() {
-//        return args -> {
-//            ActionDocument cleanupYourBed = actionDocumentRepository.findActionByName("Cleanup your bed");
-//            System.out.println(cleanupYourBed);
-//        };
-//    }
-//    @Bean
-//    public CommandLineRunner executeJobByEngine() {
-//        return args -> {
-//            File file = new File(ActionManagerApplication.class.getClassLoader().getResource("violation-executor.js").getFile());
-//            String data = FileUtils.readFileToString(file, "UTF-8");
-//            JobResult result = scriptEngineService.execute(data, Collections.emptyMap());
-//            System.out.println(result);
-//        };
-//    }
-
     public static void main (String[] args) {
         SpringApplication.run(ActionManagerApplication.class, args);
     }

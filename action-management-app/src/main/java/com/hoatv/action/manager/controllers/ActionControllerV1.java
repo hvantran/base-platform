@@ -7,6 +7,8 @@ import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.action.manager.dtos.ActionOverviewDTO;
 import com.hoatv.action.manager.exceptions.EntityNotFoundException;
 import com.hoatv.monitor.mgmt.LoggingMonitor;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,8 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,13 +24,11 @@ import java.util.Optional;
 @RequestMapping(value = "/v1/actions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ActionControllerV1 {
 
-    private ActionManagerService actionManagerService;
-    private JobManagerService jobManagerService;
+    private final ActionManagerService actionManagerService;
 
     @Autowired
-    public ActionControllerV1(ActionManagerService actionManagerService, JobManagerService jobManagerService) {
+    public ActionControllerV1(ActionManagerService actionManagerService) {
         this.actionManagerService = actionManagerService;
-        this.jobManagerService = jobManagerService;
     }
 
     @LoggingMonitor
@@ -55,8 +53,9 @@ public class ActionControllerV1 {
     @GetMapping(value = "/{hash}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getActionDetail(@PathVariable("hash") String hash) {
         Optional<ActionDefinitionDTO> actionResult = actionManagerService.getActionById(hash);
-        actionResult.orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
-        return ResponseEntity.ok(actionResult);
+        ActionDefinitionDTO actionDefinitionDTO = actionResult
+                .orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
+        return ResponseEntity.ok(actionDefinitionDTO);
     }
 
     @LoggingMonitor
@@ -64,8 +63,9 @@ public class ActionControllerV1 {
     public ResponseEntity<?> setFavoriteActionValue(@PathVariable("hash") String hash,
                                                @RequestParam("isFavorite") boolean isFavorite) {
         Optional<ActionDefinitionDTO> actionResult = actionManagerService.setFavoriteActionValue(hash, isFavorite);
-        actionResult.orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
-        return ResponseEntity.ok(actionResult);
+        ActionDefinitionDTO actionDefinitionDTO = actionResult
+                .orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
+        return ResponseEntity.ok(actionDefinitionDTO);
     }
 
     @LoggingMonitor
@@ -79,8 +79,9 @@ public class ActionControllerV1 {
     @DeleteMapping(value = "/{hash}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteAction(@PathVariable("hash") String hash) {
         Optional<ActionDefinitionDTO> actionResult = actionManagerService.getActionById(hash);
-        actionResult.orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
-        actionManagerService.deleteAction(hash);
+        ActionDefinitionDTO actionDefinitionDTO = actionResult
+                .orElseThrow(() -> new EntityNotFoundException("Cannot find action ID: " + hash));
+        actionManagerService.deleteAction(actionDefinitionDTO.getHash());
         return ResponseEntity.noContent().build();
     }
 

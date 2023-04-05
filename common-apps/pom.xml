@@ -15,6 +15,5 @@
 
     <modules>
         <module>springboot-common-app</module>
-        <module>springboot-webflux-app</module>
     </modules>
 </project>
