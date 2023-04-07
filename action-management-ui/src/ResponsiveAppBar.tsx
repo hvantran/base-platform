@@ -1,9 +1,11 @@
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import AppsIcon from '@mui/icons-material/Apps';
 import MailIcon from '@mui/icons-material/Mail';
 import MenuIcon from '@mui/icons-material/Menu';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
+import { ClickAwayListener, Grid, Paper } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -12,9 +14,9 @@ import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { alpha, styled } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { alpha, styled } from '@mui/material/styles';
 import * as React from 'react';
 
 const pages = [
@@ -71,14 +73,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorAppSwicherEl, setAnchorAppSwicherEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);
+  const isAppSwicherMenuOpen = Boolean(anchorAppSwicherEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
+  };
+  const handleAppSwitcherMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorAppSwicherEl(event.currentTarget);
   };
 
   const handleMobileMenuClose = () => {
@@ -88,6 +95,10 @@ export default function PrimarySearchAppBar() {
   const handleMenuClose = () => {
     setAnchorEl(null);
     handleMobileMenuClose();
+  };
+
+  const handleAppSwicherMenuClose = () => {
+    setAnchorAppSwicherEl(null);
   };
 
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -113,6 +124,68 @@ export default function PrimarySearchAppBar() {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+    </Menu>
+  );
+
+  const goooApp = function(targetURL: string) {
+    window.location.href = targetURL;
+  }
+
+  const renderAppSwicherMenu = (
+    <Menu
+      anchorEl={anchorAppSwicherEl}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      id="primary-app-swicher-menu"
+      keepMounted
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      open={isAppSwicherMenuOpen}
+      onClose={handleAppSwicherMenuClose}
+    >
+      <Grid container spacing={2}
+        sx={{ minWidth: 300 }}
+        direction="row"
+        alignItems="center"
+        justifyContent="center"
+        style={{ minHeight: '50vh' }}>
+        <Grid item xs={6}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/")}>
+            <img alt='Template manager' src='/template-manager.jpg' width={70}/>
+            <Typography variant="caption" display="block" gutterBottom>
+               Template Manager
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={6}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/")}>
+            <img alt='Action manager' src='/action-manager.png' width={70}/>
+            <Typography variant="caption" display="block" gutterBottom>
+              Action Manager
+            </Typography>
+          </Paper>
+          </Grid>
+        <Grid item xs={6}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://ecommerceui.local:8080")}>
+            <img alt='Ecommerce statistics' src='/ecommerce-stats.png' width={70}/>
+            <Typography variant="caption" display="block" gutterBottom>
+              Ecommerce Statistics
+            </Typography>
+          </Paper>
+          </Grid>
+        <Grid item xs={6}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:8080")}>
+            <img alt='External endpoint collector' src='/rest-api.png' width={70}/>
+            <Typography variant="caption" display="block" gutterBottom>
+              Ecommerce Statistics
+            </Typography>
+          </Paper>
+          </Grid>
+      </Grid>
     </Menu>
   );
 
@@ -234,6 +307,16 @@ export default function PrimarySearchAppBar() {
             >
               <AccountCircle />
             </IconButton>
+            <IconButton
+              size="large"
+              aria-label="App switcher"
+              aria-controls="primary-search-account-menu"
+              onClick={handleAppSwitcherMenuOpen}
+              aria-haspopup="true"
+              color="inherit"
+            >
+              <AppsIcon />
+            </IconButton>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -251,6 +334,7 @@ export default function PrimarySearchAppBar() {
       </AppBar>
       {renderMobileMenu}
       {renderMenu}
+      {renderAppSwicherMenu}
     </Box>
   );
 }

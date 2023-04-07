@@ -2,8 +2,8 @@
 export const JOB_CATEGORY_VALUES = ["IO", "CPU"]
 export const JOB_OUTPUT_TARGET_VALUES = ["CONSOLE", "METRIC"]
 export const JOB_SCHEDULE_TIME_SELECTION = [0, 5, 10, 20, 30, 60]
-export const ACTION_MANAGER_API_URL: string = 'http://192.168.1.6:6085/action-manager/v1/actions'
-export const JOB_MANAGER_API_URL: string = 'http://192.168.1.6:6085/action-manager/v1/jobs'
+export const ACTION_MANAGER_API_URL: string = 'http://actmanager.local:6085/action-manager/v1/actions'
+export const JOB_MANAGER_API_URL: string = 'http://actmanager.local:6085/action-manager/v1/jobs'
 export const DEFAULT_JOB_CONTENT: string = `let Collections = Java.type('java.util.Collections');
 let List = Java.type('java.util.List');
 let ArrayList = Java.type('java.util.ArrayList');
