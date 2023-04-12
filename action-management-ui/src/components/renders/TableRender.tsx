@@ -25,6 +25,11 @@ export default function TableRender(props: TableMetadata) {
         props.pagingOptions.onPageChange(0, +event.target.value);
     };
     const keyColumn = props.columns.find(p => p.isKeyColumn === true)?.id
+    let recordTransfromCallback = props.pagingResult.elementTransformCallback
+    let pagingContent = props.pagingResult.content;
+    if (recordTransfromCallback) {
+        pagingContent = props.pagingResult.content.map(recordTransfromCallback);
+    }
 
     if (!keyColumn) {
         throw new Error("Need to provide a key column for table");
@@ -49,7 +54,7 @@ export default function TableRender(props: TableMetadata) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {props.pagingResult.content
+                        {pagingContent
                             .map((row) => {
                                 return (
                                     <TableRow hover role="checkbox" tabIndex={-1} key={row[keyColumn]}>

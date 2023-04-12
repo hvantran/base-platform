@@ -26,7 +26,7 @@ import {
 } from '../GenericConstants';
 
 import { useNavigate } from 'react-router-dom';
-import { ActionOverview, ACTION_MANAGER_API_URL } from '../AppConstants';
+import { ActionOverview, ACTION_MANAGER_API_URL, ROOT_BREADCRUMB } from '../AppConstants';
 import SnackbarAlert from '../common/SnackbarAlert';
 import PageEntityRender from '../renders/PageEntityRender';
 
@@ -46,7 +46,7 @@ export default function ActionSummary() {
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href='#'>
-      Actions
+      {ROOT_BREADCRUMB}
     </Link>,
     <Typography key="3" color="text.primary">
       Summary

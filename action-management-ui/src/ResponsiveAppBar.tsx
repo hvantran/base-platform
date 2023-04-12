@@ -148,7 +148,7 @@ export default function PrimarySearchAppBar() {
       onClose={handleAppSwicherMenuClose}
     >
       <Grid container spacing={2}
-        sx={{ minWidth: 300 }}
+        sx={{ maxWidth: '600px' }}
         direction="row"
         alignItems="center"
         justifyContent="center"
@@ -178,10 +178,10 @@ export default function PrimarySearchAppBar() {
           </Paper>
           </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:8080")}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:3002")}>
             <img alt='External endpoint collector' src='/rest-api.png' width={70}/>
             <Typography variant="caption" display="block" gutterBottom>
-              Ecommerce Statistics
+              External Endpoint Collector
             </Typography>
           </Paper>
           </Grid>

@@ -171,6 +171,7 @@ export interface PagingOptionMetadata {
 export interface PagingResult {
     totalElements: number
     content: Array<any>
+    elementTransformCallback?: (record: any) => any
     pageable?: any
 }
 

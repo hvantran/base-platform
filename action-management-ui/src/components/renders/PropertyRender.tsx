@@ -1,4 +1,4 @@
-import { FormControl, Grid, Input, MenuItem, Select, Switch, TextField } from '@mui/material';
+import { Box, FormControl, Grid, Input, MenuItem, Select, Switch, TextField } from '@mui/material';
 import * as React from 'react';
 import CodeEditor from '../common/CodeEditor';
 import { PropertyMetadata, PropType } from '../GenericConstants';
@@ -105,7 +105,9 @@ export default function PropertyRender(props: any) {
     return (
         <Grid container spacing={2} sx={{ py: 1 }} {...property.layoutProperties}>
             <Grid item {...property.labelElementProperties}>
-                <label>{property.propLabel} {property.isRequired ? (<span>*</span>) : (<span />)}</label>
+                <Box {...property.labelElementProperties.sx}>
+                    <label>{property.propLabel} {property.isRequired ? (<span>*</span>) : (<span />)}</label>
+                </Box>
             </Grid>
             <Grid item {...property.valueElementProperties}>
                 {renderNode}

@@ -9,7 +9,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { useParams } from 'react-router-dom';
-import { ActionDetails, ACTION_MANAGER_API_URL } from '../AppConstants';
+import { ActionDetails, ACTION_MANAGER_API_URL, ROOT_BREADCRUMB } from '../AppConstants';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
 import { DialogMetadata, PageEntityMetadata, PropType, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
@@ -67,7 +67,7 @@ export default function ActionDetail() {
     });
   }
 
-  const deleteAction =async (actionId: string) => {
+  const deleteAction = async (actionId: string) => {
 
     const requestOptions = {
       method: "DELETE",
@@ -85,7 +85,7 @@ export default function ActionDetail() {
     });
   }
 
-  const replayAction =async (actionId: string) => {
+  const replayAction = async (actionId: string) => {
 
     const requestOptions = {
       method: "GET",
@@ -110,7 +110,9 @@ export default function ActionDetail() {
   let pageEntityMetadata: PageEntityMetadata = {
     pageName: 'action-details',
     breadcumbsMeta: [
-      <Link underline="hover" key="1" color="inherit" href="/actions">Actions</Link>,
+      <Link underline="hover" key="1" color="inherit" href="/actions">
+        {ROOT_BREADCRUMB}
+      </Link>,
       <Typography key="3" color="text.primary">{actionId}</Typography>,
     ],
     pageEntityActions: [
@@ -123,17 +125,17 @@ export default function ActionDetail() {
       {
         actionIcon: <ReplayIcon />,
         actionLabel: "Replay action",
-        actionLabelContent: 
-        <Box sx={{ display: 'flex', alignItems: "center", flexDirection: 'row' }}>
+        actionLabelContent:
+          <Box sx={{ display: 'flex', alignItems: "center", flexDirection: 'row' }}>
             <InfoIcon />
             <p>Replay function only support for one time jobs, <b>doesn't support for schedule jobs</b></p>
-        </Box>,
+          </Box>,
         actionName: "replayAction",
         onClick: () => () => replayAction(actionId)
       },
       {
         actionIcon: <DeleteIcon />,
-        properties: {sx:{color: red[800]}},
+        properties: { sx: { color: red[800] } },
         actionLabel: "Delete action",
         actionName: "deleteAction",
         onClick: () => () => setDeleteConfirmationDialogOpen(true)
