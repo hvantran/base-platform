@@ -2,7 +2,25 @@ import * as React from 'react';
 import { Link } from "react-router-dom";
 import { ViewUpdate } from "@codemirror/view";
 import { LanguageSupport } from '@codemirror/language';
-import { SelectChangeEvent } from '@mui/material';
+import { SelectChangeEvent, createTheme } from '@mui/material';
+
+export const DEFAULT_THEME = createTheme({
+  typography: {
+    fontSize: 13,
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+  },
+});
 
 export function WithLink(to: any, children: any) {
     return <Link to={to}>{children}</Link>

@@ -1,23 +1,22 @@
 
+import DeleteIcon from '@mui/icons-material/Delete';
+import InfoIcon from '@mui/icons-material/Info';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ReplayIcon from '@mui/icons-material/Replay';
 import { Box, Stack } from '@mui/material';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ReplayIcon from '@mui/icons-material/Replay';
-import InfoIcon from '@mui/icons-material/Info';
-import RefreshIcon from '@mui/icons-material/Refresh';
 
-import { useParams } from 'react-router-dom';
-import { ActionDetails, ACTION_MANAGER_API_URL, ROOT_BREADCRUMB } from '../AppConstants';
+import { red } from '@mui/material/colors';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ACTION_MANAGER_API_URL, ActionDetails, ROOT_BREADCRUMB } from '../AppConstants';
+import { DialogMetadata, PageEntityMetadata, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
+import ConfirmationDialog from '../common/ConfirmationDialog';
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
-import { DialogMetadata, PageEntityMetadata, PropType, RestClient, SnackbarAlertMetadata, SnackbarMessage } from '../GenericConstants';
 import PageEntityRender from '../renders/PageEntityRender';
 import ActionJobTable from './ActionJobTable';
-import { red } from '@mui/material/colors';
-import { useNavigate } from 'react-router-dom';
-import ConfirmationDialog from '../common/ConfirmationDialog';
 
 
 export default function ActionDetail() {
@@ -120,7 +119,10 @@ export default function ActionDetail() {
         actionIcon: <RefreshIcon />,
         actionLabel: "Refresh action",
         actionName: "refreshAction",
-        onClick: () => () => loadActionDetailAsync()
+        onClick: () => () => {
+          loadActionDetailAsync();
+          setReplayActionFlag(previous => !previous);
+        }
       },
       {
         actionIcon: <ReplayIcon />,

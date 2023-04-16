@@ -2,7 +2,6 @@ package com.hoatv.action.manager.controllers;
 
 
 import com.hoatv.action.manager.api.ActionManagerService;
-import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.action.manager.dtos.ActionOverviewDTO;
 import com.hoatv.action.manager.exceptions.EntityNotFoundException;

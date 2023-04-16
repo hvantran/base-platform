@@ -1,4 +1,4 @@
-
+export const ROOT_BREADCRUMB = 'Actions'
 export const JOB_CATEGORY_VALUES = ["IO", "CPU"]
 export const JOB_OUTPUT_TARGET_VALUES = ["CONSOLE", "METRIC"]
 export const JOB_SCHEDULE_TIME_SELECTION = [0, 5, 10, 20, 30, 60]

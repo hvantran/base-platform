@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, ThemeProvider, createTheme } from '@mui/material';
 import React from 'react';
 import { Route, Routes } from "react-router-dom";
 import ActionSummary from './components/actions/ActionSummary';
@@ -9,21 +9,24 @@ import HomeContent from './components/HomeContent';
 import PrimarySearchAppBar from './ResponsiveAppBar';
 import JobSummary from './components/jobs/JobSummary';
 import JobDetails from './components/jobs/JobDetails';
+import { DEFAULT_THEME } from './components/GenericConstants';
 
 
 function App() {
   return (
-    <Stack spacing={4}>
-      <PrimarySearchAppBar />
-      <Routes>
-        <Route path='/' element={<HomeContent />} errorElement={<ErrorPage />}></Route>
-        <Route path='/actions' element={<ActionSummary />}></Route>
-        <Route path='/actions/:actionId' element={<ActionDetail />}></Route>
-        <Route path='/actions/new' element={<ActionCreation />}></Route>
-        <Route path='jobs' element={<JobSummary />}></Route>
-        <Route path='/actions/:actionId/jobs/:jobId' element={<JobDetails />}></Route>
-      </Routes>
-    </Stack>
+    <ThemeProvider theme={DEFAULT_THEME}>
+      <Stack spacing={4}>
+        <PrimarySearchAppBar />
+        <Routes>
+          <Route path='/' element={<HomeContent />} errorElement={<ErrorPage />}></Route>
+          <Route path='/actions' element={<ActionSummary />}></Route>
+          <Route path='/actions/:actionId' element={<ActionDetail />}></Route>
+          <Route path='/actions/new' element={<ActionCreation />}></Route>
+          <Route path='jobs' element={<JobSummary />}></Route>
+          <Route path='/actions/:actionId/jobs/:jobId' element={<JobDetails />}></Route>
+        </Routes>
+      </Stack>
+    </ThemeProvider>
   );
 }
 export default App;

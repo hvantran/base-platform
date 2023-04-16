@@ -3,10 +3,10 @@ package com.hoatv.action.manager.dtos;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoatv.springboot.common.validation.ValueOfEnum;
-import lombok.*;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.*;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 

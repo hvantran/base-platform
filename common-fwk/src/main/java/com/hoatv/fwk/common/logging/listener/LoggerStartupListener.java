@@ -1,8 +1,5 @@
 package com.hoatv.fwk.common.logging.listener;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -10,6 +7,9 @@ import ch.qos.logback.classic.spi.LoggerContextListener;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.spi.ContextAwareBase;
 import ch.qos.logback.core.spi.LifeCycle;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * To getting environment variables and put into logback configuration XML files

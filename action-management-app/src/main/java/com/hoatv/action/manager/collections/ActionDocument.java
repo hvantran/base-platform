@@ -1,18 +1,12 @@
 package com.hoatv.action.manager.collections;
 
-import java.util.UUID;
-
 import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.UUID;
 
 @Document("actions")
 @Getter

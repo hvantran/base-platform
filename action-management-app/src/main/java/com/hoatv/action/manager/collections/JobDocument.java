@@ -1,22 +1,14 @@
 package com.hoatv.action.manager.collections;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.hoatv.action.manager.dtos.JobCategory;
 import com.hoatv.action.manager.dtos.JobDefinitionDTO;
-import com.hoatv.action.manager.dtos.JobOutputTarget;
 import com.hoatv.fwk.common.ultilities.DateTimeUtils;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.List;
+import java.util.UUID;
 
 @Document("jobs")
 @Getter

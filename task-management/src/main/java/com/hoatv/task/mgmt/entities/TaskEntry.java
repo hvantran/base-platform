@@ -2,7 +2,6 @@ package com.hoatv.task.mgmt.entities;
 
 import com.hoatv.fwk.common.services.BiCheckedFunction;
 import com.hoatv.fwk.common.services.CheckedFunction;
-import com.hoatv.fwk.common.ultilities.ObjectUtils;
 import com.hoatv.task.mgmt.annotations.ScheduleApplication;
 import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import lombok.Getter;

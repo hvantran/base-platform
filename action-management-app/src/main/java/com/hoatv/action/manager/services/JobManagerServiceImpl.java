@@ -23,6 +23,7 @@ import com.hoatv.task.mgmt.entities.TaskEntry;
 import com.hoatv.task.mgmt.services.ScheduleTaskMgmtService;
 import com.hoatv.task.mgmt.services.TaskFactory;
 import com.hoatv.task.mgmt.services.TaskMgmtServiceV1;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -33,7 +34,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.concurrent.Callable;

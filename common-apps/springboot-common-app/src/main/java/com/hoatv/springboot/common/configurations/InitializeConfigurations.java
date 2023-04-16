@@ -14,6 +14,8 @@ import com.hoatv.task.mgmt.entities.TaskCollection;
 import com.hoatv.task.mgmt.services.ScheduleTaskMgmtService;
 import com.hoatv.task.mgmt.services.ScheduleTaskRegistryService;
 import com.hoatv.task.mgmt.services.TaskFactory;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import org.apache.commons.collections4.CollectionUtils;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -24,8 +26,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;

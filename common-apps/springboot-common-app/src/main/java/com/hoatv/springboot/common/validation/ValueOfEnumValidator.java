@@ -1,9 +1,9 @@
 package com.hoatv.springboot.common.validation;
 
-import org.apache.commons.lang3.StringUtils;
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

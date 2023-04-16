@@ -2,10 +2,10 @@ package com.hoatv.action.manager.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.*;
+
 import java.util.List;
 
 

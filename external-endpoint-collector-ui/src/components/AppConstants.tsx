@@ -1,4 +1,4 @@
-export const EXT_ENDPOINT_BACKEND_URL: string = 'http://localhost:8083/ext-endpoint-collector/rest-data/endpoints'
+export const EXT_ENDPOINT_BACKEND_URL: string = 'http://localhost:6082/ext-endpoint-collector/endpoints'
 export const ROOT_BREADCRUMB: string = 'Endpoints'
 
 export interface ExtEndpointOverview {
