@@ -4,7 +4,7 @@ import { Stack } from '@mui/material';
 import LinkBreadcrumd from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { EXT_ENDPOINT_BACKEND_URL, ExtEndpointMetadata, ROOT_BREADCRUMB } from '../AppConstants';
+import { EXT_ENDPOINT_BACKEND_URL, ExtEndpointMetadata, ROOT_BREADCRUMB, SAMPLE_ENDPOINT_DATA } from '../AppConstants';
 import {
   PageEntityMetadata,
   PropType,
@@ -17,6 +17,8 @@ import {
 import ProcessTracking from '../common/ProcessTracking';
 import SnackbarAlert from '../common/SnackbarAlert';
 import PageEntityRender from '../renders/PageEntityRender';
+import TimelapseIcon from '@mui/icons-material/Timelapse';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 
 export default function ActionCreation() {
@@ -62,6 +64,7 @@ export default function ActionCreation() {
           propName: 'taskName',
           propLabel: 'Task name',
           propValue: '',
+          isRequired: true,
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
@@ -76,8 +79,10 @@ export default function ActionCreation() {
         },
         {
           propName: 'noAttemptTimes',
-          propLabel: 'Number of attempts',
-          propValue: '',
+          propLabel: 'Run times',
+          propValue: 1,
+          propDefaultValue: 1,
+          isRequired: true,
           propExtraProperties: {type: "number"},
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
@@ -93,8 +98,10 @@ export default function ActionCreation() {
         },
         {
           propName: 'noParallelThread',
-          propLabel: 'Number of threads',
-          propValue: '',
+          propLabel: 'Thread count',
+          propValue: 1,
+          propDefaultValue: 1,
+          isRequired: true,
           propExtraProperties: {type: "number"},
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
@@ -112,6 +119,7 @@ export default function ActionCreation() {
           propName: 'extEndpoint',
           propLabel: 'Targeting endpoint',
           propValue: '',
+          isRequired: true,
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
           valueElementProperties: { xs: 8 },
@@ -128,6 +136,8 @@ export default function ActionCreation() {
           propName: 'extEndpointMethod',
           propLabel: 'Http method',
           propValue: 'GET',
+          propDefaultValue: 'GET',
+          isRequired: true,
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
@@ -181,6 +191,7 @@ export default function ActionCreation() {
           propName: 'generatorStrategy',
           propLabel: 'Generator data strategy',
           propValue: 'NONE',
+          propDefaultValue: 'NONE',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
           valueElementProperties: { xs: 8 },
@@ -196,8 +207,10 @@ export default function ActionCreation() {
         },
         {
           propName: 'successCriteria',
-          propLabel: 'Success contains text',
+          propLabel: 'Success condition',
           propValue: '',
+          isRequired: true,
+          propExtraProperties: {placeholder: 'Contain a text in success case'},
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
@@ -214,6 +227,7 @@ export default function ActionCreation() {
           propName: 'responseConsumerType',
           propLabel: 'Response Type',
           propValue: 'CONSOLE',
+          propDefaultValue: 'CONSOLE',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
           valueElementProperties: { xs: 8 },
@@ -292,9 +306,8 @@ export default function ActionCreation() {
         };
 
         const targetURL = `${EXT_ENDPOINT_BACKEND_URL}`;
-        await restClient.sendRequest(requestOptions, targetURL, async (response) => {
-          let responseJSON = await response.json();
-          let message = `Action ${responseJSON['endpointMetadataId']} is created`;
+        await restClient.sendRequest(requestOptions, targetURL, async () => {
+          let message = `Endpoint collector ${endpointMetadata.input.application} is created`;
           return { 'message': message, key: new Date().getTime() } as SnackbarMessage;
         }, async (response: Response) => {
           return { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
@@ -317,7 +330,7 @@ export default function ActionCreation() {
       return stepMetadata ? stepMetadata.properties.find(filter) : undefined;
     }
     const getExtEndpointMetadata = (): ExtEndpointMetadata => {
-      let application = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "aplication")?.propValue;
+      let application = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "application")?.propValue;
       let taskName = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "taskName")?.propValue;
       let noAttemptTimes = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "noAttemptTimes")?.propValue;
       let noParallelThread = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "noParallelThread")?.propValue;
@@ -336,7 +349,7 @@ export default function ActionCreation() {
           taskName,
           noAttemptTimes,
           noParallelThread,
-          requestInfor: {
+          requestInfo: {
             extEndpoint,
             method,
             data
@@ -369,7 +382,30 @@ export default function ActionCreation() {
       </LinkBreadcrumd>,
       <Typography key="3" color="text.primary">new</Typography>
     ],
-    stepMetadatas: stepMetadatas
+    stepMetadatas: stepMetadatas,
+    pageEntityActions: [
+      {
+        actionIcon: <TimelapseIcon />,
+        actionLabel: "Load sample",
+        actionName: "loadSample",
+        onClick: () => () => {
+          Object.keys(SAMPLE_ENDPOINT_DATA).forEach(propertyKey => {
+            let propertyValue = SAMPLE_ENDPOINT_DATA[propertyKey]
+            setStepMetadatas(onchangeStepDefault(propertyKey, propertyValue))
+          })
+        }
+      },
+      {
+        actionIcon: <ClearAllIcon />,
+        actionLabel: "Clear sample",
+        actionName: "clearAll",
+        onClick: () => () => {
+          Object.keys(SAMPLE_ENDPOINT_DATA).forEach(propertyKey => {
+            setStepMetadatas(onchangeStepDefault(propertyKey, ''))
+          })
+        }
+      },
+    ]
   }
 
 

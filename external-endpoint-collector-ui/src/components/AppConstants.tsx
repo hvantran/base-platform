@@ -1,5 +1,41 @@
 export const EXT_ENDPOINT_BACKEND_URL: string = 'http://extendpoint.local:6082/ext-endpoint-collector/endpoints'
 export const ROOT_BREADCRUMB: string = 'Endpoints'
+export const SAMPLE_ENDPOINT_DATA: {[id: string]: any} = {
+    "application": "MOnkey 01",
+    "taskName": "Collect license key",
+    "noAttemptTimes": 10000,
+    "noParallelThread": 15,
+    "extEndpoint": "https://www.api.monkeyuni.net/api/v1/login-for-web?lang=vi-VN",
+    "method": "POST",
+    "extEndpointData": `{
+    \"access_token\":\"\",
+    \"phone\":\"%s\",
+    \"email\":\"\",
+    \"type\":3,
+    \"licence\":\"-\",
+    \"lang\":\"vi-VN\",
+    \"is_web\":1
+}`,
+    "columnMetadata": `{
+    \"columnId\": \"column1\", 
+    \"columnMetadata\": [
+        {\"fieldPath\": \"random\", \"mappingColumnName\":\"column1\"}, 
+        {\"fieldPath\": \"$.data.user_id\", \"mappingColumnName\":\"column2\"}, 
+        {\"fieldPath\": \"$.data.access_token\", \"mappingColumnName\":\"column3\"}, 
+        {\"fieldPath\": \"$.data.email\", \"mappingColumnName\":\"column4\"},
+        {\"fieldPath\": \"$.data.time_created\", \"mappingColumnName\":\"column5\"},
+        {\"fieldPath\": \"$.data.time_expired\", \"mappingColumnName\":\"column6\"},
+        {\"fieldPath\": \"$.data.name\", \"mappingColumnName\":\"column7\"},
+        {\"fieldPath\": \"$.data.access_token\", \"decryptFunctionName\":\"decryptJWTBase64\", \"mappingColumnName\":\"column10\"}
+    ]
+}`,
+    "generatorSaltLength": 10,
+    "generatorSaltStartWith": "0392013890",
+    "generatorStrategy": "SEQUENCE",
+    "successCriteria": "user_id",
+    "responseConsumerType": "DATABASE"
+}
+
 
 export interface ExtEndpointOverview {
     application: string
@@ -61,7 +97,7 @@ export interface InputMetadata {
     taskName: string
     noAttemptTimes: number
     noParallelThread: number
-    requestInfor: RequestInfoMeta
+    requestInfo: RequestInfoMeta
     columnMetadata: string
     dataGeneratorInfo: DataGeneratorInfoMeta
 }

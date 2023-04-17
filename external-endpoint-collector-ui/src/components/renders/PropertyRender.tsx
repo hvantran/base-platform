@@ -100,10 +100,10 @@ export default function PropertyRender(props: any) {
                     size="small"
                     sx={{ width: '100%' }}
                     name={property.propName}
-                    {...property.propExtraProperties}
+                    placeholder={textFieldMeta.placeholder}
                     value={value}
-                    onChange={textFieldMeta.onChangeEvent}
-                    placeholder={textFieldMeta.placeholder} />
+                    onChange={textFieldMeta.onChangeEvent} 
+                    {...property.propExtraProperties}/>
             )
             break;
     }

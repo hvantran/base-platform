@@ -50,7 +50,7 @@ export class RestClient {
         try {
             this.setCircleProcessOpen(true);
             let response = await fetch(targetURL, requestOptions);
-            if (!response.ok) {
+            if (response.status >= 400) {
                 let errorSnackbarMessage = errorCallback(response);
                 if (errorSnackbarMessage) {
                     this.setMessageInfo(await errorSnackbarMessage);
