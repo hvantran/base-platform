@@ -20,6 +20,8 @@ export default function PropertyRender(props: any) {
                     isRequired={property.isRequired}
                     propName={property.propName}
                     value={value}
+                    editable={!property.disabled}
+                    {...property.propExtraProperties}
                     height={codeEditorMeta.height}
                     onChange={codeEditorMeta.onChangeEvent}
                     language={codeEditorMeta.codeLanguges} />
@@ -40,6 +42,7 @@ export default function PropertyRender(props: any) {
                     size="small"
                     sx={{ width: '100%' }}
                     multiline
+                    {...property.propExtraProperties}
                     onChange={textareaFieldMeta.onChangeEvent}
                     variant="standard" />
             )
@@ -54,6 +57,7 @@ export default function PropertyRender(props: any) {
                     key={property.propName}
                     name={property.propName}
                     checked={value}
+                    {...property.propExtraProperties}
                     onChange={switcherFieldMeta.onChangeEvent} />
             )
             break;
@@ -70,6 +74,7 @@ export default function PropertyRender(props: any) {
                         value={value}
                         disabled={property.disabled}
                         multiple={selectionMeta.isMultiple}
+                        {...property.propExtraProperties}
                         name={property.propName}
                         label={property.propLabel}
                         onChange={selectionMeta.onChangeEvent}
@@ -95,6 +100,7 @@ export default function PropertyRender(props: any) {
                     size="small"
                     sx={{ width: '100%' }}
                     name={property.propName}
+                    {...property.propExtraProperties}
                     value={value}
                     onChange={textFieldMeta.onChangeEvent}
                     placeholder={textFieldMeta.placeholder} />

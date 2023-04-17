@@ -124,6 +124,7 @@ export interface PropertyMetadata {
     propName: string
     propValue: any
     propDefaultValue?: any
+    propExtraProperties?: any
     propType: PropType
     propLabel?: string
     isRequired?: boolean
