@@ -27,6 +27,8 @@ export default function ActionJobTable(props: any) {
     const setOpenSuccess = props.setOpenSuccess;
     let initialPagingResult: PagingResult = { totalElements: 0, content: []};
     const [pagingResult, setPagingResult] = React.useState(initialPagingResult);
+    const [pageIndex, setPageIndex] = React.useState(0);
+    const [pageSize, setPageSize] = React.useState(10);
     const restClient = new RestClient(setCircleProcessOpen, setMessageInfo, setOpenError, setOpenSuccess);
 
     const columns: ColumnMetadata[] = [
@@ -129,15 +131,17 @@ export default function ActionJobTable(props: any) {
     }
 
     React.useEffect(() => {
-        loadRelatedJobsAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+        loadRelatedJobsAsync(pageIndex, pageSize);
     }, [replayFlag])
 
     let pagingOptions: PagingOptionMetadata = {
-        pageIndex: 0,
+        pageIndex,
         component: 'div',
-        pageSize: 10,
+        pageSize,
         rowsPerPageOptions: [5, 10, 20],
         onPageChange: (pageIndex: number, pageSize: number) => {
+            setPageIndex(pageIndex);
+            setPageSize(pageSize);
             loadRelatedJobsAsync(pageIndex, pageSize);
         }
     }

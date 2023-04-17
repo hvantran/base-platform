@@ -1,4 +1,4 @@
-export const EXT_ENDPOINT_BACKEND_URL: string = 'http://localhost:6082/ext-endpoint-collector/endpoints'
+export const EXT_ENDPOINT_BACKEND_URL: string = 'http://extendpoint.local:6082/ext-endpoint-collector/endpoints'
 export const ROOT_BREADCRUMB: string = 'Endpoints'
 
 export interface ExtEndpointOverview {
@@ -27,4 +27,41 @@ export interface ExtEndpointResponseOverview {
 }
 
 export interface ExtEndpointMetadata {
+    input: InputMetadata
+    filter: FilterMetadata
+    output: OutputMetadata
+}
+
+export interface FilterMetadata {
+    successCriteria: string
+}
+
+export interface OutputMetadata {
+    responseConsumerType: string
+}
+
+export interface DataGeneratorInfoMeta {
+    generatorSaltLength: number
+    generatorSaltStartWith: string
+    generatorStrategy: string
+}
+
+export interface RequestInfoMeta {
+    extEndpoint: string
+    method: string
+    data?: string
+}
+export interface RequestInfoMeta {
+    extEndpoint: string
+    method: string
+    data?: string
+}
+export interface InputMetadata {
+    application: string
+    taskName: string
+    noAttemptTimes: number
+    noParallelThread: number
+    requestInfor: RequestInfoMeta
+    columnMetadata: string
+    dataGeneratorInfo: DataGeneratorInfoMeta
 }

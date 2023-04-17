@@ -78,6 +78,7 @@ export default function ActionCreation() {
           propName: 'noAttemptTimes',
           propLabel: 'Number of attempts',
           propValue: '',
+          propExtraProperties: {type: "number"},
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
           valueElementProperties: { xs: 8 },
@@ -94,6 +95,7 @@ export default function ActionCreation() {
           propName: 'noParallelThread',
           propLabel: 'Number of threads',
           propValue: '',
+          propExtraProperties: {type: "number"},
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
@@ -125,22 +127,27 @@ export default function ActionCreation() {
         {
           propName: 'extEndpointMethod',
           propLabel: 'Http method',
-          propValue: '',
+          propValue: 'GET',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
-          propType: PropType.InputText,
-          textFieldMeta: {
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: ["GET", "POST", "PUT", "DELETE"],
             onChangeEvent: function (event) {
               let propValue = event.target.value;
               let propName = event.target.name;
-              setStepMetadatas(onchangeStepDefault(propName, propValue))
+              setStepMetadatas(onchangeStepDefault(propName, propValue, undefined, (propertyMetadata) => {
+                if (propertyMetadata.propName === 'extEndpointData') {
+                  propertyMetadata.disabled = ["GET", "DELETE"].includes(propValue);
+                }
+              }));
             }
           }
         },
         {
           propName: 'generatorSaltLength',
-          propLabel: 'Gen data length',
+          propLabel: 'Generator data length',
           propValue: '',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
@@ -156,7 +163,7 @@ export default function ActionCreation() {
         },
         {
           propName: 'generatorSaltStartWith',
-          propLabel: 'Gen data start with',
+          propLabel: 'Generator start with',
           propValue: '',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4 },
@@ -172,10 +179,27 @@ export default function ActionCreation() {
         },
         {
           propName: 'generatorStrategy',
-          propLabel: 'Gen data strategy',
-          propValue: '',
+          propLabel: 'Generator data strategy',
+          propValue: 'NONE',
           layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
           labelElementProperties: { xs: 4, sx: { pl: 5 } },
+          valueElementProperties: { xs: 8 },
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: ["RANDOM", "SEQUENCE", "RANDOM_WITH_CONDITION", "NONE"],
+            onChangeEvent: function (event) {
+              let propValue = event.target.value;
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue))
+            }
+          }
+        },
+        {
+          propName: 'successCriteria',
+          propLabel: 'Success contains text',
+          propValue: '',
+          layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
+          labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
@@ -187,10 +211,32 @@ export default function ActionCreation() {
           }
         },
         {
+          propName: 'responseConsumerType',
+          propLabel: 'Response Type',
+          propValue: 'CONSOLE',
+          layoutProperties: { xs: 6, alignItems: "center", justifyContent: "center" },
+          labelElementProperties: { xs: 4, sx: { pl: 5 } },
+          valueElementProperties: { xs: 8 },
+          propType: PropType.Selection,
+          selectionMeta: {
+            selections: ["CONSOLE", "DATABASE"],
+            onChangeEvent: function (event) {
+              let propValue = event.target.value;
+              let propName = event.target.name;
+              setStepMetadatas(onchangeStepDefault(propName, propValue, undefined, (propertyMetadata) => {
+                if (propertyMetadata.propName === 'columnMetadata') {
+                  propertyMetadata.disabled = !["DATABASE"].includes(propValue);
+                }
+              }));
+            }
+          }
+        },
+        {
           propName: 'extEndpointData',
           propLabel: 'Data',
           propValue: '{}',
           propDefaultValue: '{}',
+          disabled: true,
           layoutProperties: { xs: 12 },
           labelElementProperties: { xs: 2 },
           valueElementProperties: { xs: 10 },
@@ -212,6 +258,7 @@ export default function ActionCreation() {
           propLabel: 'Output column metadata',
           propValue: '{}',
           propDefaultValue: '{}',
+          disabled: true,
           layoutProperties: { xs: 12 },
           labelElementProperties: { xs: 2 },
           valueElementProperties: { xs: 10 },
@@ -236,7 +283,7 @@ export default function ActionCreation() {
       description: 'This step is used to review all steps',
       properties: [],
       onFinishStepClick: async (currentStepMetadata: Array<StepMetadata>) => {
-        let endpointMetadata: ExtEndpointMetadata = getActionFromStepper(currentStepMetadata);
+        let endpointMetadata: ExtEndpointMetadata = getExtEndpointMetadataFromStepper(currentStepMetadata);
 
         const requestOptions = {
           method: 'POST',
@@ -260,7 +307,7 @@ export default function ActionCreation() {
     setStepMetadatas(initialStepMetadatas);
   }, [])
 
-  const getActionFromStepper = (currentStepMetadata: Array<StepMetadata>) => {
+  const getExtEndpointMetadataFromStepper = (currentStepMetadata: Array<StepMetadata>) => {
     const endpointMetadataStepIndex = 0;
     let endpointMetadataMetadata = currentStepMetadata.at(endpointMetadataStepIndex);
     if (!endpointMetadataMetadata) {
@@ -269,14 +316,49 @@ export default function ActionCreation() {
     const findStepPropertyByCondition = (stepMetadata: StepMetadata | undefined, filter: (property: PropertyMetadata) => boolean): PropertyMetadata | undefined => {
       return stepMetadata ? stepMetadata.properties.find(filter) : undefined;
     }
-    const getAction = (): ExtEndpointMetadata => {
-      let endpointMetadataDescription = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "endpointMetadataDescription");
+    const getExtEndpointMetadata = (): ExtEndpointMetadata => {
+      let application = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "aplication")?.propValue;
+      let taskName = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "taskName")?.propValue;
+      let noAttemptTimes = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "noAttemptTimes")?.propValue;
+      let noParallelThread = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "noParallelThread")?.propValue;
+      let extEndpoint = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "extEndpoint")?.propValue;
+      let method = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "extEndpointMethod")?.propValue;
+      let data = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "extEndpointData")?.propValue;
+      let columnMetadata = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "columnMetadata")?.propValue;
+      let generatorSaltLength = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "generatorSaltLength")?.propValue;
+      let generatorSaltStartWith = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "generatorSaltStartWith")?.propValue;
+      let generatorStrategy = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "generatorStrategy")?.propValue;
+      let successCriteria = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "successCriteria")?.propValue;
+      let responseConsumerType = findStepPropertyByCondition(endpointMetadataMetadata, property => property.propName === "responseConsumerType")?.propValue;
       let endpointMetadataDefinition: ExtEndpointMetadata = {
+        input: {
+          application,
+          taskName,
+          noAttemptTimes,
+          noParallelThread,
+          requestInfor: {
+            extEndpoint,
+            method,
+            data
+          },
+          columnMetadata,
+          dataGeneratorInfo: {
+            generatorSaltLength,
+            generatorSaltStartWith,
+            generatorStrategy
+          }
+        },
+        filter: {
+          successCriteria
+        },
+        output: {
+          responseConsumerType
+        }
       }
       return endpointMetadataDefinition;
     }
 
-    return getAction();
+    return getExtEndpointMetadata();
   }
 
   let initialPageEntityMetdata: PageEntityMetadata = {
