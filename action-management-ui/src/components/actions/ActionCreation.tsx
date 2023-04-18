@@ -51,7 +51,7 @@ export default function ActionCreation() {
         valueElementProperties: { xs: 8 },
         propType: PropType.InputText,
         textFieldMeta: {
-          onChangeEvent: function (event) {
+          onChangeEvent: function (event: any) {
             let propValue = event.target.value;
             let propName = event.target.name;
             let jobIndex = propName.replace('jobName', '');
@@ -164,7 +164,7 @@ export default function ActionCreation() {
         valueElementProperties: { xs: 10 },
         propType: PropType.Textarea,
         textareaFieldMeta: {
-          onChangeEvent: function (event) {
+          onChangeEvent: function (event: any) {
             let propValue = event.target.value;
             let propName = event.target.name;
             setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -234,7 +234,7 @@ export default function ActionCreation() {
           propDescription: 'This is name of action',
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
 
@@ -255,7 +255,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 10 },
           propType: PropType.Textarea,
           textareaFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -301,7 +301,7 @@ export default function ActionCreation() {
           labelElementProperties: { xs: 4 },
           valueElementProperties: { xs: 8 },
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue, (stepMetadata) => {
@@ -413,7 +413,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 10 },
           propType: PropType.Textarea,
           textareaFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))

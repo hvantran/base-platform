@@ -178,10 +178,10 @@ export default function PrimarySearchAppBar() {
           </Paper>
           </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:3002")}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:6086")}>
             <img alt='External endpoint collector' src='/rest-api.png' width={70}/>
             <Typography variant="caption" display="block" gutterBottom>
-              External Endpoint Collector
+              Endpoint Collector
             </Typography>
           </Paper>
           </Grid>
