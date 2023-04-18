@@ -1,15 +1,14 @@
-import { Stack, ThemeProvider, createTheme } from '@mui/material';
+import { Stack, ThemeProvider } from '@mui/material';
 import React from 'react';
 import { Route, Routes } from "react-router-dom";
-import ActionSummary from './components/actions/ActionSummary';
+import PrimarySearchAppBar from './ResponsiveAppBar';
+import { DEFAULT_THEME } from './components/GenericConstants';
+import HomeContent from './components/HomeContent';
 import ActionCreation from './components/actions/ActionCreation';
 import ActionDetail from './components/actions/ActionDetail';
+import ActionSummary from './components/actions/ActionSummary';
 import ErrorPage from './components/common/ErrorPage';
-import HomeContent from './components/HomeContent';
-import PrimarySearchAppBar from './ResponsiveAppBar';
 import JobSummary from './components/jobs/JobSummary';
-import JobDetails from './components/jobs/JobDetails';
-import { DEFAULT_THEME } from './components/GenericConstants';
 
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
           <Route path='/actions/:actionId' element={<ActionDetail />}></Route>
           <Route path='/actions/new' element={<ActionCreation />}></Route>
           <Route path='jobs' element={<JobSummary />}></Route>
-          <Route path='/actions/:actionId/jobs/:jobId' element={<JobDetails />}></Route>
         </Routes>
       </Stack>
     </ThemeProvider>

@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>action-manager-backend</artifactId>
-    <name>microservices/${artifactId}</name>
+    <name>microservices/${project.artifactId}</name>
 
     <properties>
         <application.startup.class>com.hoatv.action.manager.ActionManagerApplication</application.startup.class>

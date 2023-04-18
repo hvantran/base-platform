@@ -189,8 +189,18 @@ public class JobManagerServiceImpl implements JobManagerService {
     }
 
     @Override
+    public Page<JobOverviewDTO> getJobs(PageRequest pageRequest) {
+        Page<JobDocument> jobDocuments = jobDocumentRepository.findAll(pageRequest);
+        return getJobOverviewDTOs(jobDocuments);
+    }
+
+    @Override
     public Page<JobOverviewDTO> getJobsFromAction(String actionId, PageRequest pageRequest) {
         Page<JobDocument> jobDocuments = jobDocumentRepository.findJobByActionId(actionId, pageRequest);
+        return getJobOverviewDTOs(jobDocuments);
+    }
+
+    private Page<JobOverviewDTO> getJobOverviewDTOs(Page<JobDocument> jobDocuments) {
         List<JobResultDocument> jobResultDocuments = getJobResultDocuments(jobDocuments);
 
         return jobDocuments.map(jobDocument -> {

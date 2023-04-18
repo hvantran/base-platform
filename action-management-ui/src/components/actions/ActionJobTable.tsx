@@ -1,5 +1,4 @@
 
-import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { Stack } from '@mui/material';
 import React from 'react';
 import {
@@ -7,18 +6,17 @@ import {
     PagingResult, RestClient, SnackbarMessage, TableMetadata
 } from '../GenericConstants';
 
-import { useNavigate } from 'react-router-dom';
-import { JobOverview, JOB_MANAGER_API_URL } from '../AppConstants';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import TimesOneMobiledataIcon from '@mui/icons-material/TimesOneMobiledata';
+import { ACTION_MANAGER_API_URL } from '../AppConstants';
 import JobStatus from '../common/JobStatus';
 import TextTruncate from '../common/TextTruncate';
 import PageEntityRender from '../renders/PageEntityRender';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import TimesOneMobiledataIcon from '@mui/icons-material/TimesOneMobiledata';
 
 
 export default function ActionJobTable(props: any) {
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const targetAction = props.actionId
     const setCircleProcessOpen = props.setCircleProcessOpen;
     const replayFlag = props.replayFlag;
@@ -97,19 +95,19 @@ export default function ActionJobTable(props: any) {
             align: 'left',
             format: (value: string) => (<TextTruncate text={value} maxTextLength={100}/>)
         },
-        {
-            id: 'actions',
-            label: '',
-            align: 'left',
-            actions: [{
-                actionIcon: <ReadMoreIcon />,
-                actionLabel: "Job details",
-                actionName: "gotoJobDetail",
-                onClick: (row: JobOverview) => {
-                    return () => navigate(`/jobs/${row.hash}`)
-                }
-            }]
-        }
+        // {
+        //     id: 'actions',
+        //     label: '',
+        //     align: 'left',
+        //     actions: [{
+        //         actionIcon: <ReadMoreIcon />,
+        //         actionLabel: "Job details",
+        //         actionName: "gotoJobDetail",
+        //         onClick: (row: JobOverview) => {
+        //             return () => navigate(`/jobs/${row.hash}`)
+        //         }
+        //     }]
+        // }
     ];
 
     const loadRelatedJobsAsync = async (pageIndex: number, pageSize: number) => {
@@ -120,11 +118,11 @@ export default function ActionJobTable(props: any) {
             }
         }
 
-        const targetURL = `${JOB_MANAGER_API_URL}?actionId=${encodeURIComponent(targetAction)}&pageIndex=${encodeURIComponent(pageIndex)}&pageSize=${encodeURIComponent(pageSize)}`;
+        const targetURL = `${ACTION_MANAGER_API_URL}/${encodeURIComponent(targetAction)}/jobs?pageIndex=${encodeURIComponent(pageIndex)}&pageSize=${encodeURIComponent(pageSize)}`;
         await restClient.sendRequest(requestOptions, targetURL, async (response) => {
           let responseJSON = await response.json() as PagingResult;
           setPagingResult(responseJSON);
-          return { 'message': 'Loading job sucessfully!!!', key: new Date().getTime() } as SnackbarMessage;
+          return { 'message': 'Loading jobs sucessfully!!!', key: new Date().getTime() } as SnackbarMessage;
         }, async (response: Response) => {
           return { 'message': "An interal error occurred during your request!", key: new Date().getTime() } as SnackbarMessage;
         });

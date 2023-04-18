@@ -27,4 +27,6 @@ public interface JobManagerService {
     List<Pair<JobDocument, JobResultDocument>> getJobsFromAction(String actionId);
     List<Pair<JobDocument, JobResultDocument>> getOneTimeJobsFromAction(String actionId);
     void processJob(JobDocument jobDocument, JobResultDocument jobResultDocument, Consumer<JobStatus> callback);
+
+    Page<JobOverviewDTO> getJobs(PageRequest pageRequest);
 }

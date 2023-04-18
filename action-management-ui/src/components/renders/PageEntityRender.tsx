@@ -95,7 +95,7 @@ export default function PageRender(props: PageEntityMetadata) {
     }
 
     return (
-        <Stack spacing={1}>
+        <Stack spacing={1} sx={{px: 2}}>
             {nodes}
         </Stack>
     )

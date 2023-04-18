@@ -2,8 +2,10 @@ package com.hoatv.action.manager.controllers;
 
 
 import com.hoatv.action.manager.api.ActionManagerService;
+import com.hoatv.action.manager.api.JobManagerService;
 import com.hoatv.action.manager.dtos.ActionDefinitionDTO;
 import com.hoatv.action.manager.dtos.ActionOverviewDTO;
+import com.hoatv.action.manager.dtos.JobOverviewDTO;
 import com.hoatv.action.manager.exceptions.EntityNotFoundException;
 import com.hoatv.monitor.mgmt.LoggingMonitor;
 import jakarta.validation.Valid;
@@ -24,10 +26,11 @@ import java.util.Optional;
 public class ActionControllerV1 {
 
     private final ActionManagerService actionManagerService;
+    private final JobManagerService jobManagerService;
 
-    @Autowired
-    public ActionControllerV1(ActionManagerService actionManagerService) {
+    public ActionControllerV1(ActionManagerService actionManagerService, JobManagerService jobManagerService) {
         this.actionManagerService = actionManagerService;
+        this.jobManagerService = jobManagerService;
     }
 
     @LoggingMonitor
@@ -89,8 +92,19 @@ public class ActionControllerV1 {
     public ResponseEntity<?> getActions(@RequestParam("search") String search,
                                         @RequestParam("pageIndex") @Min(0) int pageIndex,
                                         @RequestParam("pageSize") @Min(0) int pageSize) {
+        Sort defaultSorting = Sort.by(Sort.Order.desc("isFavorite"), Sort.Order.desc("createdAt"));
         Page<ActionOverviewDTO> actionResults =
-                actionManagerService.getAllActionsWithPaging(search, PageRequest.of(pageIndex, pageSize));
+                actionManagerService.getAllActionsWithPaging(search, PageRequest.of(pageIndex, pageSize, defaultSorting));
+        return ResponseEntity.ok(actionResults);
+    }
+    @LoggingMonitor
+    @GetMapping(value = "/{hash}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getJobsFromAction(@PathVariable("hash") String actionId,
+                                               @RequestParam("pageIndex") @Min(0) int pageIndex,
+                                               @RequestParam("pageSize") @Min(0) int pageSize) {
+        Sort defaultSorting = Sort.by(Sort.Order.desc("createdAt"));
+        Page<JobOverviewDTO> actionResults =
+                jobManagerService.getJobsFromAction(actionId, PageRequest.of(pageIndex, pageSize, defaultSorting));
         return ResponseEntity.ok(actionResults);
     }
 }
