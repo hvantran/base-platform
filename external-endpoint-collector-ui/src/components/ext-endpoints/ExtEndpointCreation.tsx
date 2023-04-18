@@ -48,7 +48,7 @@ export default function ActionCreation() {
           propDescription: 'The application name',
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
 
@@ -70,7 +70,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -89,7 +89,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -108,7 +108,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -125,7 +125,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -164,7 +164,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -180,7 +180,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -216,7 +216,7 @@ export default function ActionCreation() {
           valueElementProperties: { xs: 8 },
           propType: PropType.InputText,
           textFieldMeta: {
-            onChangeEvent: function (event) {
+            onChangeEvent: function (event: any) {
               let propValue = event.target.value;
               let propName = event.target.name;
               setStepMetadatas(onchangeStepDefault(propName, propValue))
@@ -391,7 +391,22 @@ export default function ActionCreation() {
         onClick: () => () => {
           Object.keys(SAMPLE_ENDPOINT_DATA).forEach(propertyKey => {
             let propertyValue = SAMPLE_ENDPOINT_DATA[propertyKey]
-            setStepMetadatas(onchangeStepDefault(propertyKey, propertyValue))
+            stepMetadatas[0].properties.filter(p => p.propName).forEach(p => {
+              switch (p.propType) {
+                case PropType.InputText:
+                  p.textFieldMeta?.onChangeEvent({target: {value: propertyValue, name: propertyKey}})
+                  break;
+                case PropType.Textarea:
+                  p.textareaFieldMeta?.onChangeEvent({target: {value: propertyValue, name: propertyKey}})
+                  break;
+                case PropType.Selection:
+                case PropType.CodeEditor:
+                case PropType.Switcher:
+                default:
+                  setStepMetadatas(onchangeStepDefault(propertyKey, propertyValue))
+                  break;
+              }
+            })
           })
         }
       },

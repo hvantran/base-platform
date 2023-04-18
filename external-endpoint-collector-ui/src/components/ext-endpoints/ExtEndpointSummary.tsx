@@ -52,7 +52,8 @@ export default function ExtEndpointSummary() {
   ];
 
   const columns: ColumnMetadata[] = [
-    { id: 'application', label: 'Application', minWidth: 100, isKeyColumn: true },
+    { id: 'endpointId', label: 'Endpoint ID', isHidden: true, minWidth: 100, isKeyColumn: true },
+    { id: 'application', label: 'Application', minWidth: 100 },
     { id: 'taskName', label: 'Task', minWidth: 100 },
     {
       id: 'noAttemptTimes',
@@ -107,7 +108,7 @@ export default function ExtEndpointSummary() {
           actionLabel: "Action details",
           actionName: "gotoActionDetail",
           onClick: (row: ExtEndpointOverview) => {
-            return () => navigate(`/endpoints/${row.application}`)
+            return () => navigate(`/endpoints/${row.endpointId}`)
           }
         },
         {
@@ -116,12 +117,31 @@ export default function ExtEndpointSummary() {
           actionLabel: "Delete endpoint",
           actionName: "deletection",
           onClick: (row: ExtEndpointOverview) => {
-            return () => { }
+            return () => deleteEndpointCollector(row.endpointId)
           }
         }
       ]
     }
   ];
+
+
+  const deleteEndpointCollector = async (endpointId: number) => {
+
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+    const targetURL = `${EXT_ENDPOINT_BACKEND_URL}/${endpointId}`;
+    await restClient.sendRequest(requestOptions, targetURL, () => {
+      loadEndpointSummaryAsync(pagingOptions.pageIndex, pagingOptions.pageSize);
+      return undefined;
+    }, async (response: Response) => {
+      let responseJSON = await response.json();
+      return { 'message': responseJSON['message'], key: new Date().getTime() } as SnackbarMessage;
+    });
+  }
 
   const loadEndpointSummaryAsync = async (pageIndex: number, pageSize: number) => {
     const requestOptions = {
@@ -136,6 +156,7 @@ export default function ExtEndpointSummary() {
       let extEndpointPagingResult = await response.json() as PagingResult;
       extEndpointPagingResult.elementTransformCallback = (record) => {
         const transfromRecord: ExtEndpointOverview = {
+          endpointId: record.endpointId,
           application: record.input.application,
           taskName: record.input.taskName,
           noAttemptTimes: record.input.noAttemptTimes,

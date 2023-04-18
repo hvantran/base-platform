@@ -6,7 +6,7 @@ export const SAMPLE_ENDPOINT_DATA: {[id: string]: any} = {
     "noAttemptTimes": 10000,
     "noParallelThread": 15,
     "extEndpoint": "https://www.api.monkeyuni.net/api/v1/login-for-web?lang=vi-VN",
-    "method": "POST",
+    "extEndpointMethod": "POST",
     "extEndpointData": `{
     \"access_token\":\"\",
     \"phone\":\"%s\",
@@ -38,6 +38,7 @@ export const SAMPLE_ENDPOINT_DATA: {[id: string]: any} = {
 
 
 export interface ExtEndpointOverview {
+    endpointId: number
     application: string
     taskName: string
     noAttemptTimes: number

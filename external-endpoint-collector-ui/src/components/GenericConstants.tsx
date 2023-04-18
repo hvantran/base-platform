@@ -100,7 +100,7 @@ export enum PropType {
 
 export interface TextFieldMetadata {
     placeholder?: string
-    onChangeEvent: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> | undefined
+    onChangeEvent: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement > | undefined | any
 }
 
 export interface CodeEditorMetadata {
