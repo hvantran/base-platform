@@ -1,20 +1,14 @@
 export const EXT_ENDPOINT_BACKEND_URL: string = 'http://extendpoint.local:6082/ext-endpoint-collector/endpoints'
 export const ROOT_BREADCRUMB: string = 'Endpoints'
 export const SAMPLE_ENDPOINT_DATA: {[id: string]: any} = {
-    "application": "MOnkey 01",
-    "taskName": "Collect license key",
+    "application": "Endpoint collector 01",
+    "taskName": "Collect data",
     "noAttemptTimes": 10000,
     "noParallelThread": 15,
-    "extEndpoint": "https://www.api.monkeyuni.net/api/v1/login-for-web?lang=vi-VN",
+    "extEndpoint": "<Targeting URL>",
     "extEndpointMethod": "POST",
     "extEndpointData": `{
-    \"access_token\":\"\",
-    \"phone\":\"%s\",
-    \"email\":\"\",
-    \"type\":3,
-    \"licence\":\"-\",
-    \"lang\":\"vi-VN\",
-    \"is_web\":1
+        <POST DATA>
 }`,
     "columnMetadata": `{
     \"columnId\": \"column1\", 
