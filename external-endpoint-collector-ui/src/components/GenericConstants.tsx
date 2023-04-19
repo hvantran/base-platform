@@ -152,6 +152,7 @@ export interface ActionMetadata {
     actionLabelContent?: any
     actionIcon: any
     visible?: (row: any) => boolean | boolean
+    disable?: boolean
     properties?: any
 }
 

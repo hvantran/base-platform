@@ -9,8 +9,9 @@ export default function TextTruncate(props: any) {
     if (!props.text) {
         return (<span></span>);
     }
+    let tooltipVisiable = props.tooltipVisiable !== undefined ? props.tooltipVisiable : true;
     return (
-        (<Tooltip title={props.text.length >= props.maxTextLength ? props.text : ""}>
+        (<Tooltip title={props.text.length >= props.maxTextLength && tooltipVisiable? props.text : ""}>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {truncate(props.text, props.maxTextLength)}
             </span>

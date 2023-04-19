@@ -150,7 +150,7 @@ export default function PrimarySearchAppBar() {
         justifyContent="center"
         style={{ minHeight: '50vh' }}>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/")}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://templatemanui.local:6088/templates")}>
             <img alt='Template manager' src='/template-manager.jpg' width={70}/>
             <Typography variant="caption" display="block" gutterBottom>
                Template Manager
@@ -158,7 +158,7 @@ export default function PrimarySearchAppBar() {
           </Paper>
         </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/")}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/actions")}>
             <img alt='Action manager' src='/action-manager.png' width={70}/>
             <Typography variant="caption" display="block" gutterBottom>
               Action Manager
@@ -174,7 +174,7 @@ export default function PrimarySearchAppBar() {
           </Paper>
           </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:6086")}>
+          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:6086/endpoints")}>
             <img alt='External endpoint collector' src='/rest-api.png' width={70}/>
             <Typography variant="caption" display="block" gutterBottom>
               Endpoint Collector

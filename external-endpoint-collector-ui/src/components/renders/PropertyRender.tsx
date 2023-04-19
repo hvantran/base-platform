@@ -41,6 +41,7 @@ export default function PropertyRender(props: any) {
                     value={value}
                     size="small"
                     sx={{ width: '100%' }}
+                    disabled={property.disabled}
                     multiline
                     {...property.propExtraProperties}
                     onChange={textareaFieldMeta.onChangeEvent}
@@ -56,6 +57,7 @@ export default function PropertyRender(props: any) {
                 <Switch
                     key={property.propName}
                     name={property.propName}
+                    disabled={property.disabled}
                     checked={value}
                     {...property.propExtraProperties}
                     onChange={switcherFieldMeta.onChangeEvent} />
@@ -101,6 +103,7 @@ export default function PropertyRender(props: any) {
                     sx={{ width: '100%' }}
                     name={property.propName}
                     placeholder={textFieldMeta.placeholder}
+                    disabled={property.disabled}
                     value={value}
                     onChange={textFieldMeta.onChangeEvent} 
                     {...property.propExtraProperties}/>
