@@ -5,7 +5,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
-import { ClickAwayListener, Grid, Paper } from '@mui/material';
+import { Grid, Paper } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -19,13 +19,7 @@ import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 import * as React from 'react';
 
-const pages = [
-  {
-    name: 'endpointSetting',
-    link: '/endpoints',
-    uiName: 'Endpoints'
-  }
-];
+const pages = JSON.parse(`${process.env.REACT_APP_PAGES}`);
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -123,7 +117,7 @@ export default function PrimarySearchAppBar() {
     </Menu>
   );
 
-  const goooApp = function(targetURL: string) {
+  const goooApp = function (targetURL: string) {
     window.location.href = targetURL;
   }
 
@@ -150,37 +144,37 @@ export default function PrimarySearchAppBar() {
         justifyContent="center"
         style={{ minHeight: '50vh' }}>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://templatemanui.local:6088/templates")}>
-            <img alt='Template manager' src='/template-manager.jpg' width={70}/>
+          <Paper variant="outlined" square sx={{ mx: 2, textAlign: 'center' }} onClick={() => goooApp(`${process.env.REACT_APP_TEMPLATE_MANAGER_FRONTEND_URL}/templates`)}>
+            <img alt={process.env.REACT_APP_TEMPLATE_MANAGER_NAME} src='/template-manager.jpg' width={70} />
             <Typography variant="caption" display="block" gutterBottom>
-               Template Manager
+              {process.env.REACT_APP_TEMPLATE_MANAGER_NAME}
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://actmanagerui.local:6084/actions")}>
-            <img alt='Action manager' src='/action-manager.png' width={70}/>
+          <Paper variant="outlined" square sx={{ mx: 2, textAlign: 'center' }} onClick={() => goooApp(`${process.env.REACT_APP_ACTION_MANAGER_FRONTEND_URL}/actions`)}>
+            <img alt={process.env.REACT_APP_ACTION_MANAGER_NAME} src='/action-manager.png' width={70} />
             <Typography variant="caption" display="block" gutterBottom>
-              Action Manager
+              {process.env.REACT_APP_ACTION_MANAGER_NAME}
             </Typography>
           </Paper>
-          </Grid>
+        </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://ecommerceui.local:8080")}>
-            <img alt='Ecommerce statistics' src='/ecommerce-stats.png' width={70}/>
+          <Paper variant="outlined" square sx={{ mx: 2, textAlign: 'center' }} onClick={() => goooApp(`${process.env.REACT_APP_ECOMMERCE_MANAGER_FRONTEND_URL}/`)}>
+            <img alt={process.env.REACT_APP_ECOMMERCE_MANAGER_NAME} src='/ecommerce-stats.png' width={70} />
             <Typography variant="caption" display="block" gutterBottom>
-              Ecommerce Statistics
+              {process.env.REACT_APP_ECOMMERCE_MANAGER_NAME}
             </Typography>
           </Paper>
-          </Grid>
+        </Grid>
         <Grid item xs={6}>
-          <Paper variant="outlined" square sx={{ mx:2, textAlign: 'center' }} onClick={() => goooApp("http://extendpointui.local:6086/endpoints")}>
-            <img alt='External endpoint collector' src='/rest-api.png' width={70}/>
+          <Paper variant="outlined" square sx={{ mx: 2, textAlign: 'center' }} onClick={() => goooApp(`${process.env.REACT_APP_ENDPOINT_MANAGER_FRONTEND_URL}/endpoints`)}>
+            <img alt={process.env.REACT_APP_ENDPOINT_MANAGER_NAME} src='/rest-api.png' width={70} />
             <Typography variant="caption" display="block" gutterBottom>
-              Endpoint Collector
+              {process.env.REACT_APP_ENDPOINT_MANAGER_NAME}
             </Typography>
           </Paper>
-          </Grid>
+        </Grid>
       </Grid>
     </Menu>
   );
@@ -256,10 +250,10 @@ export default function PrimarySearchAppBar() {
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
           >
-            ENDPOINT COLLECTOR
+            {process.env.REACT_APP_NAME}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            {pages.map((page: any) => (
               <Button key={page.name} variant="outlined" href={page.link}
                 sx={{ color: 'white', display: 'block' }}
               >

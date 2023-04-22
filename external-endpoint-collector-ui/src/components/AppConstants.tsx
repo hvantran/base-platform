@@ -1,4 +1,4 @@
-export const EXT_ENDPOINT_BACKEND_URL: string = 'http://extendpoint.local:6082/ext-endpoint-collector/endpoints'
+export const EXT_ENDPOINT_BACKEND_URL: string = `${process.env.REACT_APP_ENDPOINT_MANAGER_BACKEND_URL}/ext-endpoint-collector/endpoints`
 export const ROOT_BREADCRUMB: string = 'Endpoints'
 export const SAMPLE_ENDPOINT_DATA: {[id: string]: any} = {
     "application": "Endpoint collector 01",
