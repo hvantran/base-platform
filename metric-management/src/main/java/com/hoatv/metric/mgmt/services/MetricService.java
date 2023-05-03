@@ -4,9 +4,11 @@ import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricTag;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 
 public class MetricService {
@@ -18,6 +20,13 @@ public class MetricService {
     }
     public ComplexValue getMetric(String name) {
         return metrics.get(name);
+    }
+
+    public List<ComplexValue> getRegexMetrics(String regex) {
+        return metrics.entrySet().stream()
+                .filter(p -> Pattern.matches(regex, p.getKey()))
+                .map(Map.Entry::getValue)
+                .toList();
     }
 
     public ComplexValue removeMetric(String name) {
