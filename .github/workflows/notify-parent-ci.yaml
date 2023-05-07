@@ -1,3 +1,4 @@
+
 name: send-submodule-updates-to-parent-repo-ci
 
 on:
@@ -28,3 +29,19 @@ jobs:
           git add --all
           git commit -m "Update base-platform submodules" || echo "No changes to commit"
           git push
+      - name: Git pull rebase and push
+        if: failure()
+        run: |
+          git pull --rebase
+          git push
+      - name: Git pull rebase and push 2
+        if: failure()
+        run: |
+          git pull --rebase
+          git push
+      - name: Git pull rebase and push 3
+        if: failure()
+        run: |
+          git pull --rebase
+          git push
+
