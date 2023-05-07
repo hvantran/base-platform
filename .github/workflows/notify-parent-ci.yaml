@@ -28,20 +28,8 @@ jobs:
           git config user.name "GitHub Actions - update base-platform submodule"
           git add --all
           git commit -m "Update base-platform submodules" || echo "No changes to commit"
-          git push
-      - name: Git pull rebase and push
-        if: failure()
-        run: |
-          git pull --rebase
-          git push
-      - name: Git pull rebase and push 2
-        if: failure()
-        run: |
-          git pull --rebase
-          git push
-      - name: Git pull rebase and push 3
-        if: failure()
-        run: |
-          git pull --rebase
-          git push
-
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_seconds: 15
+          max_attempts: 5
+          command: git pull --rebase && git push
