@@ -1,6 +1,11 @@
 package com.hoatv.springboot.common.advices;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 import com.hoatv.fwk.common.exceptions.AppException;
+import com.hoatv.fwk.common.exceptions.InvalidArgumentException;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -12,11 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ControllerAdvice
 public class DefaultExceptionHandler {
@@ -37,6 +37,16 @@ public class DefaultExceptionHandler {
         return ResponseEntity.badRequest()
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(errors);
+    }
+
+    @ResponseBody
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(InvalidArgumentException.class)
+    public ResponseEntity<Object> handleInvalidArgumentException(InvalidArgumentException ex) {
+        LOGGER.error("An InvalidArgumentException occurred while processing", ex);
+        return ResponseEntity.badRequest()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Map.of("message", ex.getMessage()));
     }
 
     @ExceptionHandler(value= {AppException.class})
