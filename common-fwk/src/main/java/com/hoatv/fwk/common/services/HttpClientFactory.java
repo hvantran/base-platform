@@ -49,7 +49,12 @@ public enum HttpClientFactory  {
             if (genericHttpClientPool == null || genericHttpClientPool.isClosed()) {
                 genericHttpClientPool = new GenericHttpClientPool(maxTotal, maxWaitMillis);
                 serviceRegistry.put(categoryName, genericHttpClientPool);
+                LOGGER.info("Creating new HttpClient Pool for category: {} - max clients: {} - max waiting time: {}",
+                        categoryName, maxTotal, maxWaitMillis);
+                return genericHttpClientPool;
             }
+
+            LOGGER.info("Using existing HttpClient Pool: {} for category: {}", genericHttpClientPool, categoryName);
             return genericHttpClientPool;
         }
     }
