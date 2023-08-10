@@ -17,7 +17,7 @@ public class LoggingAspect {
     public Object logMethodExecution(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         String methodName = proceedingJoinPoint.getSignature().getName();
         long start = System.currentTimeMillis();
-        LOGGER.info("Processing method {} - {}", methodName, proceedingJoinPoint.getArgs());
+        LOGGER.debug("Processing method {} - {}", methodName, proceedingJoinPoint.getArgs());
         Object returnValue = proceedingJoinPoint.proceed();
         long end = System.currentTimeMillis();
         LOGGER.info("Method {} execution time: {} ms", methodName, (end - start));
