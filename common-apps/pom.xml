@@ -12,8 +12,4 @@
 
     <artifactId>common-apps</artifactId>
     <name>base-platform/common-apps</name>
-
-    <modules>
-        <module>springboot-common-app</module>
-    </modules>
 </project>
