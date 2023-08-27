@@ -50,7 +50,7 @@ public class LoggingAspect {
         Map<String, Object> argumentMapper = IntStream.range(0, methodArguments.length)
                 .mapToObj(index -> new SimpleEntry<>("argument" + index, methodArguments[index]))
                 .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
-        ObjectStringSubstitutor objectStringSubstitutor = new ObjectStringSubstitutor(argumentMapper);
+        ObjectStringSubstitutor objectStringSubstitutor = new ObjectStringSubstitutor(argumentMapper, "{", "}");
         String description = objectStringSubstitutor.replace(descriptionFormat);
         LOGGER.info("{}", description);
     }
