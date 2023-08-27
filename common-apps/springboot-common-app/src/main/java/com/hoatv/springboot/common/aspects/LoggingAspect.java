@@ -1,8 +1,8 @@
 package com.hoatv.springboot.common.aspects;
 
+import com.hoatv.fwk.common.ultilities.ObjectStringSubstitutor;
 import com.hoatv.monitor.mgmt.LoggingMonitor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -47,11 +47,11 @@ public class LoggingAspect {
             return;
         }
 
-        Map<String, String> argumentMapper = IntStream.range(0, methodArguments.length)
-                .mapToObj(index -> new SimpleEntry<>("argument" + index, String.valueOf(methodArguments[index])))
+        Map<String, Object> argumentMapper = IntStream.range(0, methodArguments.length)
+                .mapToObj(index -> new SimpleEntry<>("argument" + index, methodArguments[index]))
                 .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
-        StringSubstitutor descriptionSubstitutor = new StringSubstitutor(argumentMapper);
-        String description = descriptionSubstitutor.replace(descriptionFormat);
+        ObjectStringSubstitutor objectStringSubstitutor = new ObjectStringSubstitutor(argumentMapper);
+        String description = objectStringSubstitutor.replace(descriptionFormat);
         LOGGER.info("{}", description);
     }
 }
