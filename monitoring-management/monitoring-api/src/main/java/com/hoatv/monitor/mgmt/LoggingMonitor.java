@@ -9,4 +9,11 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface LoggingMonitor {
 
+    /**
+     * The summary of method. It supports display parameters of execution method
+     * Example:
+     * "Hello ${argument0}" on method with first argument is Nick. Result is "Hello Nick"
+     * @return
+     */
+    String description() default "";
 }
