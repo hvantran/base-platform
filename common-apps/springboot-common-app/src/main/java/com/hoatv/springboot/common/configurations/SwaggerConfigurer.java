@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"dev", "test"})
 public class SwaggerConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SwaggerConfigurer.class);
