@@ -1,6 +1,5 @@
 package com.hoatv.fwk.common.ultilities;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoatv.fwk.common.services.BiCheckedConsumer;
 
 import java.io.BufferedOutputStream;
@@ -13,7 +12,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -29,7 +27,7 @@ public class ZipFileUtils {
         while ((entry = zipInputStream.getNextEntry()) != null) {
             int size;
             byte[] buffer = new byte[2048];
-            Path tempFile = Files.createTempFile("", entry.getName());
+            Path tempFile = Files.createTempFile("", ".json");
             FileOutputStream fos = new FileOutputStream(tempFile.toFile());
             BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
 
