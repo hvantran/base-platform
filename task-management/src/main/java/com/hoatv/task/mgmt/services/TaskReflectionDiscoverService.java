@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 public class TaskReflectionDiscoverService {
 
@@ -39,7 +38,7 @@ public class TaskReflectionDiscoverService {
 
         return scheduleAppClasses.stream()
                 .map(InstanceUtils::newInstance)
-                .map(mappingFunction).collect(Collectors.toList());
+                .map(mappingFunction).toList();
     }
 
     private CheckedFunction<Object, TaskCollection> getTaskCollectionFromApplication(
@@ -58,7 +57,7 @@ public class TaskReflectionDiscoverService {
 
             List<TaskEntry> taskHandlerOnClasses = taskHandlerClasses.stream()
                     .filter(taskHandlerClass -> classPredicate.test(application, taskHandlerClass))
-                    .map(taskEntryOnClasses).collect(Collectors.toList());
+                    .map(taskEntryOnClasses).toList();
             taskEntries.addAll(taskHandlerOnClasses);
             APP_LOGGER.info("Number of schedule tasks for application: {} on classes - {}", application, taskHandlerOnClasses.size());
 
@@ -66,7 +65,7 @@ public class TaskReflectionDiscoverService {
             List<TaskEntry> taskHandlerOnMethods = Arrays.stream(methods)
                     .filter(method -> Objects.nonNull(method.getAnnotation(ScheduleTask.class)))
                     .map(method -> taskEntryOnMethods.apply(applicationObj, method))
-                    .collect(Collectors.toList());
+                    .toList();
             APP_LOGGER.info("Number of schedule tasks for application: {} on its method - {}", application, taskHandlerOnMethods.size());
             taskEntries.addAll(taskHandlerOnMethods);
             return taskCollection;

@@ -29,7 +29,7 @@ public class MetricProviderRegistry {
         Map<String, MetricCollection> metricPairs = metricInstances.stream().map(instance -> {
 
             Set<Method> metricMethod = ReflectionUtils.getAllMethods(instance.getClass(), metricAnnotated);
-            List<MetricEntry> metricEntries = metricMethod.stream().map(MetricEntry::fromMethod).collect(Collectors.toList());
+            List<MetricEntry> metricEntries = metricMethod.stream().map(MetricEntry::fromMethod).toList();
 
             Optional<MetricProvider> metricProviderAnnotation = ObjectUtils.getAnnotation(MetricProvider.class, instance);
             ObjectUtils.checkThenThrow(metricProviderAnnotation.isEmpty(), "MetricProvider annotation is missing");
@@ -50,7 +50,7 @@ public class MetricProviderRegistry {
 
         synchronized (metricRegistry) {
 
-            List<MetricEntry> metricEntries = methods.stream().map(MetricEntry::fromMethod).collect(Collectors.toList());
+            List<MetricEntry> metricEntries = methods.stream().map(MetricEntry::fromMethod).toList();
             MetricCollection metricCollection = metricRegistry.get(application);
             if (Objects.nonNull(metricCollection)) {
                 metricCollection.getMetricEntries().addAll(metricEntries);

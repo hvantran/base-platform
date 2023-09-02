@@ -40,7 +40,7 @@ public class TaskCollection {
         List<TaskEntry> taskHandlerOnMethods = Arrays.stream(methods)
                 .filter(method -> getAnnotation(ScheduleTask.class, applicationObj, method).isPresent())
                 .map(method -> taskEntryOnMethods.apply(applicationObj, method))
-                .collect(Collectors.toList());
+                .toList();
 
         APP_LOGGER.info("Number of schedule tasks for application: {} on its method - {}", application, taskHandlerOnMethods.size());
         taskEntries.addAll(taskHandlerOnMethods);

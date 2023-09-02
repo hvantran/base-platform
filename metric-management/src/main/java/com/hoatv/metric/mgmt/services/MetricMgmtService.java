@@ -144,8 +144,8 @@ public class MetricMgmtService {
 
     private String getMetricUnit(MetricEntry metric, Object value) {
         String unit = metric.getUnit();
-        if (value instanceof MetricTag) {
-            Map<String, String> attributes = ((MetricTag) value).getAttributes();
+        if (value instanceof MetricTag metrictag) {
+            Map<String, String> attributes = metrictag.getAttributes();
             String unitMetricAttribute = attributes.get("unit");
             if (Objects.nonNull(unitMetricAttribute)) {
                 unit = unitMetricAttribute;
@@ -157,8 +157,8 @@ public class MetricMgmtService {
 
     private Map<String, Object> getValueMap(Object value) {
         Map<String, Object> valueMap = new HashMap<>();
-        if (value instanceof MetricTag) {
-            Long lValue = Long.parseLong(((MetricTag) value).getValue());
+        if (value instanceof MetricTag metrictag) {
+            Long lValue = Long.parseLong(metrictag.getValue());
             valueMap.put(METRIC_VALUE, lValue);
         } else {
             valueMap.put(METRIC_VALUE, value);

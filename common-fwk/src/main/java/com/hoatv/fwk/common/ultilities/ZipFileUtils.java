@@ -23,8 +23,7 @@ public class ZipFileUtils {
     public static List<Path> getFilesFromZip(ZipInputStream zipInputStream) throws IOException {
 
         List<Path> fileOutputPaths = new ArrayList<>();
-        ZipEntry entry;
-        while ((entry = zipInputStream.getNextEntry()) != null) {
+        while ((zipInputStream.getNextEntry()) != null) {
             int size;
             byte[] buffer = new byte[2048];
             Path tempFile = Files.createTempFile("tmp", ".json");

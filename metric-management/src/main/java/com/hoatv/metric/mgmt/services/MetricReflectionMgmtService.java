@@ -17,7 +17,6 @@ import static com.hoatv.fwk.common.constants.SystemSettings.*;
 @SchedulePoolSettings(application = METRIC_MANAGEMENT, threadPoolSettings = @ThreadPoolSettings(name = METRIC_MANAGEMENT_THREAD_POOL, numberOfThreads = NUMBER_OF_METRIC_THREADS))
 public class MetricReflectionMgmtService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MetricReflectionMgmtService.class);
     private static final Logger METRIC_LOGGER = LoggerFactory.getLogger(METRIC_LOG_APP_NAME);
     private final Reflections reflections = new Reflections(DEFAULT_SCAN_PACKAGE);
 
