@@ -27,7 +27,7 @@ public class ZipFileUtils {
         while ((entry = zipInputStream.getNextEntry()) != null) {
             int size;
             byte[] buffer = new byte[2048];
-            Path tempFile = Files.createTempFile("", ".json");
+            Path tempFile = Files.createTempFile("tmp", ".json");
             FileOutputStream fos = new FileOutputStream(tempFile.toFile());
             BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
 
