@@ -64,15 +64,15 @@ public enum TemplateEngineEnum implements GenericTemplateEngine {
         private final Configuration configuration;
 
         FreemarkerConfigurationSingleton() {
-            Configuration configuration = new Configuration(Configuration.VERSION_2_3_30);
-            configuration.setDefaultEncoding("UTF-8");
-            configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-            configuration.setLogTemplateExceptions(false);
-            configuration.setWrapUncheckedExceptions(true);
-            configuration.setFallbackOnNullLoopVariable(false);
-            configuration.setObjectWrapper(new DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_30).build());
+            Configuration defaultConfiguration = new Configuration(Configuration.VERSION_2_3_30);
+            defaultConfiguration.setDefaultEncoding("UTF-8");
+            defaultConfiguration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            defaultConfiguration.setLogTemplateExceptions(false);
+            defaultConfiguration.setWrapUncheckedExceptions(true);
+            defaultConfiguration.setFallbackOnNullLoopVariable(false);
+            defaultConfiguration.setObjectWrapper(new DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_30).build());
 
-            this.configuration = configuration;
+            this.configuration = defaultConfiguration;
         }
     }
 }

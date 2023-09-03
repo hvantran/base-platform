@@ -25,7 +25,7 @@ public class ObjectUtils {
     }
     public static <X extends Throwable> void checkThenThrow(boolean predicate, Supplier<? extends X> exceptionSupplier) throws X {
         if (predicate) {
-            throw (X) exceptionSupplier.get();
+            throw exceptionSupplier.get();
         }
     }
 
