@@ -12,11 +12,7 @@ public class MDCUtils {
     }
 
     public static void includeProperties(Map<String, String> properties, Logger logger, String message, Object... objects) {
-        try {
-            properties.forEach(MDC::put);
-            logger.info(message, objects);
-        } finally {
-            MDC.clear();
-        }
+        properties.forEach(MDC::put);
+        logger.info(message, objects);
     }
 }
