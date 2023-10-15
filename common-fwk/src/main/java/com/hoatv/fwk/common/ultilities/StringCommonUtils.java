@@ -14,7 +14,21 @@ public class StringCommonUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StringCommonUtils.class);
 
-    public static final String END_BRACKETS = "}";
+    public static final String END_BRACES = "}";
+
+    public static final String OPEN_BRACES = "{";
+
+    public static final String OPEN_ANGLE_BRACKETS = "<";
+
+    public static final String CLOSE_ANGLE_BRACKETS = ">";
+
+    public static final String OPEN_PARENTHESIS = "(";
+
+    public static final String CLOSE_PARENTHESIS = ")";
+
+    public static final String EMPTY_STRING = "";
+
+    public static final String ADDITIONAL_NUMBER_OF_CHARACTER_FORMULA_FORMAT = ":%s:";
 
     private StringCommonUtils() {
     }
@@ -24,8 +38,9 @@ public class StringCommonUtils {
      * Parse string input into Map<String, String> object with provided properties template
      * Example:
      * Input string: Student(name=Nick, age=6, className=1/10, nickname=tit)
-     * Properties template: Set.of("{<(secondName)name><, >}", "{<age><, >}", "{<className><, >}", "{<nickname><, >}")
+     * Properties template: Set.of("{<(:1:secondName)name><, >}", "{(:1:)<age><, >}", "{(:1:)<className><, >}", "{(:1:)<nickname><, >}")
      * Output: {secondName=Nick, age=6, className=1/10, nickname=tit}
+     * Notes: :1: above is number of characters will take after the property, like above example it will skip = characters
      *
      * @param propertyTemplates : The set of template properties need to collect
      * @param input: The input string
@@ -50,13 +65,14 @@ public class StringCommonUtils {
      * @param input: The input string
      * @return the properties as a Map
      */
-    public static Map<String, String> getPropertiesFromTemplate (String template, String input) {
-        String[] placeHolders = StringUtils.substringsBetween(template, "{", "}");
+
+    private static Map<String, String> getPropertiesFromTemplate (String template, String input) {
+        String[] placeHolders = StringUtils.substringsBetween(template, OPEN_BRACES, END_BRACES);
         Map<String, String> properties = new HashMap<>();
         try {
             for (int index = 0; index < placeHolders.length; index++) {
                 String propertyNamePlaceholder = placeHolders[index];
-                String[] propertyFormulaArr = StringUtils.substringsBetween(propertyNamePlaceholder, "<", ">");
+                String[] propertyFormulaArr = StringUtils.substringsBetween(propertyNamePlaceholder, OPEN_ANGLE_BRACKETS, CLOSE_ANGLE_BRACKETS);
                 String startPropertyNameTemplate = propertyFormulaArr[0];
                 String endPropertyNameTemplate = propertyFormulaArr[1];
 
@@ -64,13 +80,14 @@ public class StringCommonUtils {
                 String endPropertyName = getPropertyName(endDelta, endPropertyNameTemplate);
                 int startDelta = getDelta(startPropertyNameTemplate);
                 String startPropertyName = getPropertyName(startDelta, startPropertyNameTemplate);
+                String formatPropertyNameFormula = StringUtils.substringBetween(startPropertyNameTemplate, OPEN_PARENTHESIS, CLOSE_PARENTHESIS);
 
-                String propertyNameRaw =  startPropertyNameTemplate
-                        .replace(String.format("(%s)", startPropertyName), "");
+                String propertyNameRaw = startPropertyNameTemplate
+                        .replace(String.format("(%s)", formatPropertyNameFormula), EMPTY_STRING);
 
-                if (startDelta != 0 ) {
-                    propertyNameRaw = propertyNameRaw
-                            .replace(String.format(":%s:", startDelta), "");
+                if (startDelta != 0) {
+                    String deltaFormat = String.format(ADDITIONAL_NUMBER_OF_CHARACTER_FORMULA_FORMAT, startDelta);
+                    propertyNameRaw = propertyNameRaw.replace(deltaFormat, EMPTY_STRING);
                 }
 
                 int propertyStartIndex = input.indexOf(propertyNameRaw);
@@ -79,7 +96,7 @@ public class StringCommonUtils {
                     continue;
                 }
 
-                int currentIndex = propertyStartIndex + propertyNameRaw.length() + startDelta + 1;
+                int currentIndex = propertyStartIndex + propertyNameRaw.length() + startDelta;
                 int nextIndex = input.indexOf(endPropertyName, currentIndex) + endDelta;
 
                 if (nextIndex == -1) {
@@ -88,7 +105,7 @@ public class StringCommonUtils {
                 }
 
                 String propertyValue = input.substring(currentIndex, nextIndex);
-                propertyValue = propertyValue.endsWith(END_BRACKETS) ?
+                propertyValue = propertyValue.endsWith("}") ?
                         propertyValue.substring(0, propertyValue.length() - 1) : propertyValue;
                 properties.put(startPropertyName, propertyValue);
             }
@@ -114,18 +131,21 @@ public class StringCommonUtils {
         return propertyName;
     }
 
-    private static String getPropertyName (int endDelta, String endPropertyNameRaw) {
+
+    private static String getPropertyName (int delta, String endPropertyNameRaw) {
         String secondPropertyNameTemplate = getPropertyName(endPropertyNameRaw);
-        if ( endDelta != 0) {
-            String deltaString = String.format(":%s:", endDelta);
-            String secondPropertyName = secondPropertyNameTemplate.replace(deltaString, "");
+        if ( delta != 0) {
+            String deltaString = String.format(ADDITIONAL_NUMBER_OF_CHARACTER_FORMULA_FORMAT, delta);
+            String secondPropertyName = secondPropertyNameTemplate.replace(deltaString, EMPTY_STRING);
             if (StringUtils.isEmpty(secondPropertyName)) {
-                String propertyPlaceHolder = String.format("(:%s:)", endDelta);
-                return endPropertyNameRaw.replace(propertyPlaceHolder, "");
+                String propertyPlaceHolder = String.format("(:%s:)", delta);
+                return endPropertyNameRaw.replace(propertyPlaceHolder, EMPTY_STRING);
             }
+            return secondPropertyName;
         }
         return secondPropertyNameTemplate;
     }
+
 
     /**
      * Example abc:1: => delta = 1
