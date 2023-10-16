@@ -111,7 +111,7 @@ public class StringCommonUtils {
             }
             return properties;
         } catch (StringIndexOutOfBoundsException | ArrayIndexOutOfBoundsException e) {
-            LOGGER.warn("Error occurred while processing template {}", template, e);
+            LOGGER.warn("Error occurred while processing template {} from input {}", template, input, e);
             return Collections.emptyMap();
         }
     }
