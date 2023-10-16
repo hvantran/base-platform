@@ -57,7 +57,7 @@
         <appender-ref ref="MetricLogstashUdp" />
     </logger>
     <root level="INFO">
-        <appender-ref ref="Console" />
+<!--        <appender-ref ref="Console" />-->
         <appender-ref ref="ApplicationLogstashUdp" />
     </root>
 </included>
