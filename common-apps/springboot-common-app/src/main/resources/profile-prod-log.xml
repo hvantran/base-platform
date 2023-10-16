@@ -53,7 +53,7 @@
     </appender>
 
     <logger name="Metric" level="DEBUG" additivity="false">
-        <appender-ref ref="Console" />
+<!--        <appender-ref ref="Console" />-->
         <appender-ref ref="MetricLogstashUdp" />
     </logger>
     <root level="INFO">
