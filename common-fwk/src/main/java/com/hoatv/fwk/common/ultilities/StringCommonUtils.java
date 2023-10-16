@@ -14,9 +14,9 @@ public class StringCommonUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StringCommonUtils.class);
 
-    public static final String END_BRACES = "}";
+    public static final String END_BRACES = "}$";
 
-    public static final String OPEN_BRACES = "{";
+    public static final String OPEN_BRACES = "^{";
 
     public static final String OPEN_ANGLE_BRACKETS = "<";
 
@@ -38,7 +38,7 @@ public class StringCommonUtils {
      * Parse string input into Map<String, String> object with provided properties template
      * Example:
      * Input string: Student(name=Nick, age=6, className=1/10, nickname=tit)
-     * Properties template: Set.of("{<(:1:secondName)name><, >}", "{(:1:)<age><, >}", "{(:1:)<className><, >}", "{(:1:)<nickname><, >}")
+     * Properties template: Set.of("^{<(:1:secondName)name><, >}$", "{(:1:)<age><, >}$", "{(:1:)<className><, >}$", "{(:1:)<nickname><, >}$")
      * Output: {secondName=Nick, age=6, className=1/10, nickname=tit}
      * Notes: :1: above is number of characters will take after the property, like above example it will skip = characters
      *
@@ -58,7 +58,7 @@ public class StringCommonUtils {
      * Parse string input into Map<String, String> object with provided properties template
      * Example:
      * Input string: Student(name=Nick, age=6, className=1/10, nickname=tit)
-     * Template string: "{<(secondName)name><, >} {<age><, >} {<className><, >} {<nickname><, >}"
+     * Template string: "^{<(secondName)name><, >}$ ^{<age><, >}$ ^{<className><, >}$ ^{<nickname><, >}$"
      * Output: {secondName=Nick, age=6, className=1/10, nickname=tit}
      *
      * @param template: The string of template properties need to collect
@@ -111,7 +111,7 @@ public class StringCommonUtils {
             }
             return properties;
         } catch (StringIndexOutOfBoundsException | ArrayIndexOutOfBoundsException e) {
-            LOGGER.warn("Error occurred while processing template {} from input {}", template, input, e);
+            LOGGER.warn("Error occurred while processing template {}", template, e);
             return Collections.emptyMap();
         }
     }
