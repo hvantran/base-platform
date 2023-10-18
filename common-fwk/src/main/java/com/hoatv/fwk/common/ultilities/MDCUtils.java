@@ -16,7 +16,7 @@ public class MDCUtils {
             properties.forEach(MDC::put);
             logger.info(message, objects);
         } finally {
-            MDC.clear();
+            properties.keySet().forEach(MDC::remove);
         }
     }
 }
