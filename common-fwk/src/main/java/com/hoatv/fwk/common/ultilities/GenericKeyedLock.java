@@ -41,9 +41,4 @@ public class GenericKeyedLock<T> {
         LOGGER.info("Put lock key {}, semaphore - {}", key, semaphore);
         locks.putIfAbsent(key, semaphore);
     }
-
-    public static void main(String[] args) {
-        GenericKeyedLock<String> stringGenericKeyedLock = new GenericKeyedLock<>();
-        stringGenericKeyedLock.tryAcquire("a", )
-    }
 }
