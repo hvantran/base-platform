@@ -56,7 +56,7 @@ public enum TemplateEngineEnum implements GenericTemplateEngine {
     public static TemplateEngineEnum getTemplateEngineFromName(String templateEngineName) {
         return Arrays.stream(TemplateEngineEnum.values())
                 .filter(templateEngineEnum -> templateEngineName.equals(templateEngineEnum.templateEngineName))
-                .findFirst().orElseThrow(() -> new AppException("Cannot find template engine: " + templateEngineName));
+                .findFirst().orElseThrow(() -> new AppException("Not supported template engine: " + templateEngineName));
     }
 
     private static final class FreemarkerConfigurationSingleton {
