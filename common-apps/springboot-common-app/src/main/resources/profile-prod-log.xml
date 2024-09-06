@@ -28,13 +28,13 @@
         <host>${logstash.service.name}</host>
         <port>${logstash.udp.port}</port>
         <layout class="net.logstash.logback.layout.LogstashLayout">
-            <customFields>{"type":"metrics-${app_name}-${iso_date}"}</customFields>
+            <customFields>{"type":"metric-${app_name}-${iso_date}"}</customFields>
         </layout>
     </appender>
     <appender name="MetricLogstashTcp" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${logstash.service.name}:${logstash.tcp.port}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"type":"metrics-${app_name}-${iso_date}"}</customFields>
+            <customFields>{"type":"metric-${app_name}-${iso_date}"}</customFields>
         </encoder>
         <keepAliveDuration>5 minutes</keepAliveDuration>
     </appender>
