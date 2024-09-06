@@ -13,6 +13,7 @@ import com.hoatv.task.mgmt.annotations.ScheduleTask;
 import com.hoatv.task.mgmt.annotations.ThreadPoolSettings;
 import net.logstash.logback.argument.StructuredArguments;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -37,6 +38,8 @@ public class MetricMgmtService {
     private static final String METRIC_NAME = "metric-name";
     private static final String METRIC_VALUE = "metric-value";
     public static final String METRIC_UNIT = "metric-unit";
+    public static final String UNIT = "unit";
+    public static final String NAME_PROPERTY = "name";
 
     private final MetricProviderRegistry metricProviders;
 
@@ -66,11 +69,19 @@ public class MetricMgmtService {
                     if (value instanceof SimpleValue simpleValue) {
                         processSimpleValue(metricEntry, name, simpleValue);
                     } else if (value instanceof String metricValue) {
-                        processSimpleValue(metricEntry, name, Long.valueOf(metricValue));
+                        try {
+                            Long metricValueLong = NumberUtils.createLong(metricValue);
+                            processSimpleValue(metricEntry, name, metricValueLong);
+                        } catch (NumberFormatException exception) {
+                            Double metricValueDouble = NumberUtils.createDouble(metricValue);
+                            processSimpleValue(metricEntry, name, metricValueDouble);
+                        }
                     } else if (value instanceof Long metricValue) {
                         processSimpleValue(metricEntry, name, metricValue);
                     } else if (value instanceof Integer metricValue) {
                         processSimpleValue(metricEntry, name, metricValue.longValue());
+                    } else if (value instanceof Double metricValue) {
+                        processSimpleValue(metricEntry, name, metricValue);
                     } else if (value instanceof Collection<?>) {
                         @SuppressWarnings("unchecked")
                         Collection<ComplexValue> complexValues = (Collection<ComplexValue>) value;
@@ -91,7 +102,13 @@ public class MetricMgmtService {
         MDC.put(METRIC_NAME, name);
         logMetricRecord(name, simpleValue.getValue(), metricEntry.getUnit());
     }
+
     private void processSimpleValue(MetricEntry metricEntry, String name, Long simpleValue) {
+        MDC.put(METRIC_NAME, name);
+        logMetricRecord(name, simpleValue, metricEntry.getUnit());
+    }
+
+    private void processSimpleValue(MetricEntry metricEntry, String name, Double simpleValue) {
         MDC.put(METRIC_NAME, name);
         logMetricRecord(name, simpleValue, metricEntry.getUnit());
     }
@@ -102,13 +119,13 @@ public class MetricMgmtService {
         for (MetricTag metricTag : metricTags) {
             String metricUnit = getMetricUnit(metricEntry, metricTag);
             Map<String, String> attributes = metricTag.getAttributes();
-            String nameTag = attributes.get("name");
+            String nameTag = attributes.get(NAME_PROPERTY);
             String metricNameCompute = name;
             MDC.put(METRIC_UNIT, metricUnit);
             if (attributes.isEmpty()) {
                 MDC.put(METRIC_NAME, name);
             } else if (Objects.nonNull(nameTag)) {
-                Predicate<Map.Entry<String, String>> filterOutName = p -> !"name".equals(p.getKey());
+                Predicate<Map.Entry<String, String>> filterOutName = p -> !NAME_PROPERTY.equals(p.getKey());
                 Map<String, String> newAttributes =
                         attributes.entrySet()
                                 .stream()
@@ -146,29 +163,36 @@ public class MetricMgmtService {
         String unit = metric.getUnit();
         if (value instanceof MetricTag metrictag) {
             Map<String, String> attributes = metrictag.getAttributes();
-            String unitMetricAttribute = attributes.get("unit");
+            String unitMetricAttribute = attributes.get(UNIT);
             if (Objects.nonNull(unitMetricAttribute)) {
                 unit = unitMetricAttribute;
-                attributes.remove("unit");
+                attributes.remove(UNIT);
             }
         }
         return unit;
     }
 
     private Map<String, Object> getValueMap(Object value) {
-        Map<String, Object> valueMap = new HashMap<>();
         if (value instanceof MetricTag metrictag) {
-            Long lValue = Long.parseLong(metrictag.getValue());
-            valueMap.put(METRIC_VALUE, lValue);
-        } else {
-            valueMap.put(METRIC_VALUE, value);
+            String metricValue = metrictag.getValue();
+            try {
+                Long metricValueLong = NumberUtils.createLong(metricValue);
+                return Map.of(METRIC_VALUE, metricValueLong);
+            } catch (NumberFormatException exception) {
+                Double metricValueDouble = NumberUtils.createDouble(metricValue);
+                return Map.of(METRIC_VALUE, metricValueDouble);
+            }
         }
-        return valueMap;
+        return Map.of(METRIC_VALUE, value);
     }
 
     public static String deAccent(String str) {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("").replace("đ", "d");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(NumberUtils.createLong("1.0"));
     }
 }
