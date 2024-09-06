@@ -191,8 +191,4 @@ public class MetricMgmtService {
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("").replace("đ", "d");
     }
-
-    public static void main(String[] args) {
-        System.out.println(NumberUtils.createLong("1.0"));
-    }
 }
