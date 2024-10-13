@@ -1,57 +1,152 @@
 
 {
-  "mappings" : {
-    "properties" : {
-      "@timestamp" : {
-        "type" : "date"
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
       },
-      "@version" : {
-        "type" : "keyword"
-      },
-      "application" : {
-        "type" : "keyword"
-      },
-      "category" : {
-        "type" : "keyword"
-      },
-      "host" : {
-        "type" : "keyword"
-      },
-      "level" : {
-        "type" : "keyword"
-      },
-      "level_value" : {
-        "type" : "long"
-      },
-      "logger_name" : {
-        "type" : "keyword"
-      },
-      "message" : {
-        "type" : "text",
-        "fields" : {
-          "keyword" : {
-            "type" : "keyword",
-            "ignore_above" : 256
+      "@version": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
           }
         }
       },
-      "metric-name" : {
-        "type" : "keyword"
+      "app_name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
-      "metric-unit" : {
-        "type" : "keyword"
+      "application": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
-      "metric-value" : {
-        "type" : "long"
+      "category": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
-      "path" : {
-        "type" : "keyword"
+      "event": {
+        "properties": {
+          "original": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
       },
-      "thread_name" : {
-        "type" : "keyword"
+      "host": {
+        "properties": {
+          "ip": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
       },
-      "type" : {
-        "type" : "keyword"
+      "iso_date": {
+        "type": "date"
+      },
+      "level": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "level_value": {
+        "type": "long"
+      },
+      "logger_name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "message": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "metric-name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "metric-unit": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "metric-value": {
+        "type": "double"
+      },
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "thread_name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "type": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       }
     }
   }
