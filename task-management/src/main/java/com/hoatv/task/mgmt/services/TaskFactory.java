@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public enum TaskFactory {
 
@@ -16,8 +17,8 @@ public enum TaskFactory {
 
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(TaskFactory.class);
 
-    private final Map<String, LinkedList<CloseableTask>> serviceRegistry = new ConcurrentHashMap<>();
-    private final Map<String, LinkedList<CloseableTaskV1>> serviceRegistryV1 = new ConcurrentHashMap<>();
+    final Map<String, LinkedList<CloseableTask>> serviceRegistry = new ConcurrentHashMap<>();
+    final Map<String, LinkedList<CloseableTaskV1>> serviceRegistryV1 = new ConcurrentHashMap<>();
 
     public TaskMgmtServiceV1 getTaskMgmtServiceV1(int numberOfThreads, int maxAwaitTerminationMillis, String application) {
         serviceRegistryV1.putIfAbsent(application, new LinkedList<>());
@@ -39,7 +40,7 @@ public enum TaskFactory {
         serviceRegistry.putIfAbsent(application, new LinkedList<>());
         LinkedList<? super CloseableTask> services = serviceRegistry.get(application);
 
-        TaskMgmtService  taskMgmtService = new TaskMgmtService(numberOfThreads, maxAwaitTerminationMillis, application);
+        TaskMgmtService taskMgmtService = new TaskMgmtService(numberOfThreads, maxAwaitTerminationMillis, application);
         services.add(taskMgmtService);
         return taskMgmtService;
     }
@@ -67,15 +68,65 @@ public enum TaskFactory {
         return scheduleTaskMgmtService;
     }
 
+    public void destroy(String application, TaskMgmtService taskMgmtService) {
+        APP_LOGGER.info("Destroy registered executor under application: {}", application);
+        LinkedList<CloseableTask> linkedListStream = serviceRegistry.entrySet().stream()
+                .filter(p -> p.getKey().equals(application))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElseThrow(() -> new RuntimeException("Application not found to destroy"));
+        linkedListStream
+                .stream()
+                .filter(taskMgmtService::equals)
+                .filter(p -> !p.isClosed())
+                .forEach(CloseableTask::shutdownNow);
+        linkedListStream.remove(taskMgmtService);
+    }
+
+    public void destroy(String application, TaskMgmtServiceV1 taskMgmtService) {
+        LinkedList<CloseableTaskV1> linkedListStream = serviceRegistryV1.entrySet().stream()
+                .filter(p -> p.getKey().equals(application))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElseThrow(() -> new RuntimeException("Application not found to destroy"));
+        linkedListStream
+                .stream()
+                .filter(taskMgmtService::equals)
+                .filter(p -> !p.isClosed())
+                .forEach(CloseableTaskV1::shutdownNow);
+        linkedListStream.remove(taskMgmtService);
+    }
+
+    public void destroy(String application) {
+        APP_LOGGER.info("Destroy all registered executors in both v0 and v1 under application: {}", application);
+        serviceRegistry.entrySet().stream()
+                .filter(p -> p.getKey().equals(application))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .filter(p -> !p.isClosed())
+                .forEach(CloseableTask::shutdownNow);
+        serviceRegistry.remove(application);
+
+        serviceRegistryV1.entrySet().stream()
+                .filter(p -> p.getKey().equals(application))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .filter(p -> !p.isClosed())
+                .forEach(CloseableTaskV1::shutdownNow);
+        serviceRegistryV1.remove(application);
+    }
+
     public void destroy() {
         APP_LOGGER.info("Destroy all registered executors");
         serviceRegistry.values().stream()
                 .flatMap(Collection::stream)
                 .filter(p -> !p.isClosed())
                 .forEach(CloseableTask::shutdownNow);
+        serviceRegistry.clear();
         serviceRegistryV1.values().stream()
                 .flatMap(Collection::stream)
                 .filter(p -> !p.isClosed())
                 .forEach(CloseableTaskV1::shutdownNow);
+        serviceRegistryV1.clear();
     }
 }

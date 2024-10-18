@@ -59,6 +59,10 @@ public enum HttpClientFactory  {
         }
     }
 
+    public void destroy(String categoryName) {
+        LOGGER.info("Close all registered http client pool under category: {}", categoryName);
+        serviceRegistry.get(categoryName).close();
+    }
 
     public void destroy() {
         LOGGER.info("Close all registered http client pool");
