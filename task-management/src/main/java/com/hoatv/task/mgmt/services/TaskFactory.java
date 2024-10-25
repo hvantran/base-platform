@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -70,31 +71,36 @@ public enum TaskFactory {
 
     public void destroy(String application, TaskMgmtService taskMgmtService) {
         APP_LOGGER.info("Destroy registered executor under application: {}", application);
-        LinkedList<CloseableTask> linkedListStream = serviceRegistry.entrySet().stream()
+        Optional<LinkedList<CloseableTask>> linkedListStreamOp = serviceRegistry.entrySet().stream()
                 .filter(p -> p.getKey().equals(application))
                 .findFirst()
-                .map(Map.Entry::getValue)
-                .orElseThrow(() -> new RuntimeException("Application not found to destroy"));
-        linkedListStream
-                .stream()
-                .filter(taskMgmtService::equals)
-                .filter(p -> !p.isClosed())
-                .forEach(CloseableTask::shutdownNow);
-        linkedListStream.remove(taskMgmtService);
+                .map(Map.Entry::getValue);
+        if (linkedListStreamOp.isPresent()) {
+            LinkedList<CloseableTask> linkedListStream = linkedListStreamOp.get();
+            linkedListStream
+                    .stream()
+                    .filter(taskMgmtService::equals)
+                    .filter(p -> !p.isClosed())
+                    .forEach(CloseableTask::shutdownNow);
+            linkedListStream.remove(taskMgmtService);
+        }
     }
 
     public void destroy(String application, TaskMgmtServiceV1 taskMgmtService) {
-        LinkedList<CloseableTaskV1> linkedListStream = serviceRegistryV1.entrySet().stream()
+        Optional<LinkedList<CloseableTaskV1>> linkedListStreamOp = serviceRegistryV1.entrySet().stream()
                 .filter(p -> p.getKey().equals(application))
                 .findFirst()
-                .map(Map.Entry::getValue)
-                .orElseThrow(() -> new RuntimeException("Application not found to destroy"));
-        linkedListStream
-                .stream()
-                .filter(taskMgmtService::equals)
-                .filter(p -> !p.isClosed())
-                .forEach(CloseableTaskV1::shutdownNow);
-        linkedListStream.remove(taskMgmtService);
+                .map(Map.Entry::getValue);
+
+        if (linkedListStreamOp.isPresent()) {
+            LinkedList<CloseableTaskV1> linkedListStream = linkedListStreamOp.get();
+            linkedListStream
+                    .stream()
+                    .filter(taskMgmtService::equals)
+                    .filter(p -> !p.isClosed())
+                    .forEach(CloseableTaskV1::shutdownNow);
+            linkedListStream.remove(taskMgmtService);
+        }
     }
 
     public void destroy(String application) {
