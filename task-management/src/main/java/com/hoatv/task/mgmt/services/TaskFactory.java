@@ -83,6 +83,8 @@ public enum TaskFactory {
                     .filter(p -> !p.isClosed())
                     .forEach(CloseableTask::shutdownNow);
             linkedListStream.remove(taskMgmtService);
+        } else {
+            APP_LOGGER.warn("Application {} is not found", application);
         }
     }
 
@@ -100,6 +102,8 @@ public enum TaskFactory {
                     .filter(p -> !p.isClosed())
                     .forEach(CloseableTaskV1::shutdownNow);
             linkedListStream.remove(taskMgmtService);
+        } else {
+            APP_LOGGER.warn("Application {} is not found", application);
         }
     }
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum HttpClientFactory  {
@@ -61,7 +62,12 @@ public enum HttpClientFactory  {
 
     public void destroy(String categoryName) {
         LOGGER.info("Close all registered http client pool under category: {}", categoryName);
-        serviceRegistry.get(categoryName).close();
+        GenericHttpClientPool genericHttpClientPool = serviceRegistry.get(categoryName);
+        if (Objects.nonNull(genericHttpClientPool)) {
+            genericHttpClientPool.close();
+            return;
+        }
+        LOGGER.warn("Category {} is not found", categoryName);
     }
 
     public void destroy() {
