@@ -1,15 +1,17 @@
 package com.hoatv.fwk.common.services;
 
 import com.hoatv.fwk.common.annotations.HttpConnectionPoolSettings;
+import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public enum HttpClientFactory  {
+public enum HttpClientFactory {
 
     INSTANCE;
 
@@ -21,6 +23,7 @@ public enum HttpClientFactory  {
     /**
      * Create a GenericHttpClientPool.
      * If the GenericHttpClientPool is not created or already closed, a new GenericHttpClientPool will be created
+     *
      * @param httpConnectionPoolSettings
      * @return
      */
@@ -39,16 +42,26 @@ public enum HttpClientFactory  {
     /**
      * Create a GenericHttpClientPool.
      * If the GenericHttpClientPool is not created or already closed, a new GenericHttpClientPool will be created
+     *
      * @param categoryName
      * @param maxTotal
      * @param maxWaitMillis
+     * @param pooledObjectFactory
      * @return
      */
-    public GenericHttpClientPool getGenericHttpClientPool(String categoryName, int maxTotal, int maxWaitMillis) {
+    public GenericHttpClientPool getGenericHttpClientPool(
+            String categoryName,
+            int maxTotal,
+            int maxWaitMillis,
+            PooledObjectFactory<HttpClient> pooledObjectFactory) {
         synchronized (serviceRegistry) {
             GenericHttpClientPool genericHttpClientPool = serviceRegistry.get(categoryName);
             if (genericHttpClientPool == null || genericHttpClientPool.isClosed()) {
-                genericHttpClientPool = new GenericHttpClientPool(maxTotal, maxWaitMillis);
+                if (pooledObjectFactory == null) {
+                    genericHttpClientPool = new GenericHttpClientPool(maxTotal, maxWaitMillis);
+                } else {
+                    genericHttpClientPool = new GenericHttpClientPool(maxTotal, maxWaitMillis, pooledObjectFactory);
+                }
                 serviceRegistry.put(categoryName, genericHttpClientPool);
                 LOGGER.info("Creating new HttpClient Pool for category: {} - max clients: {} - max waiting time: {}",
                         categoryName, maxTotal, maxWaitMillis);
@@ -58,6 +71,20 @@ public enum HttpClientFactory  {
             LOGGER.info("Using existing HttpClient Pool: {} for category: {}", genericHttpClientPool, categoryName);
             return genericHttpClientPool;
         }
+    }
+
+
+    /**
+     * Create a GenericHttpClientPool.
+     * If the GenericHttpClientPool is not created or already closed, a new GenericHttpClientPool will be created
+     *
+     * @param categoryName
+     * @param maxTotal
+     * @param maxWaitMillis
+     * @return
+     */
+    public GenericHttpClientPool getGenericHttpClientPool(String categoryName, int maxTotal, int maxWaitMillis) {
+        return getGenericHttpClientPool(categoryName, maxTotal, maxWaitMillis, null);
     }
 
     public void destroy(String categoryName) {
