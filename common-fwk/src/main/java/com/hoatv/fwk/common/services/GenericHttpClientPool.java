@@ -2,6 +2,8 @@ package com.hoatv.fwk.common.services;
 
 import com.hoatv.fwk.common.annotations.HttpConnectionPoolSettings;
 import lombok.Getter;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,13 @@ public class GenericHttpClientPool extends GenericObjectPool<HttpClient> {
 
     public GenericHttpClientPool(int maxTotal, int maxWaitMillis) {
         super(new HttpClientObjectPoolFactory());
+        this.setMaxTotal(maxTotal);
+        this.setMaxIdle(maxTotal);
+        this.setMaxWaitMillis(maxWaitMillis);
+    }
+
+    public GenericHttpClientPool(int maxTotal, int maxWaitMillis, PooledObjectFactory<HttpClient> pooledObjectFactory) {
+        super(pooledObjectFactory);
         this.setMaxTotal(maxTotal);
         this.setMaxIdle(maxTotal);
         this.setMaxWaitMillis(maxWaitMillis);
