@@ -4,10 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.Normalizer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StringCommonUtils {
@@ -33,6 +35,11 @@ public class StringCommonUtils {
     private StringCommonUtils() {
     }
 
+    public static String deAccent(String str) {
+        String  nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+        Pattern pattern             = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(nfdNormalizedString).replaceAll("").replace("đ", "d");
+    }
 
     /**
      * Parse string input into Map<String, String> object with provided properties template
