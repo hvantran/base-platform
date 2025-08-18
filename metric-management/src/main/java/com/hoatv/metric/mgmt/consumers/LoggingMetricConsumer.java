@@ -1,4 +1,4 @@
-package com.hoatv.metric.mgmt.services;
+package com.hoatv.metric.mgmt.consumers;
 
 import static com.hoatv.fwk.common.constants.Constants.METRIC_LOG_APP_NAME;
 import static com.hoatv.fwk.common.ultilities.StringCommonUtils.deAccent;
@@ -18,7 +18,6 @@ import org.slf4j.MDC;
 
 import com.hoatv.fwk.common.ultilities.StringCommonUtils;
 import com.hoatv.metric.mgmt.annotations.MetricConsumer;
-import com.hoatv.metric.mgmt.consumers.MetricConsumerHandler;
 import com.hoatv.metric.mgmt.entities.ComplexValue;
 import com.hoatv.metric.mgmt.entities.MetricTag;
 import com.hoatv.metric.mgmt.entities.SimpleValue;

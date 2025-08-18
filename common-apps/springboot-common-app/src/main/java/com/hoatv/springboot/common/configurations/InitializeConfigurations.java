@@ -7,7 +7,7 @@ import com.hoatv.metric.mgmt.annotations.MetricConsumer;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.annotations.MetricRegistry;
 import com.hoatv.metric.mgmt.consumers.MetricConsumerHandler;
-import com.hoatv.metric.mgmt.services.LoggingMetricConsumer;
+import com.hoatv.metric.mgmt.consumers.LoggingMetricConsumer;
 import com.hoatv.metric.mgmt.services.MetricConsumerRegistry;
 import com.hoatv.metric.mgmt.services.MetricMgmtService;
 import com.hoatv.metric.mgmt.services.MetricProviderRegistry;
