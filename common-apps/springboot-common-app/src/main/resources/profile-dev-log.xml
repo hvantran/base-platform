@@ -24,8 +24,10 @@
 
     <logger name="Metric" level="DEBUG" additivity="false">
         <appender-ref ref="Console" />
+<!--        <appender-ref ref="Metric" />-->
     </logger>
     <root level="INFO">
         <appender-ref ref="Console" />
+<!--        <appender-ref ref="Application" />-->
     </root>
 </included>

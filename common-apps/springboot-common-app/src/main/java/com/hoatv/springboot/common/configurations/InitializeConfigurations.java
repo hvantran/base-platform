@@ -3,8 +3,12 @@ package com.hoatv.springboot.common.configurations;
 import com.hoatv.fwk.common.services.CheckedConsumer;
 import com.hoatv.fwk.common.services.HttpClientFactory;
 import com.hoatv.fwk.common.ultilities.ObjectUtils;
+import com.hoatv.metric.mgmt.annotations.MetricConsumer;
 import com.hoatv.metric.mgmt.annotations.MetricProvider;
 import com.hoatv.metric.mgmt.annotations.MetricRegistry;
+import com.hoatv.metric.mgmt.consumers.MetricConsumerHandler;
+import com.hoatv.metric.mgmt.consumers.LoggingMetricConsumer;
+import com.hoatv.metric.mgmt.services.MetricConsumerRegistry;
 import com.hoatv.metric.mgmt.services.MetricMgmtService;
 import com.hoatv.metric.mgmt.services.MetricProviderRegistry;
 import com.hoatv.system.health.metrics.MethodStatisticCollector;
@@ -56,8 +60,19 @@ public class InitializeConfigurations {
     }
 
     @Bean
-    public MetricMgmtService getMetricMgmtService(MetricProviderRegistry metricProviderRegistry) {
-        return new MetricMgmtService(metricProviderRegistry);
+    public MetricConsumerRegistry getMetricConsumerRegistry() {
+        return new MetricConsumerRegistry();
+    }
+
+    @Bean
+    public LoggingMetricConsumer getLoggingMetricConsumer() {
+        return new LoggingMetricConsumer();
+    }
+
+    @Bean
+    public MetricMgmtService getMetricMgmtService(MetricProviderRegistry metricProviderRegistry,
+                                                  MetricConsumerRegistry metricConsumerRegistry) {
+        return new MetricMgmtService(metricProviderRegistry, metricConsumerRegistry);
     }
 
     @Bean
@@ -73,14 +88,18 @@ public class InitializeConfigurations {
     }
 
     @Bean
-    public CommandLineRunner getCommandLineRunner(ApplicationContext ctx) {
+    public CommandLineRunner getCommandLineRunner(ApplicationContext ctx,
+                                                  MetricConsumerRegistry metricConsumerRegistry) {
         return args -> {
             LOGGER.info("Let's inspect the beans provided by Spring Boot");
             String[] metricProviderBeanNames = ctx.getBeanNamesForAnnotation(MetricProvider.class);
+            String[] metricConsumerBeanNames = ctx.getBeanNamesForAnnotation(MetricConsumer.class);
             String[] metricRegistryBeanNames = ctx.getBeanNamesForAnnotation(MetricRegistry.class);
             String[] schedulePoolSettingBeanNames = ctx.getBeanNamesForAnnotation(SchedulePoolSettings.class);
 
             List<Object> metricProviders = Stream.of(metricProviderBeanNames).map(ctx::getBean).collect(Collectors.toList());
+            List<MetricConsumerHandler> metricConsumers = Stream.of(metricConsumerBeanNames).map(ctx::getBean)
+                                                                .map(o -> (MetricConsumerHandler) o).collect(Collectors.toList());
             List<Object> metricRegistries = Stream.of(metricRegistryBeanNames).map(ctx::getBean).collect(Collectors.toList());
             List<Object> poolSettings = Stream.of(schedulePoolSettingBeanNames).map(ctx::getBean).collect(Collectors.toList());
             ObjectUtils.checkThenThrow(metricRegistries.size() != 1, "Required at least one of Metric Registry annotation");
@@ -88,6 +107,7 @@ public class InitializeConfigurations {
             ObjectUtils.checkThenThrow(!(metricRegistry instanceof MetricProviderRegistry), "This must be an instance of MetricProviderRegistry");
             MetricProviderRegistry metricProviderRegistry = (MetricProviderRegistry) metricRegistry;
             metricProviderRegistry.loadFromObjects(metricProviders);
+            metricConsumerRegistry.addAll(metricConsumers);
 
             ScheduleTaskRegistryService scheduleTaskExecutorService = ctx.getBean(ScheduleTaskRegistryService.class);
 
