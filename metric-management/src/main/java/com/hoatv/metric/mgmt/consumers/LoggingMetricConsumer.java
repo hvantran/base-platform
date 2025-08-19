@@ -39,35 +39,26 @@ public class LoggingMetricConsumer implements MetricConsumerHandler {
             MDC.put("application", application);
             MDC.put("category", category);
 
-            if ( value instanceof SimpleValue simpleValue ) {
-                processSimpleValue(unit, name, simpleValue);
-            }
-            else if ( value instanceof String metricValue ) {
-                try {
-                    Long metricValueLong = NumberUtils.createLong(metricValue);
-                    processSimpleValue(unit, name, metricValueLong);
+            switch (value) {
+                case SimpleValue simpleValue -> processSimpleValue(unit, name, simpleValue);
+                case String metricValue -> {
+                    try {
+                        Long metricValueLong = NumberUtils.createLong(metricValue);
+                        processSimpleValue(unit, name, metricValueLong);
+                    } catch (NumberFormatException exception) {
+                        Double metricValueDouble = NumberUtils.createDouble(metricValue);
+                        processSimpleValue(unit, name, metricValueDouble);
+                    }
                 }
-                catch (NumberFormatException exception) {
-                    Double metricValueDouble = NumberUtils.createDouble(metricValue);
-                    processSimpleValue(unit, name, metricValueDouble);
+                case Long metricValue -> processSimpleValue(unit, name, metricValue);
+                case Integer metricValue -> processSimpleValue(unit, name, metricValue.longValue());
+                case Double metricValue -> processSimpleValue(unit, name, metricValue);
+                case Collection<?> objects -> {
+                    @SuppressWarnings("unchecked")
+                    Collection<ComplexValue> complexValues = (Collection<ComplexValue>) value;
+                    complexValues.forEach(complexValue -> processComplexValue(unit, name, complexValue));
                 }
-            }
-            else if ( value instanceof Long metricValue ) {
-                processSimpleValue(unit, name, metricValue);
-            }
-            else if ( value instanceof Integer metricValue ) {
-                processSimpleValue(unit, name, metricValue.longValue());
-            }
-            else if ( value instanceof Double metricValue ) {
-                processSimpleValue(unit, name, metricValue);
-            }
-            else if ( value instanceof Collection<?> ) {
-                @SuppressWarnings("unchecked")
-                Collection<ComplexValue> complexValues = (Collection<ComplexValue>) value;
-                complexValues.forEach(complexValue -> processComplexValue(unit, name, complexValue));
-            }
-            else {
-                processComplexValue(unit, name, (ComplexValue) value);
+                case null, default -> processComplexValue(unit, name, (ComplexValue) value);
             }
         }
         finally {
