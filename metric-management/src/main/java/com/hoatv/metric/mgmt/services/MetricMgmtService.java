@@ -63,7 +63,7 @@ public class MetricMgmtService {
                     try {
                         consumer.consume(application, category, name, value, unit);
                     } catch (Exception exception) {
-                        LOGGER.error("Unable to forward metric to consumer: {}, error: {}", consumerName, exception.getMessage(), exception);
+                        LOGGER.error("Unable to forward metric to consumer: {}", consumerName, exception);
                     }
                 });
             }
