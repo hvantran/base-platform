@@ -34,7 +34,7 @@ public class LoggingMetricConsumer implements MetricConsumerHandler {
     public static final String NAME_PROPERTY = "name";
 
     @Override
-    public void consume (String application, String category, String name, Object value,  String unit) {
+    public void consume(String application, String category, String name, Object value, String unit) {
         try {
             MDC.put("application", application);
             MDC.put("category", category);
@@ -60,8 +60,7 @@ public class LoggingMetricConsumer implements MetricConsumerHandler {
                 }
                 case null, default -> processComplexValue(unit, name, (ComplexValue) value);
             }
-        }
-        finally {
+        } finally {
             MDC.clear();
         }
     }
@@ -85,26 +84,26 @@ public class LoggingMetricConsumer implements MetricConsumerHandler {
         Collection<MetricTag> metricTags = complexValue.getTags();
 
         for (MetricTag metricTag : metricTags) {
-            String              metricUnit = getMetricUnit(unit, metricTag);
+            String metricUnit = getMetricUnit(unit, metricTag);
             Map<String, String> attributes = metricTag.getAttributes();
-            String              nameTag    = attributes.get(NAME_PROPERTY);
+            String nameTag = attributes.get(NAME_PROPERTY);
             String metricNameCompute = name;
             MDC.put(METRIC_UNIT, metricUnit);
             if (attributes.isEmpty()) {
                 MDC.put(METRIC_NAME, name);
-            } else if ( Objects.nonNull(nameTag)) {
+            } else if (Objects.nonNull(nameTag)) {
                 Predicate<Map.Entry<String, String>> filterOutName = p -> !NAME_PROPERTY.equals(p.getKey());
                 Map<String, String> newAttributes =
-                    attributes.entrySet()
-                              .stream()
-                              .filter(filterOutName)
-                              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                        attributes.entrySet()
+                                .stream()
+                                .filter(filterOutName)
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 String nameReplaced = nameTag.toLowerCase().replace(" ", "-");
                 String attNames = newAttributes.values().stream().map(StringCommonUtils::deAccent).collect(Collectors.joining("-"));
 
                 StringJoiner stringJoiner = new StringJoiner("-");
                 stringJoiner.add(deAccent(nameReplaced));
-                if ( StringUtils.isNotEmpty(attNames)) {
+                if (StringUtils.isNotEmpty(attNames)) {
                     stringJoiner.add(attNames);
                 }
 
