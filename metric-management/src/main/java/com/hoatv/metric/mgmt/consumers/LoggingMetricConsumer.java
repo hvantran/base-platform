@@ -132,7 +132,6 @@ public class LoggingMetricConsumer implements MetricConsumerHandler {
             String unitMetricAttribute = attributes.get(UNIT);
             if (Objects.nonNull(unitMetricAttribute)) {
                 unit = unitMetricAttribute;
-                attributes.remove(UNIT);
             }
         }
         return unit;
