@@ -10,16 +10,24 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
-@Setter
 @RequiredArgsConstructor
 public class MetricTag {
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###.##");
 
-    private Map<String, String> attributes = new HashMap<>();
+    private final Map<String, String> attributes = new HashMap<>();
+
+    public Map<String, String> getAttributes() {
+        return Map.copyOf(attributes);
+    }
+
+    public void add(String attributeName, String value) {
+        attributes.put(attributeName, value);
+    }
 
     @NonNull
+    @Getter
+    @Setter
     private String value;
 
     @Override

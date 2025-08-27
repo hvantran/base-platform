@@ -69,8 +69,8 @@ public class MethodStatisticCollector {
         private ComplexValue getComplexValue(String metricName, String unit, long value) {
             ComplexValue complexValue = new ComplexValue();
             MetricTag metricTag = new MetricTag(String.valueOf(value));
-            metricTag.getAttributes().put("name", metricName);
-            metricTag.getAttributes().put("unit", unit);
+            metricTag.add("name", metricName);
+            metricTag.add("unit", unit);
             complexValue.setTags(Collections.singletonList(metricTag));
             return complexValue;
         }
