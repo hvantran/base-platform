@@ -169,4 +169,8 @@ public class StringCommonUtils {
         }
         return 0;
     }
+
+    public static String removeInvalidUserData(String input) {
+        return input.replaceAll("[\n\r]", "_");
+    }
 }
