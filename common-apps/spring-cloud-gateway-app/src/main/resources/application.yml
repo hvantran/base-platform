@@ -37,9 +37,20 @@ spring:
     oauth2:
       client:
         registration:
-          github:
-            clientId: 290c8864349c10a1b625
-            clientSecret: aaff6c9561986ea4e177fd675ac058e11b4e322e
+          keycloak:
+            client-id: pman-client
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:your-client-secret-here}
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}
+          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}/protocol/openid-connect/certs
   cloud:
     gateway:
       routes:
@@ -49,12 +60,25 @@ spring:
             - Path=/api/e-commerce-stats/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - TokenRelay=
         - id: api.external.collector.dev
           uri: http://localhost:8083
           predicates:
             - Path=/api/ext-endpoint-collector/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - TokenRelay=
+        - id: action.manager.dev
+          uri: http://localhost:6085
+          predicates:
+            - Path=/api/action-manager/**
+          filters:
+            - RewritePath=/api/action-manager(?<segment>/?.*), $\{segment}
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: actionManagerCircuitBreaker
+                fallbackUri: forward:/fallback
 ---
 
 spring:
@@ -72,9 +96,20 @@ spring:
     oauth2:
       client:
         registration:
-          github:
-            clientId: 290c8864349c10a1b625
-            clientSecret: aaff6c9561986ea4e177fd675ac058e11b4e322e
+          keycloak:
+            client-id: pman-client
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}
+          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}/protocol/openid-connect/certs
   cloud:
     gateway:
       routes:
@@ -84,9 +119,22 @@ spring:
             - Path=/api/${ecommerce.stats.service.name}/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - TokenRelay=
         - id: api.external.collector
           uri: http://${ext.endpoint.collector.service.name}:8083
           predicates:
             - Path=/api/${ext.endpoint.collector.service.name}/**
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - TokenRelay=
+        - id: action.manager.prod
+          uri: http://action-manager-backend:6085
+          predicates:
+            - Path=/api/action-manager/**
+          filters:
+            - RewritePath=/api/action-manager(?<segment>/?.*), $\{segment}
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: actionManagerCircuitBreaker
+
