@@ -6,7 +6,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -25,20 +24,11 @@ import java.util.stream.Collectors;
 @Component
 public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Mono<AbstractAuthenticationToken>> {
 
-    private final Converter<Jwt, AbstractAuthenticationToken> delegate;
-
-    public KeycloakJwtAuthenticationConverter() {
-        this.delegate = new ReactiveJwtAuthenticationConverterAdapter(this::convertJwt);
-    }
-
     @Override
     public Mono<AbstractAuthenticationToken> convert(Jwt jwt) {
-        return delegate.convert(jwt);
-    }
-
-    private AbstractAuthenticationToken convertJwt(Jwt jwt) {
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
-        return new JwtAuthenticationToken(jwt, authorities);
+        AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities);
+        return Mono.just(token);
     }
 
     /**
