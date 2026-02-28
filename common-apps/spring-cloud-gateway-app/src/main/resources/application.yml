@@ -104,7 +104,13 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           keycloak:
+            # Internal URL for server-to-server communication (JWT validation)
             issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/pman-realm}
+            # External URLs for browser redirects - must be accessible from user's browser
+            authorization-uri: ${KEYCLOAK_AUTHORIZATION_URI:http://localhost:6080/realms/pman-realm/protocol/openid-connect/auth}
+            token-uri: ${KEYCLOAK_TOKEN_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/token}
+            user-info-uri: ${KEYCLOAK_USER_INFO_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/userinfo}
+            jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/certs}
             user-name-attribute: preferred_username
       resourceserver:
         jwt:
