@@ -104,12 +104,12 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           keycloak:
-            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/pman-realm}
             user-name-attribute: preferred_username
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}
-          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:6080/realms/pman-realm}/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/pman-realm}
+          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/pman-realm}/protocol/openid-connect/certs
   cloud:
     gateway:
       routes:
@@ -128,7 +128,7 @@ spring:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
             - TokenRelay=
         - id: action.manager.prod
-          uri: http://action-manager-backend:6085
+          uri: http://action-manager-backend:8082
           predicates:
             - Path=/api/action-manager/**
           filters:
