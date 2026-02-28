@@ -53,27 +53,24 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
 
                     logger.info("Logging out user {} from Keycloak", oidcUser.getPreferredUsername());
 
-                    // Redirect to Keycloak logout endpoint
-                    return exchange.getExchange().getResponse()
-                            .writeWith(Mono.empty())
-                            .then(Mono.fromRunnable(() -> {
-                                exchange.getExchange().getResponse().setStatusCode(
-                                        org.springframework.http.HttpStatus.FOUND
-                                );
-                                exchange.getExchange().getResponse().getHeaders()
-                                        .setLocation(URI.create(logoutUrl));
-                            }));
+                    // Set redirect headers and complete
+                    exchange.getExchange().getResponse().setStatusCode(
+                            org.springframework.http.HttpStatus.FOUND
+                    );
+                    exchange.getExchange().getResponse().getHeaders()
+                            .setLocation(URI.create(logoutUrl));
+                    
+                    return exchange.getExchange().getResponse().setComplete();
                 })
-                .switchIfEmpty(
-                        // If not OIDC user, just redirect to home
-                        Mono.fromRunnable(() -> {
-                            exchange.getExchange().getResponse().setStatusCode(
-                                    org.springframework.http.HttpStatus.FOUND
-                            );
-                            exchange.getExchange().getResponse().getHeaders()
-                                    .setLocation(URI.create("/"));
-                        })
-                );
+                .switchIfEmpty(Mono.defer(() -> {
+                    // If not OIDC user, just redirect to home
+                    exchange.getExchange().getResponse().setStatusCode(
+                            org.springframework.http.HttpStatus.FOUND
+                    );
+                    exchange.getExchange().getResponse().getHeaders()
+                            .setLocation(URI.create("/"));
+                    return exchange.getExchange().getResponse().setComplete();
+                }));
     }
 
     private String getPostLogoutRedirectUri(WebFilterExchange exchange) {
