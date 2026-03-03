@@ -25,13 +25,14 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakLogoutHandler.class);
 
-    @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
-    private String issuerUri;
-
+    private final String issuerUri;
     private final WebClient webClient;
 
-    public KeycloakLogoutHandler(WebClient.Builder webClientBuilder) {
+    public KeycloakLogoutHandler(
+            WebClient.Builder webClientBuilder,
+            @Value("${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}") String issuerUri) {
         this.webClient = webClientBuilder.build();
+        this.issuerUri = issuerUri;
     }
 
     @Override

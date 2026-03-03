@@ -108,7 +108,7 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           keycloak:
-            # Explicit endpoint URIs (no autodiscovery)
+            # Explicit endpoint URIs (no autodiscovery to avoid startup connectivity issues)
             authorization-uri: ${KEYCLOAK_AUTHORIZATION_URI:http://localhost:6080/realms/pman-realm/protocol/openid-connect/auth}
             token-uri: ${KEYCLOAK_TOKEN_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/token}
             user-info-uri: ${KEYCLOAK_USER_INFO_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/userinfo}

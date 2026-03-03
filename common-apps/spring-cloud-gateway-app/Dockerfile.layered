@@ -1,0 +1,7 @@
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+COPY target/layers/dependencies/ ./
+COPY target/layers/spring-boot-loader/ ./
+COPY target/layers/snapshot-dependencies/ ./
+COPY target/layers/application/ ./
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
