@@ -23,19 +23,24 @@ public class SecurityConfig {
 
     private final KeycloakJwtAuthenticationConverter jwtAuthenticationConverter;
     private final KeycloakLogoutHandler keycloakLogoutHandler;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     public SecurityConfig(
             KeycloakJwtAuthenticationConverter jwtAuthenticationConverter,
-            KeycloakLogoutHandler keycloakLogoutHandler) {
+            KeycloakLogoutHandler keycloakLogoutHandler,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtAuthenticationConverter = jwtAuthenticationConverter;
         this.keycloakLogoutHandler = keycloakLogoutHandler;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             // OAuth2 Login for user authentication
-            .oauth2Login(Customizer.withDefaults())
+            .oauth2Login(oauth2 -> oauth2
+                .authenticationSuccessHandler(oAuth2LoginSuccessHandler)
+            )
             
             // OAuth2 Resource Server for JWT validation
             .oauth2ResourceServer(oauth2 -> oauth2
