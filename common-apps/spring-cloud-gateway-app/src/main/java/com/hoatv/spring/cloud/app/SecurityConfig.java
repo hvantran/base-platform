@@ -37,6 +37,9 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+            // CORS configuration - must be before other filters
+            .cors(cors -> cors.disable()) // Using CorsWebFilter instead
+            
             // OAuth2 Login for user authentication
             .oauth2Login(oauth2 -> oauth2
                 .authenticationSuccessHandler(oAuth2LoginSuccessHandler)
@@ -49,6 +52,9 @@ public class SecurityConfig {
             
             // Authorization rules
             .authorizeExchange(exchanges -> exchanges
+                // Allow CORS preflight requests (OPTIONS)
+                .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                
                 // Public endpoints
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                 
