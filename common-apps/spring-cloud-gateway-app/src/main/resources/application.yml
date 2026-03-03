@@ -82,7 +82,7 @@ spring:
           predicates:
             - Path=/api/action-manager/**
           filters:
-            - RewritePath=/api/action-manager(?<segment>/?.*), $\{segment}
+            - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
             - TokenRelay=
             - name: CircuitBreaker
               args:
@@ -145,7 +145,7 @@ spring:
           predicates:
             - Path=/api/action-manager/**
           filters:
-            - RewritePath=/api/action-manager(?<segment>/?.*), $\{segment}
+            - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
             - TokenRelay=
             - name: CircuitBreaker
               args:
