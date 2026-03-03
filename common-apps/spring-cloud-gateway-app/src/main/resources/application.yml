@@ -24,6 +24,11 @@ spring:
   application:
     name: api-gateway
 
+# Application URLs
+app:
+  ui:
+    url: ${APP_UI_URL:http://localhost:6084}
+
 ---
 
 spring:
