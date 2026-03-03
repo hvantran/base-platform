@@ -13,6 +13,10 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.web: DEBUG
+    com.hoatv.spring.cloud: DEBUG
 
 spring:
   profiles:
