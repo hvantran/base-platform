@@ -41,13 +41,6 @@ spring:
   config:
     activate:
       on-profile: "dev"
-  sleuth:
-    otel:
-      config:
-        trace-id-ratio-based: 1.0
-      exporter:
-        otlp:
-          endpoint: http://localhost:8200
   security:
     oauth2:
       client:
@@ -100,13 +93,6 @@ spring:
   config:
     activate:
       on-profile: "prod"
-  sleuth:
-    otel:
-      config:
-        trace-id-ratio-based: 1.0
-      exporter:
-        otlp:
-          endpoint: http://apmserver:8200
   security:
     oauth2:
       client:
