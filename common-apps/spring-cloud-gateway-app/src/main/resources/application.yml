@@ -12,17 +12,10 @@ management:
 
 logging:
   level:
-    org.springframework.cloud.gateway: TRACE
-    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
-    org.springframework.cloud.gateway.handler.FilteringWebHandler: TRACE
-    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: TRACE
-    org.springframework.boot.autoconfigure: DEBUG
-    org.springframework.web.reactive.DispatcherHandler: TRACE
-    org.springframework.web.reactive.HandlerMapping: TRACE
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2: DEBUG
-    org.springframework.security.web: DEBUG
-    com.hoatv.spring.cloud: DEBUG
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: INFO
+    com.hoatv.spring.cloud: INFO
 
 spring:
   profiles:
