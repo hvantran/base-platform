@@ -8,11 +8,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'metrics,gateway,health,info,prometheus'
+        include: 'metrics,gateway,health,info,prometheus,routes'
 
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
+    org.springframework.cloud.gateway.handler.FilteringWebHandler: TRACE
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: TRACE
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
     org.springframework.security.web: DEBUG
