@@ -83,10 +83,6 @@ spring:
           filters:
             - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
             - TokenRelay=
-            - name: CircuitBreaker
-              args:
-                name: actionManagerCircuitBreaker
-                fallbackUri: forward:/fallback
 ---
 
 spring:
@@ -139,7 +135,4 @@ spring:
           filters:
             - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
             - TokenRelay=
-            - name: CircuitBreaker
-              args:
-                name: actionManagerCircuitBreaker
 
