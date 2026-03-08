@@ -2,18 +2,15 @@ package com.hoatv.spring.cloud.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 
 /**
  * Security configuration for Spring Cloud Gateway with Keycloak integration.
- * Implements the backoffice pattern with:
- * - OAuth2 Login for user authentication via Keycloak
- * - OAuth2 Resource Server for JWT token validation
- * - Role-based access control
- * - SSO logout integration
+ * Implements the backoffice pattern with session-based OAuth2 authentication.
  * 
  * Related to hvantran/project-management#187
  */
@@ -21,33 +18,38 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    private final KeycloakJwtAuthenticationConverter jwtAuthenticationConverter;
     private final KeycloakLogoutHandler keycloakLogoutHandler;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     public SecurityConfig(
-            KeycloakJwtAuthenticationConverter jwtAuthenticationConverter,
             KeycloakLogoutHandler keycloakLogoutHandler,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
-        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+            @Lazy OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.keycloakLogoutHandler = keycloakLogoutHandler;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
+    
+    /**
+     * Security context repository that stores authentication in WebSession (cookies)
+     */
+    @Bean
+    public WebSessionServerSecurityContextRepository securityContextRepository() {
+        return new WebSessionServerSecurityContextRepository();
+    }
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain springSecurityFilterChain(
+            ServerHttpSecurity http,
+            WebSessionServerSecurityContextRepository securityContextRepository) {
         http
             // CORS configuration - must be before other filters
             .cors(cors -> cors.disable()) // Using CorsWebFilter instead
             
-            // OAuth2 Login for user authentication
+            // Explicitly configure security context repository to use WebSession
+            .securityContextRepository(securityContextRepository)
+            
+            // OAuth2 Login for user authentication (session-based)
             .oauth2Login(oauth2 -> oauth2
                 .authenticationSuccessHandler(oAuth2LoginSuccessHandler)
-            )
-            
-            // OAuth2 Resource Server for JWT validation
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
             )
             
             // Authorization rules

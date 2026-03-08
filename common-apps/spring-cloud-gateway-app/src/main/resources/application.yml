@@ -48,10 +48,7 @@ spring:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}
             user-name-attribute: preferred_username
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}
-          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}/protocol/openid-connect/certs
+      # Note: resourceserver configuration removed - using session-based oauth2Login only
   cloud:
     gateway:
       routes:
@@ -97,13 +94,10 @@ spring:
             # Explicit endpoint URIs (no autodiscovery to avoid startup connectivity issues)
             authorization-uri: ${KEYCLOAK_AUTHORIZATION_URI:http://localhost:6080/realms/pman-realm/protocol/openid-connect/auth}
             token-uri: ${KEYCLOAK_TOKEN_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/token}
-            user-info-uri: ${KEYCLOAK_USER_INFO_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/userinfo}
+            # Omit user-info-uri to force using ID token claims only
             jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/certs}
             user-name-attribute: preferred_username
-      resourceserver:
-        jwt:
-          # Only use jwk-set-uri without issuer validation 
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/pman-realm/protocol/openid-connect/certs}
+      # Note: resourceserver configuration removed - using session-based oauth2Login only
   cloud:
     gateway:
       routes:
