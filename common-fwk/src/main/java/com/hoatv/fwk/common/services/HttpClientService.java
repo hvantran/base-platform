@@ -114,13 +114,21 @@ public enum HttpClientService {
 
             CheckedSupplier<HttpResponse<String>> supplier = () -> requestParams.httpClient
                     .send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            HttpResponse<String> response = supplier.get();
-            for (int index = 0; index < requestParams.retryTimes; index++) {
-                if (requestParams.successRequestPredicate.test(response)) {
+            int totalExecuteTimes = requestParams.retryTimes + 1;
+            HttpResponse<String> response = null;
+            while (totalExecuteTimes > 0) {
+                try {
+                    response = supplier.get();
+                    if (requestParams.successRequestPredicate.test(response)) {
+                        return response;
+                    }
                     return response;
+                } catch (AppException e) {
+                    totalExecuteTimes--;
+                    if (totalExecuteTimes == 0) {
+                        throw e;
+                    }
                 }
-                response = supplier.get();
             }
             return response;
         };
