@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -43,11 +45,48 @@ public class DefaultExceptionHandler {
             .body(errors);
     }
 
+    /**
+     * Handle validation errors from @Min, @Max, @Size annotations on method parameters
+     * Introduced in Spring Boot 3.x
+     */
+    @ResponseBody
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        LOGGER.error("A HandlerMethodValidationException occurred while processing", ex);
+        
+        // Extract validation error messages
+        String errors = ex.getAllValidationResults().stream()
+            .flatMap(result -> result.getResolvableErrors().stream())
+            .map(error -> error.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+        
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", errors.isEmpty() ? "Validation failure" : errors);
+        
+        return ResponseEntity.badRequest()
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .body(errorResponse);
+    }
+
     @ResponseBody
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(InvalidArgumentException.class)
     public ResponseEntity<Object> handleInvalidArgumentException(InvalidArgumentException ex) {
         LOGGER.error("An InvalidArgumentException occurred while processing", ex);
+        return ResponseEntity.badRequest()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Map.of("message", ex.getMessage()));
+    }
+
+    /**
+     * Handle IllegalArgumentException from PageRequest and other validation failures
+     */
+    @ResponseBody
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        LOGGER.error("An IllegalArgumentException occurred while processing", ex);
         return ResponseEntity.badRequest()
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(Map.of("message", ex.getMessage()));
