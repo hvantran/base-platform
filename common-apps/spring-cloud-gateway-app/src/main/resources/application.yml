@@ -1,5 +1,6 @@
 server:
   port: 8081
+  forward-headers-strategy: framework
 
 management:
   metrics:
@@ -27,6 +28,9 @@ spring:
 app:
   ui:
     url: ${APP_UI_URL:http://localhost:6084}
+    allowed-origins: ${APP_UI_ALLOWED_ORIGINS:http://localhost:6084,http://localhost:6088}
+  security:
+    allowed-redirect-origins: ${APP_SECURITY_ALLOWED_REDIRECT_ORIGINS:http://localhost:6084,http://localhost:6088}
 
 ---
 

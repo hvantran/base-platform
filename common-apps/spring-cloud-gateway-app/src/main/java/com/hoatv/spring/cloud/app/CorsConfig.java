@@ -8,7 +8,8 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * CORS configuration for Spring Cloud Gateway.
@@ -22,12 +23,23 @@ public class CorsConfig {
     @Value("${app.ui.url:http://localhost:6084}")
     private String uiUrl;
 
+    @Value("${app.ui.allowed-origins:http://localhost:6084,http://localhost:6088}")
+    private String uiAllowedOrigins;
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
+
+        List<String> allowedOrigins = Arrays.stream(uiAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .collect(Collectors.toList());
+        if (!allowedOrigins.contains(uiUrl)) {
+            allowedOrigins.add(uiUrl);
+        }
         
         // Allow UI origin
-        corsConfig.setAllowedOrigins(Arrays.asList(uiUrl, "http://localhost:6084"));
+        corsConfig.setAllowedOrigins(allowedOrigins);
         
         // Allow all HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

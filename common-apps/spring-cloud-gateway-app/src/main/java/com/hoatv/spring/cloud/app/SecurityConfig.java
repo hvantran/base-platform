@@ -41,8 +41,8 @@ public class SecurityConfig {
             ServerHttpSecurity http,
             WebSessionServerSecurityContextRepository securityContextRepository) {
         http
-            // CORS configuration - must be before other filters
-            .cors(cors -> cors.disable()) // Using CorsWebFilter instead
+            // CORS configuration for browser calls from UI host
+            .cors(cors -> {})
             
             // Explicitly configure security context repository to use WebSession
             .securityContextRepository(securityContextRepository)
@@ -56,6 +56,9 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
                 // Allow CORS preflight requests (OPTIONS)
                 .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+                // OAuth2 login and callback endpoints
+                .pathMatchers("/oauth2/**", "/login/**").permitAll()
                 
                 // Public endpoints
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
