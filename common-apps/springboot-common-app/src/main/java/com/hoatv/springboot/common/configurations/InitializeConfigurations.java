@@ -109,6 +109,7 @@ public class InitializeConfigurations {
             metricProviderRegistry.loadFromObjects(metricProviders);
             LOGGER.info("Loaded metric providers: {}", metricProviders);
             metricConsumerRegistry.addAll(metricConsumers);
+            LOGGER.info("Loaded metric consumers: {}", metricConsumers);
 
             ScheduleTaskRegistryService scheduleTaskExecutorService = ctx.getBean(ScheduleTaskRegistryService.class);
 
