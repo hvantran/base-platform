@@ -107,6 +107,7 @@ public class InitializeConfigurations {
             ObjectUtils.checkThenThrow(!(metricRegistry instanceof MetricProviderRegistry), "This must be an instance of MetricProviderRegistry");
             MetricProviderRegistry metricProviderRegistry = (MetricProviderRegistry) metricRegistry;
             metricProviderRegistry.loadFromObjects(metricProviders);
+            LOGGER.info("Loaded metric providers: {}", metricProviders);
             metricConsumerRegistry.addAll(metricConsumers);
 
             ScheduleTaskRegistryService scheduleTaskExecutorService = ctx.getBean(ScheduleTaskRegistryService.class);
