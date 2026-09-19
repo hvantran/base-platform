@@ -77,6 +77,13 @@ spring:
           filters:
             - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
             - TokenRelay=
+        - id: spring.kafka.notifier
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/kafka-notifier/**
+          filters:
+            - RewritePath=/api/kafka-notifier(?<segment>/?.*),$\{segment}
+            - TokenRelay=
 ---
 
 spring:
@@ -132,5 +139,12 @@ spring:
             - Path=/api/action-manager/**
           filters:
             - RewritePath=/api/action-manager(?<segment>/?.*), /action-manager-backend$\{segment}
+            - TokenRelay=
+        - id: spring.kafka.notifier
+          uri: http://spring-kafka-notifier:8080
+          predicates:
+            - Path=/api/kafka-notifier/**
+          filters:
+            - RewritePath=/api/kafka-notifier(?<segment>/?.*),$\{segment}
             - TokenRelay=
 
