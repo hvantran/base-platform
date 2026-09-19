@@ -115,9 +115,16 @@ spring:
         - id: api.external.collector
           uri: http://${ext.endpoint.collector.service.name}:8083
           predicates:
-            - Path=/api/${ext.endpoint.collector.service.name}/**
+            - Path=/api/external-endpoint-collector/**
           filters:
-            - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - RewritePath=/api/external-endpoint-collector(?<segment>/?.*), $\{segment}
+            - TokenRelay=
+        - id: template.manager.prod
+          uri: http://template-manager-backend:8084
+          predicates:
+            - Path=/api/template-manager/**
+          filters:
+            - RewritePath=/api/template-manager(?<segment>/?.*), $\{segment}
             - TokenRelay=
         - id: action.manager.prod
           uri: http://action-manager-backend:8082
