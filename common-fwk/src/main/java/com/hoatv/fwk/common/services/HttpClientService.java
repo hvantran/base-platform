@@ -66,11 +66,13 @@ public enum HttpClientService {
     }
 
     private void appendRequestHeaders(RequestParams requestParams, HttpRequest.Builder httpRequestBuilder) {
-        Map<String, String> headers = requestParams.headers;
-        if (MapUtils.isEmpty(headers)) {
-            headers = new HashMap<>();
+        Map<String, String> headers = new HashMap<>();
+        if (MapUtils.isNotEmpty(requestParams.headers)) {
+            headers.putAll(requestParams.headers);
+        } else {
             headers.put(CONTENT_TYPE, APPLICATION_JSON);
         }
+        OutboundRequestAuth.mergeAuthorizationHeader(requestParams.url, headers);
         headers.forEach(httpRequestBuilder::header);
     }
 
@@ -142,5 +144,16 @@ public enum HttpClientService {
 
     public static String asString(HttpResponse<String> response) {
         return response.body();
+    }
+
+    public static boolean is2xx(HttpResponse<String> response) {
+        return response != null && response.statusCode() >= 200 && response.statusCode() < 300;
+    }
+
+    public static Map<String, Object> asScriptHttpResult(HttpResponse<String> response) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("statusCode", response.statusCode());
+        result.put("body", response.body());
+        return result;
     }
 }
