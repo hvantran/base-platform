@@ -28,9 +28,9 @@ spring:
 app:
   ui:
     url: ${APP_UI_URL:http://localhost:6084}
-    allowed-origins: ${APP_UI_ALLOWED_ORIGINS:http://localhost:6084,http://localhost:6088}
+    allowed-origins: ${APP_UI_ALLOWED_ORIGINS:http://localhost:6084,http://localhost:6088,http://localhost:6090}
   security:
-    allowed-redirect-origins: ${APP_SECURITY_ALLOWED_REDIRECT_ORIGINS:http://localhost:6084,http://localhost:6088}
+    allowed-redirect-origins: ${APP_SECURITY_ALLOWED_REDIRECT_ORIGINS:http://localhost:6084,http://localhost:6088,http://localhost:6090}
 
 ---
 
@@ -83,6 +83,13 @@ spring:
             - Path=/api/kafka-notifier/**
           filters:
             - RewritePath=/api/kafka-notifier(?<segment>/?.*),$\{segment}
+            - TokenRelay=
+        - id: exam.integrity.dev
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/exam-integrity/**
+          filters:
+            - RewritePath=/api/exam-integrity(?<segment>/?.*), /exam-integrity-backend$\{segment}
             - TokenRelay=
 ---
 
@@ -146,5 +153,12 @@ spring:
             - Path=/api/kafka-notifier/**
           filters:
             - RewritePath=/api/kafka-notifier(?<segment>/?.*),$\{segment}
+            - TokenRelay=
+        - id: exam.integrity.prod
+          uri: http://exam-integrity-backend:8090
+          predicates:
+            - Path=/api/exam-integrity/**
+          filters:
+            - RewritePath=/api/exam-integrity(?<segment>/?.*), /exam-integrity-backend$\{segment}
             - TokenRelay=
 
