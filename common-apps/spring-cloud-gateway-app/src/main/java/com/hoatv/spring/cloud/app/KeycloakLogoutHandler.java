@@ -13,6 +13,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles logout by invalidating the session in both the gateway and Keycloak.
@@ -27,12 +31,23 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
 
     private final String issuerUri;
     private final WebClient webClient;
+    private final Set<String> allowedRedirectOrigins;
+    private final String defaultPostLogoutRedirectUri;
 
     public KeycloakLogoutHandler(
             WebClient.Builder webClientBuilder,
-            @Value("${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}") String issuerUri) {
+            @Value("${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}") String issuerUri,
+            @Value("${app.security.allowed-redirect-origins:${app.ui.allowed-origins:http://localhost:6084,http://localhost:6088,http://localhost:6090}}")
+            String allowedRedirectOrigins,
+            @Value("${app.ui.url:http://localhost:6084}")
+            String defaultPostLogoutRedirectUri) {
         this.webClient = webClientBuilder.build();
         this.issuerUri = issuerUri;
+        this.defaultPostLogoutRedirectUri = defaultPostLogoutRedirectUri;
+        this.allowedRedirectOrigins = Arrays.stream(allowedRedirectOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -64,18 +79,48 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
                     return exchange.getExchange().getResponse().setComplete();
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    // If not OIDC user, just redirect to home
+                    // If not OIDC user, redirect to post logout destination
                     exchange.getExchange().getResponse().setStatusCode(
                             org.springframework.http.HttpStatus.FOUND
                     );
                     exchange.getExchange().getResponse().getHeaders()
-                            .setLocation(URI.create("/"));
+                            .setLocation(URI.create(getPostLogoutRedirectUri(exchange)));
                     return exchange.getExchange().getResponse().setComplete();
                 }));
     }
 
     private String getPostLogoutRedirectUri(WebFilterExchange exchange) {
-        String baseUrl = exchange.getExchange().getRequest().getURI().toString();
+        String queryRedirectUri = exchange.getExchange().getRequest().getQueryParams().getFirst("redirect_uri");
+        if (queryRedirectUri != null && !queryRedirectUri.isBlank()) {
+            try {
+                URI parsed = new URI(queryRedirectUri);
+                String origin = extractOrigin(parsed);
+                if (origin != null && allowedRedirectOrigins.contains(origin)) {
+                    return queryRedirectUri;
+                }
+                logger.warn("Blocked redirect_uri with non-allowlisted origin in logout: {}", queryRedirectUri);
+            } catch (URISyntaxException e) {
+                logger.warn("Invalid redirect_uri format in logout: {}", queryRedirectUri);
+            }
+        }
+
+        String referer = exchange.getExchange().getRequest().getHeaders().getFirst("Referer");
+        if (referer != null && !referer.isBlank()) {
+            try {
+                URI parsed = new URI(referer);
+                String origin = extractOrigin(parsed);
+                if (origin != null && allowedRedirectOrigins.contains(origin)) {
+                    return referer;
+                }
+            } catch (URISyntaxException e) {
+                logger.warn("Invalid Referer format in logout: {}", referer);
+            }
+        }
+
+        if (defaultPostLogoutRedirectUri != null && !defaultPostLogoutRedirectUri.isBlank()) {
+            return defaultPostLogoutRedirectUri;
+        }
+
         String scheme = exchange.getExchange().getRequest().getURI().getScheme();
         String host = exchange.getExchange().getRequest().getURI().getHost();
         int port = exchange.getExchange().getRequest().getURI().getPort();
@@ -84,5 +129,17 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
                 scheme, 
                 host, 
                 (port != -1 && port != 80 && port != 443) ? ":" + port : "");
+    }
+
+    private String extractOrigin(URI uri) {
+        if (uri.getScheme() == null || uri.getHost() == null) {
+            return null;
+        }
+        StringBuilder origin = new StringBuilder();
+        origin.append(uri.getScheme()).append("://").append(uri.getHost());
+        if (uri.getPort() != -1) {
+            origin.append(":").append(uri.getPort());
+        }
+        return origin.toString();
     }
 }

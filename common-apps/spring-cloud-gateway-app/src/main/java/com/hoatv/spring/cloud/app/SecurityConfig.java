@@ -57,8 +57,8 @@ public class SecurityConfig {
                 // Allow CORS preflight requests (OPTIONS)
                 .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-                // OAuth2 login and callback endpoints
-                .pathMatchers("/oauth2/**", "/login/**").permitAll()
+                // OAuth2 login, callback, and logout endpoints
+                .pathMatchers("/oauth2/**", "/login/**", "/logout").permitAll()
                 
                 // Public endpoints
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
@@ -74,8 +74,9 @@ public class SecurityConfig {
                 .anyExchange().authenticated()
             )
             
-            // Logout configuration with Keycloak SSO logout
+            // Logout configuration with Keycloak SSO logout (supports both GET and POST)
             .logout(logout -> logout
+                .requiresLogout(org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers("/logout"))
                 .logoutSuccessHandler(keycloakLogoutHandler)
             )
             
