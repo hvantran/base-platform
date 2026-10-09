@@ -37,7 +37,7 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
     public KeycloakLogoutHandler(
             WebClient.Builder webClientBuilder,
             @Value("${KEYCLOAK_ISSUER_URI:http://localhost:6080/realms/pman-realm}") String issuerUri,
-            @Value("${app.security.allowed-redirect-origins:${app.ui.allowed-origins:http://localhost:6084,http://localhost:6088,http://localhost:6090}}")
+            @Value("${app.security.allowed-redirect-origins:${app.ui.allowed-origins:http://localhost:6084,http://localhost:6088,http://localhost:6090,http://localhost:3000}}")
             String allowedRedirectOrigins,
             @Value("${app.ui.url:http://localhost:6084}")
             String defaultPostLogoutRedirectUri) {
