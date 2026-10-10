@@ -54,39 +54,32 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
     public Mono<Void> onLogoutSuccess(WebFilterExchange exchange, Authentication authentication) {
         return Mono.justOrEmpty(authentication)
                 .filter(auth -> auth.getPrincipal() instanceof OidcUser)
-                .flatMap(auth -> {
+                .map(auth -> {
                     OidcUser oidcUser = (OidcUser) auth.getPrincipal();
-                    String idToken = oidcUser.getIdToken().getTokenValue();
-                    
-                    // Construct Keycloak logout URL
-                    String logoutUrl = UriComponentsBuilder
+                    String idToken = oidcUser.getIdToken() != null ? oidcUser.getIdToken().getTokenValue() : null;
+
+                    UriComponentsBuilder builder = UriComponentsBuilder
                             .fromUriString(issuerUri)
                             .path("/protocol/openid-connect/logout")
-                            .queryParam("id_token_hint", idToken)
-                            .queryParam("post_logout_redirect_uri", getPostLogoutRedirectUri(exchange))
-                            .build()
-                            .toUriString();
+                            .queryParam("post_logout_redirect_uri", getPostLogoutRedirectUri(exchange));
 
+                    if (idToken != null) {
+                        builder.queryParam("id_token_hint", idToken);
+                    }
+
+                    String logoutUrl = builder.build().toUriString();
                     logger.info("Logging out user {} from Keycloak", oidcUser.getPreferredUsername());
-
-                    // Set redirect headers and complete
-                    exchange.getExchange().getResponse().setStatusCode(
-                            org.springframework.http.HttpStatus.FOUND
-                    );
-                    exchange.getExchange().getResponse().getHeaders()
-                            .setLocation(URI.create(logoutUrl));
-                    
-                    return exchange.getExchange().getResponse().setComplete();
+                    return logoutUrl;
                 })
-                .switchIfEmpty(Mono.defer(() -> {
-                    // If not OIDC user, redirect to post logout destination
+                .defaultIfEmpty(getPostLogoutRedirectUri(exchange))
+                .flatMap(destinationUrl -> {
                     exchange.getExchange().getResponse().setStatusCode(
                             org.springframework.http.HttpStatus.FOUND
                     );
                     exchange.getExchange().getResponse().getHeaders()
-                            .setLocation(URI.create(getPostLogoutRedirectUri(exchange)));
+                            .setLocation(URI.create(destinationUrl));
                     return exchange.getExchange().getResponse().setComplete();
-                }));
+                });
     }
 
     private String getPostLogoutRedirectUri(WebFilterExchange exchange) {
