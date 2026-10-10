@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -84,30 +85,15 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
 
     private String getPostLogoutRedirectUri(WebFilterExchange exchange) {
         String queryRedirectUri = exchange.getExchange().getRequest().getQueryParams().getFirst("redirect_uri");
-        if (queryRedirectUri != null && !queryRedirectUri.isBlank()) {
-            try {
-                URI parsed = new URI(queryRedirectUri);
-                String origin = extractOrigin(parsed);
-                if (origin != null && allowedRedirectOrigins.contains(origin)) {
-                    return queryRedirectUri;
-                }
-                logger.warn("Blocked redirect_uri with non-allowlisted origin in logout: {}", queryRedirectUri);
-            } catch (URISyntaxException e) {
-                logger.warn("Invalid redirect_uri format in logout: {}", queryRedirectUri);
-            }
+        Optional<String> validatedQuery = validateRedirectUri(queryRedirectUri, "redirect_uri");
+        if (validatedQuery.isPresent()) {
+            return validatedQuery.get();
         }
 
         String referer = exchange.getExchange().getRequest().getHeaders().getFirst("Referer");
-        if (referer != null && !referer.isBlank()) {
-            try {
-                URI parsed = new URI(referer);
-                String origin = extractOrigin(parsed);
-                if (origin != null && allowedRedirectOrigins.contains(origin)) {
-                    return referer;
-                }
-            } catch (URISyntaxException e) {
-                logger.warn("Invalid Referer format in logout: {}", referer);
-            }
+        Optional<String> validatedReferer = validateRedirectUri(referer, "Referer");
+        if (validatedReferer.isPresent()) {
+            return validatedReferer.get();
         }
 
         if (defaultPostLogoutRedirectUri != null && !defaultPostLogoutRedirectUri.isBlank()) {
@@ -117,11 +103,28 @@ public class KeycloakLogoutHandler implements ServerLogoutSuccessHandler {
         String scheme = exchange.getExchange().getRequest().getURI().getScheme();
         String host = exchange.getExchange().getRequest().getURI().getHost();
         int port = exchange.getExchange().getRequest().getURI().getPort();
-        
+
         return String.format("%s://%s%s/", 
                 scheme, 
                 host, 
                 (port != -1 && port != 80 && port != 443) ? ":" + port : "");
+    }
+
+    private Optional<String> validateRedirectUri(String candidateUri, String sourceName) {
+        if (candidateUri == null || candidateUri.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            URI parsed = new URI(candidateUri);
+            String origin = extractOrigin(parsed);
+            if (origin != null && allowedRedirectOrigins.contains(origin)) {
+                return Optional.of(candidateUri);
+            }
+            logger.warn("Blocked {} with non-allowlisted origin in logout: {}", sourceName, candidateUri);
+        } catch (URISyntaxException e) {
+            logger.warn("Invalid {} format in logout: {}", sourceName, candidateUri);
+        }
+        return Optional.empty();
     }
 
     private String extractOrigin(URI uri) {
